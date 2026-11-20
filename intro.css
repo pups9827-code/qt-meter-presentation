@@ -1,0 +1,49 @@
+/* The reference starts with the header already in place. Text rises slightly,
+   the dividers appear, then the two vertical titles are revealed in order. */
+@media (prefers-reduced-motion: no-preference) {
+  .intro-heading,
+  .intro-lead,
+  .intro-description,
+  .intro-footer {
+    animation: intro-copy-in 620ms cubic-bezier(.16, 1, .3, 1) backwards;
+  }
+
+  .intro-lead { animation-delay: 100ms; }
+  .intro-description { animation-delay: 210ms; }
+  .intro-footer { animation-delay: 340ms; }
+
+  .panel {
+    --divider-start: 420ms;
+    --title-start: 1580ms;
+    animation: intro-divider-in 500ms ease-out var(--divider-start) backwards;
+  }
+
+  .panel:nth-child(2) {
+    --divider-start: 520ms;
+    --title-start: 2280ms;
+  }
+
+  .panel:nth-child(3) {
+    --divider-start: 620ms;
+  }
+
+  .panel-title {
+    /* After the title's 90° rotation its inline axis points down the page. */
+    animation: intro-title-in 940ms cubic-bezier(.42, 0, .58, 1) var(--title-start) backwards;
+  }
+}
+
+@keyframes intro-copy-in {
+  from { opacity: 0; transform: translateY(9px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes intro-divider-in {
+  from { border-left-color: transparent; }
+  to { border-left-color: var(--line); }
+}
+
+@keyframes intro-title-in {
+  from { clip-path: inset(0 100% 0 0); }
+  to { clip-path: inset(0 0 0 0); }
+}
