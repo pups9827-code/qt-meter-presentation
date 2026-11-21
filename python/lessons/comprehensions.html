@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#090909">
+  <title>Списочные выражения — pupsiks</title>
+  <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../docs.css">
+  <script src="../docs.js" defer></script>
+</head>
+<body>
+  <header class="masthead">
+    <a class="brand" href="../../index.html"><img src="../../favicon.svg" alt="" width="38" height="38">pupsiks</a>
+    <a class="label" href="../index.html">Справочник Python</a>
+    <a class="home-link" href="../../index.html">На главную</a>
+  </header>
+  <div class="docs module">
+    <aside class="sidebar">
+      <nav aria-label="Разделы справочника" class="chapters">
+        <p class="label">Темы</p>
+        <ol>
+          <li><a href="../algorithms.html">Линейные алгоритмы и циклы</a></li>
+          <li><a href="../collections.html" aria-current="page">Коллекции</a></li>
+          <li><a href="../files.html">Файлы и библиотеки</a></li>
+          <li><a href="../functions.html">Функции</a></li>
+          <li><a href="../oop.html">ООП</a></li>
+        </ol>
+      </nav>
+    </aside>
+    <aside class="contents module-contents">
+      <nav aria-label="На этой странице">
+        <p class="label">На этой странице</p>
+        <a href="#topic-1">Списочное выражение</a>
+        <a href="#topic-2">Списочное выражение с тернарным оператором</a>
+        <a href="#topic-3">Списочное выражение с условием</a>
+        <a href="#topic-4">Списочное выражение для вложенных списков</a>
+        <a href="#topic-5">Что такое хорошо</a>
+      </nav>
+    </aside>
+    <main>
+      <header class="overview" id="overview">
+        <a class="lesson-back label" href="../collections.html#comprehensions">Коллекции</a>
+        <h1>Списочные выражения</h1>
+        <p>Краткость — сестра Python</p>
+      </header>
+
+      <article class="lesson-body">
+      <p>Это случается с каждым, кто начинает писать на Python. В какой-то момент вы сидите такие, пишете цикл:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>squares = []
+for x in range(10):
+    squares.append(x * x)</code></pre>
+      </figure>
+      <p>И вдруг натыкаетесь на чей-то код:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>squares = [x * x for x in range(10)]</code></pre>
+      </figure>
+      <p>🤯 Всё. Назад дороги нет. Это как впервые попробовать нормальный кофе — уже невозможно вернуться к растворимому (если только понадобится взбодриться не от кофеина, а от вкуса, который пробуждает внутреннего Халка).</p>
+      <p>Списочные выражения (list comprehensions, в некоторых переводах на русский также встречается — списочные включения) — это не просто синтаксический сахар. Это новый способ думать. Вы больше не пишете как, а описываете, что нужно получить.</p>
+      <h2 id="topic-1">☰ Выражаемся грамотно</h2>
+      <p>Ещё раз вернёмся и посмотрим на синтаксис.</p>
+      <p>Итак, пусть нам надо написать программу, которая получит список длин строк из списка этих самых строк. Стандартный подход:</p>
+      <p>сделаем пустой список,</p>
+      <p>пройдёмся по всем элементам исходного списка,</p>
+      <p>добавим длину каждого элемента в новый список.</p>
+      <p>То есть мы по шагам рассказали интерпретатору, что нужно сделать, чтобы получить финальный результат. Как-то так:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>excuses = [
+    &quot;Ждал подходящего понедельника&quot;,
+    &quot;Не было подходящей тетрадки&quot;,
+    &quot;Кот спал на клавиатуре&quot;,
+    &quot;Слишком солнечно для работы&quot;,
+    &quot;Слишком пасмурно для вдохновения&quot;
+]
+result = []
+for ex in excuses:
+    result.append(len(ex))
+print(result)</code></pre>
+      </figure>
+      <p>В случае использования списочных выражений нам надо описать интерпретатору желаемый результат:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>bed_excuses = [
+    &quot;гравитация усилилась&quot;,
+    &quot;одеяло не отпускало&quot;,
+    &quot;снаружи - реальность&quot;,
+    &quot;мир пока не готов к моему величию&quot;,
+    &quot;стоял на зарядке&quot;
+]
+result = [len(x) for x in bed_excuses]</code></pre>
+      </figure>
+      <p>Можно читать так: «Создай мне список из длин x для каждого x из списка bed_excuses».</p>
+      <p>Скорость работы списочных выражений такая же, как у цикла, но код получается короче и выразительнее. Ещё пример:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>batteries = [90, 50, 20, 100]  # Поставили батарейки на зарядку.
+batteries = [min(level + 10, 100) for level in batteries]  # Зарядили батарейки на 10%.
+print(batteries)  # [100, 60, 30, 100]</code></pre>
+      </figure>
+      <p>Если в задаче написано что-то похожее на «вводится список целых чисел через запятую» — самое время доставать списочное выражение:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>data = [int(x) for x in input().split(&#x27;,&#x27;)]
+# Разделим строку по запятым, а потом каждый элемент превратим в целое число.</code></pre>
+      </figure>
+      <p>Важный момент, чисто визуально результат вот этих двух кусочков будет идентичным:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>print(sum([x ** 2 for x in range(10)]))</code></pre>
+      </figure>
+      <p>и</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>print(sum(x ** 2 for x in range(10)))</code></pre>
+      </figure>
+      <p>Но на самом деле во втором выражении вообще никакого списка нет. А что есть? Узнаем через пару уроков, а пока не забывайте квадратные скобки.</p>
+      <h2 id="topic-2">🤔 Выполняйте мои условия</h2>
+      <p>Когда мы говорили про условные операторы в Python, мы сознательно прошли мимо сокращённой записи if — тернарного оператора. Вот так выглядит его синтаксис:</p>
+      <p>b if condition else c</p>
+      <p>Читается: верни b, если выполняется условие condition, иначе верни c. Тернарный оператор, в отличие от обычного if, не бывает без else-части.</p>
+      <p>Причина, по которой этот оператор оказался так далеко от урока про условия, кроется в том, что по-настоящему мощь тернарного оператора раскрывается в комбинации со списочными выражениями.</p>
+      <p>Например, у нас есть список, чётные числа в котором надо возвести в квадрат, а нечётные — в третью степень:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>numbers = [1, 2, 3, 4, 5]
+result = [x ** 2 if x % 2 == 0 else x ** 3 for x in numbers]</code></pre>
+      </figure>
+      <p>Или мы хотим разметить людей на взрослых и детей в зависимости от их возраста:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>ages = [5, 17, 34, 70]
+
+status = [&quot;ребёнок&quot; if a &lt; 18 else &quot;взрослый&quot; for a in ages]
+print(status)  # [&#x27;ребёнок&#x27;, &#x27;ребёнок&#x27;, &#x27;взрослый&#x27;, &#x27;взрослый&#x27;]</code></pre>
+      </figure>
+      <h2 id="topic-3">🗑️ Фильтруем выражения</h2>
+      <p>А вернее — списочные выражения, которые фильтруют. Иногда нам недостаточно использовать тернарный оператор для того, чтобы обработать исходный список. Иногда нам необходимо, чтобы в результирующий список попали не все элементы, а только те, которые удовлетворяют какому-либо условию.</p>
+      <p>То есть нам надо написать что-то, что без списочных выражений выглядело бы как-то так:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>evens = []
+for x in range(10): 
+    if x % 2 == 0:
+        evens.append(x ** 2)  # Допустим, мы забыли про шаг в range и решили получать чётные числа таким образом.</code></pre>
+      </figure>
+      <p>В синтаксисе списочных выражений это будет выглядеть следующим образом:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>evens = [x ** 2 for x in range(10) if x % 2 == 0]  # Опять же, если мы не вспомним про шаг в range.</code></pre>
+      </figure>
+      <p>Если говорить языком схем, то миграция операторов из привычного кода в списочное выражение выглядит вот так:</p>
+      <p>Чуть менее притянутый за уши пример:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code># Отбираем только съедобные продукты из странного списка.
+foods = [&quot;яблоко&quot;, &quot;камень&quot;, &quot;груша&quot;, &quot;гвоздь&quot;, &quot;банан&quot;, &quot;яблоко&quot;]
+edible = [food for food in foods if food in (&quot;яблоко&quot;, &quot;груша&quot;, &quot;банан&quot;)]
+# [&quot;яблоко&quot;, &quot;груша&quot;, &quot;банан&quot;, &quot;яблоко&quot;] (камень и гвоздь — тот случай, когда ужин правда лучше отдать врагу).</code></pre>
+      </figure>
+      <p>или:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>words = [&quot;я&quot;, &quot;люблю&quot;, &quot;Python&quot;, &quot;и&quot;, &quot;кофе&quot;]
+result = [word.upper() for word in words if len(word) &gt; 2]
+# [&quot;ЛЮБЛЮ&quot;, &quot;PYTHON&quot;, &quot;КОФЕ&quot;]</code></pre>
+      </figure>
+      <p>Фильтрацию, конечно, можно совмещать с использованием тернарного оператора.</p>
+      <h2 id="part-90">🤯 Занятная комбинация</h2>
+      <p>В списочном выражении можно использовать несколько циклов. В этом случае внешним считается тот, который написан раньше.</p>
+      <p>Допустим мы захотели попробовать все комбинации продуктов в нашем холодильнике:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>ingredients = [&quot;хлеб&quot;, &quot;колбаса&quot;, &quot;сыр&quot;, &quot;варенье&quot;]
+combinations = [(a, b) for a in ingredients for b in ingredients if a != b]
+# [(&quot;хлеб&quot;, &quot;колбаса&quot;), (&quot;хлеб&quot;, &quot;сыр&quot;), ..., (&quot;сыр&quot;, &quot;варенье&quot;)] </code></pre>
+      </figure>
+      <p>Кстати, сыр с вареньем — топ! 🐀</p>
+      <p>Ещё раз: не забываем про порядок выполнения циклов — сначала внешний, потом внутренний!</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code># Все даты года, когда программист пил кофе (даже несуществующие).
+coffee_days = [(day, month) for month in range(1, 13) for day in range(1, 32)]</code></pre>
+      </figure>
+      <h2 id="topic-4">🌐 Возвращение в матрицу</h2>
+      <p>Списочные выражения часто используют для генерации матриц, для этого нужно всего лишь засунуть одно списочное выражение (которое генерирует элементы строки) в другое (которое, собственно, объединяет строки в матрицу).</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>matrix = [[x * y for y in range(1, 4)] for x in range(1, 4)]
+print(matrix)
+# [[1, 2, 3], [2, 4, 6], [3, 6, 9]]</code></pre>
+      </figure>
+      <p>На каждую итерацию цикла во внешнем списочном выражении полностью вычисляется внутреннее списочное выражение.</p>
+      <p>Давайте сделаем с помощью вложенных списочных выражений «шахматную доску»:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>board = [[&#x27;⬛&#x27; if (i + j) % 2 else &#x27;⬜&#x27; for j in range(8)] for i in range(8)]
+print(*board, sep=&#x27;\n&#x27;)</code></pre>
+      </figure>
+      <p>С генерацией матриц есть небольшой подвох. Скажите, ведь правда для создания списка одинаковых списков хочется написать что-то вроде:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>row = [0] * 3
+grid = [row] * 3</code></pre>
+      </figure>
+      <p>На первый взгляд всё хорошо, но проблема покажет себя сразу после первого же присваивания элемента:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>grid[0][0] = 1
+print(grid)</code></pre>
+      </figure>
+      <p>Спойлер: будет [[1, 0, 0], [1, 0, 0], [1, 0, 0]], потому что все строки — это одна и та же ссылка! Чтобы этого избежать, надо явно для каждой строки создавать отдельный список:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>grid = [[0] * 3 for _ in range(3)]</code></pre>
+      </figure>
+      <h2 id="topic-5">😵‍💫 Слишком много хорошего — это тоже плохо</h2>
+      <p>Помните: списочные выражения должны упрощать код, а не усложнять его. Когда мы с вами чуть потренируемся, для вас не будет большой проблемой написать списочное выражение, которое:</p>
+      <p>откроет файл,</p>
+      <p>прочитает оттуда данные,</p>
+      <p>каким-нибудь образом преобразует эти данные,</p>
+      <p>запишет результат в другой файл.</p>
+      <p>И вообще, python-разработчики любят в качестве упражнения пытаться решить любую задачу с помощью one-liner (программы в одну строку), но в реальных проектах списочные выражения длиной в тысячи символов определённо вредят, а не делают код лучше.</p>
+      <p>Если использование списочного выражения превращает программу в ребус, то лучше использовать отдельный цикл:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code># Плохо:
+result = [x if x % 2 == 0 else (x ** 2 if x &gt; 5 else x / 2) for x in range(10)]
+
+# Хорошо:
+result = []
+for x in range(10):
+    if x % 2 == 0:
+        result.append(x)
+    else:
+        result.append(x ** 2 if x &gt; 5 else x / 2)</code></pre>
+      </figure>
+      <p>Если выражение в 3 вложенных уровня — пора остановиться и подышать.</p>
+      <p>Другой пример неправильного использования:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code># Плохо
+[print(f&quot;Значение: {x}&quot;) for x in data]
+
+# Лучше
+for x in data:
+    print(f&quot;Значение: {x}&quot;)</code></pre>
+      </figure>
+      <p>Если не создаёте список — не надо делать вид, что создаёте.</p>
+      <h2 id="part-144">🤨 Что ты такое?</h2>
+      <p>Так как Python — язык с динамической типизацией (упрощённо говоря, мы можем сначала положить в переменную строку, а потом число — и ничего нам за это не будет), интерпретатору в каждый момент времени необходимо знать, какого типа значение хранится в переменной. Для этого, если чуть заглянуть под капот, каждый объект (у нас будет це-е-е-лый блок уроков про это) в Python, помимо значения, хранит ещё и тип. Эта информация доступна и нам как разработчикам.</p>
+      <p>Мы всегда можем проверить, хранит ли переменная объект определённого типа с помощью функции isinstance().</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>x = [n for n in range(3)]
+print(isinstance(x, list))  # True
+print(isinstance({}, set))  # False, на следующем уроке расскажем
+print(isinstance(3, int))  # True</code></pre>
+      </figure>
+      <p>Оставим в списке только строки:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>mixed = [42, &quot;эспрессо&quot;, 3.14, &quot;капучино&quot;, [&quot;список&quot;]]
+strings = [item for item in mixed if isinstance(item, str)]</code></pre>
+      </figure>
+      <h2 id="part-154">🌟 Итог: наше выражение лица — 😊</h2>
+      <p>Итак, списочные выражения это:</p>
+      <p>Краткость. Сокращайте циклы до одной строки.</p>
+      <p>Читаемость. Пишите код, который звучит как предложение.</p>
+      <p>Гибкость. Комбинируйте условия, циклы и преобразования, но не превращайте ваш код в монстра.</p>
+      <p>Как мы уже говорили, любое списочное выражение может быть переписано на циклы. А ещё мы знаем, что вы способны такие циклы написать. Но при решении задач этого урока необходимо использовать списочные выражения, без них задача не будет принята. Такие дела ¯\_(ツ)_/¯</p>
+      <p>P. S. Мы знаем, что когда в руках молоток, всё выглядит как гвозди. Но сдерживайте себя, используйте списочные выражения только тогда, когда это сделает мир лучше.</p>
+      </article>
+      <nav class="lesson-pagination" aria-label="Переключение уроков">
+        <a class="chapter-next" href="conversions.html">Назад · Преобразования коллекций</a>
+        <a class="chapter-next" href="dictionaries.html">Далее · Словари</a>
+      </nav>
+    </main>
+  </div>
+</body>
+</html>

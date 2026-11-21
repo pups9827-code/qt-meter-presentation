@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#090909">
+  <title>Библиотека PIL. Трансформация — pupsiks</title>
+  <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../docs.css">
+  <script src="../docs.js" defer></script>
+</head>
+<body>
+  <header class="masthead">
+    <a class="brand" href="../../index.html"><img src="../../favicon.svg" alt="" width="38" height="38">pupsiks</a>
+    <a class="label" href="../index.html">Справочник Python</a>
+    <a class="home-link" href="../../index.html">На главную</a>
+  </header>
+  <div class="docs module">
+    <aside class="sidebar">
+      <nav aria-label="Разделы справочника" class="chapters">
+        <p class="label">Темы</p>
+        <ol>
+          <li><a href="../algorithms.html">Линейные алгоритмы и циклы</a></li>
+          <li><a href="../collections.html">Коллекции</a></li>
+          <li><a href="../files.html" aria-current="page">Файлы и библиотеки</a></li>
+          <li><a href="../functions.html">Функции</a></li>
+          <li><a href="../oop.html">ООП</a></li>
+        </ol>
+      </nav>
+    </aside>
+    <aside class="contents module-contents">
+      <nav aria-label="На этой странице">
+        <p class="label">На этой странице</p>
+        <a href="#topic-1">Цвета отдельных пикселей</a>
+        <a href="#topic-2">Размер, вставка, поворот</a>
+        <a href="#topic-3">Встроенные фильтры</a>
+        <a href="#topic-4">Метаданные</a>
+      </nav>
+    </aside>
+    <main>
+      <header class="overview" id="overview">
+        <a class="lesson-back label" href="../files.html#pillow-transforms">Файлы и библиотеки</a>
+        <h1>Библиотека PIL. Трансформация</h1>
+        <p>Отфильтрованная красота</p>
+      </header>
+
+      <article class="lesson-body">
+      <p>Сегодня мы продолжим наше погружение в обработку изображений с помощью библиотеки PIL. Если на первом уроке мы рисовали примитивами, как люди каменного века на стенах пещер, то сегодня мы будем модифицировать уже существующие изображения, чтобы сделать их красивее (иногда, а иногда — нет).</p>
+      <p>Тут и далее будем трактовать понятие фильтр максимально широко, как любое изменение исходного изображения.</p>
+      <p>Вообще тема фильтров очень распространена. Периодически выстреливают приложения и социальные сети, основной фишкой которых является обработка фотографий. Пользователи (и мы не исключение) любят, когда одной кнопкой «Сделать красиво» любой снимок становится как из портфолио профессионального фотографа.</p>
+      <p>Кроме того, фильтры очень широко применяются и в киноиндустрии (это называется color grading). Сравните цветовую гамму молодёжных комедий или современных блокбастеров с классическим «Шерлоком Холмсом», например.</p>
+      <p>Иначе говоря, редактирование изображений невероятно востребовано, начиная от самых простых алгоритмов и заканчивая работами с привлечением искусственного интеллекта, сделанных, например, в Шедевруме.</p>
+      <p>В библиотеке PIL реализовано много встроенных фильтров и инструментов (вырезание, изменение размеров и т. д.). Фактически это такой программируемый мини-Photoshop, но мы попытаемся поработать с изменением изображений сначала без дополнительных возможностей, чтобы поучиться восприятию цветовой палитры и алгоритмизации.</p>
+      <p>А эксперименты будем проводить вот на этом изображении:</p>
+      <h2 id="topic-1">🍹 Ручная цветовыжималка</h2>
+      <p>Для начала попробуем превратить изображение в чёрно-белое.</p>
+      <p>Тут все просто: чёрно-белое изображение содержит только информацию о яркости, но не о цветах. У таких изображений все три компоненты имеют одинаковое значение, поэтому мы можем просто «размазать» суммарную яркость пикселя поровну по трём компонентам.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from PIL import Image
+
+im = Image.open(&quot;test_subjects.png&quot;)
+
+pixels = im.load()
+x, y = im.size
+
+for i in range(x):  
+    for j in range(y):
+        r, g, b = pixels[i, j]
+        bw = (r + g + b) // 3
+        pixels[i, j] = bw, bw, bw
+
+im.save(&quot;greyscale.png&quot;)</code></pre>
+      </figure>
+      <p>Можно сказать, что мы слили содержимое контейнеров R, G, B в одну ёмкость, а затем разлили обратно, но уже поровну в каждый контейнер. Суммарная яркость пикселя осталась прежней, но информация о цвете не сохранилась. Фотография же стала более «задумчивой».</p>
+      <p>Кстати, получать значение пикселя и устанавливать новое можно и без загрузки массива в отдельную переменную пикселей как массива с помощью методов самого изображения im.getpixel((x, y)) / im.putpixel((x, y), (r, g, b)).</p>
+      <h2 id="part-35">💀 Без негатива</h2>
+      <p>Давайте подумаем над тем, как получить негатив. Если в позитиве белое изображение (255), в негативе должно быть чёрное (0), и наоборот. То есть для значения х негативом будет 255 — x.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from PIL import Image
+
+im = Image.open(&quot;test_subjects.png&quot;)
+
+pixels = im.load()
+x, y = im.size
+
+for i in range(x):  
+    for j in range(y):
+        r, g, b = pixels[i, j]
+        pixels[i, j] = 255 - r, 255 - g, 255 - b
+
+
+im.save(&quot;negative.png&quot;)</code></pre>
+      </figure>
+      <p>Иногда на негативе можно рассмотреть некоторые детали, которые не видны в позитиве.</p>
+      <h2 id="topic-2">😎 Не «криво», а так и задумано</h2>
+      <p>Во многих редакторах, включая Photoshop, есть инструмент «Кривые» (Curves).</p>
+      <p>Один из самых частых случаев применения кривых — фотография с очень светлыми и тёмными участками: например солнечный свет и тень на пейзажном фото. При неправильно выставленных параметрах съёмки фотоаппарат ориентируется по яркости самого яркого участка. Тень при этом становится очень тёмной, лишённой деталей.</p>
+      <p>«Кривые» позволяют задать алгоритм, меняющий яркость всего пикселя или отдельной компоненты в зависимости от исходной яркости. Разумеется, мы можем написать нечто похожее и руками. Например, можем высветлить тёмные участки в изображении, не трогая светлые.</p>
+      <p>«Высветлить» означает увеличить значения всех цветовых компонент на какой-то коэффициент. Важно помнить, что эти значения не могут быть больше 255.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from PIL import Image
+
+im = Image.open(&quot;test_subjects.png&quot;)
+
+pixels = im.load()
+x, y = im.size
+
+for i in range(x):  
+    for j in range(y):
+        r, g, b = pixels[i, j]        
+        brightness = r + g + b if r + g + b &gt; 0 else 1
+        if brightness &lt; 80:  # Почему именно 80? Потому что нам так захотелось
+            k = 80 / brightness
+            pixels[i, j] = min(255, int(r * k ** 2)), \
+                min(255, int(g * k ** 2)),\
+                min(255, int(b * k ** 2))
+        else:
+            pixels[i, j] = r, g, b
+
+
+im.save(&quot;curved.png&quot;)</code></pre>
+      </figure>
+      <p>Результат:</p>
+      <p>Частенько (но не в нашем случае) такое высветление, как и негатив, позволяет увидеть на изображении новые детали.</p>
+      <h2 id="part-82">🍽️ Готовые блюда</h2>
+      <p>Как мы уже говорили раньше, в PIL есть большое число встроенных инструментов для изменения изображений. Продолжим эксперименты над нашим «зоопарком».</p>
+      <p>Мы можем изменить размер изображения с помощью метода .resize(), в который кортежем передаётся новый размер изображения.</p>
+      <p>Обратите внимание: все подобные функции не изменяют исходное изображение, а возвращают его изменённую копию.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from PIL import Image
+
+im = Image.open(&quot;test_subjects.png&quot;)
+im2 = im.resize((100, 100))
+im2.save(&#x27;resized.png&#x27;)</code></pre>
+      </figure>
+      <p>С помощью метода .crop() можно вырезать прямоугольный кусочек из изображения. В функцию передаются координаты верхнего левого и правого нижнего угла вырезаемого прямоугольника одним кортежем.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from PIL import Image
+
+im = Image.open(&quot;test_subjects.png&quot;)
+im2 = im.crop((200, 200, 500, 500))
+im2.save(&#x27;croped.png&#x27;)</code></pre>
+      </figure>
+      <p>Есть возможность разместить одно изображение на другом для создания коллажей. Для этого нужно воспользоваться методом .paste(). Этот метод внезапно меняет само изображение, а не возвращает новое.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from PIL import Image
+
+im = Image.open(&quot;test_subjects.png&quot;)
+face = Image.open(&quot;croped.png&quot;)
+im.paste(face, (50, 50))
+im.save(&quot;pasted.png&quot;)</code></pre>
+      </figure>
+      <p>Метод .quantize() используется для сокращения количества цветов в палитре изображения и нужен, например, для создания миниатюр предпросмотра. Принимает на вход число, меньшее 256, — количество цветов.</p>
+      <p>Обратите внимание: этот метод также преобразовывает изображение в формат bmp.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from PIL import Image
+
+im = Image.open(&quot;test_subjects.png&quot;)
+im2 = im.quantize(16)
+im2.save(&#x27;quantized.bmp&#x27;)</code></pre>
+      </figure>
+      <p>Никто не запретит нам отразить или повернуть изображение, просто поменяв местами значения пикселей, но PIL содержит и уже готовые реализации данных алгоритмов.</p>
+      <p>Повороты и отражения изображения можно выполнить с помощью метода .transpose(), в который передаётся тип преобразования. Это может быть:</p>
+      <p>отражение слева направо Image.FLIP_LEFT_RIGHT;</p>
+      <p>отражение сверху вниз Image.FLIP_TOP_BOTTOM;</p>
+      <p>поворот на 90 градусов против часовой стрелки Image.ROTATE_90;</p>
+      <p>поворот на 180 градусов Image.ROTATE_180;</p>
+      <p>поворот на 270 градусов Image.ROTATE_270.</p>
+      <p>Благодаря тому, что преобразование возвращает изменённое изображение, можно создавать цепочки преобразований.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from PIL import Image
+
+im = Image.open(&quot;test_subjects.png&quot;)
+im2 = im.transpose(Image.FLIP_LEFT_RIGHT).transpose(Image.ROTATE_90)
+im2.save(&#x27;transposed.png&#x27;)</code></pre>
+      </figure>
+      <p>Повернуть изображение можно и на произвольный угол с помощью метода .rotate():</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from PIL import Image
+
+im = Image.open(&quot;test_subjects.png&quot;)
+im2 = im.rotate(17, expand=True, resample=Image.BICUBIC)
+im2.save(&#x27;rotated.png&#x27;)</code></pre>
+      </figure>
+      <p>Другие афинные преобразования с помощью метода .transform() можете посмотреть самостоятельно.</p>
+      <p>C помощью модуля ImageOps можно также выполнить преобразования изображения, например:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>ImageOps.invert(im) — негатив.
+ImageOps.grayscale(im) — ч/б.
+ImageOps.equalize(im) — выравнивание гистограммы.
+ImageOps.autocontrast(im) — автоконтраст.
+ImageOps.posterize(im, bits) — постеризация.</code></pre>
+      </figure>
+      <h2 id="topic-3">🔍 #yesfilter</h2>
+      <p>Наконец-то мы добрались до фильтров в привычном понимании. В PIL реализация некоторых алгоритмов живёт в отдельном модуле ImageFilter.</p>
+      <p>Все встроенные фильтры работают по одному принципу — тип фильтра передаётся в метод .filter() объекта картинки. Посмотрим на примере размытия Гаусса:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from PIL import Image, ImageFilter
+
+im = Image.open(&quot;test_subjects.png&quot;)
+im2 = im.filter(ImageFilter.GaussianBlur(radius=5))
+im2.save(&#x27;blurred.png&#x27;)</code></pre>
+      </figure>
+      <p>Можете посмотреть, что ещё есть в этом модуле в документации. Но вот вам парочка примеров:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code># Детализация
+detailed = im.filter(ImageFilter.DETAIL)
+detailed.save(&quot;detailed.png&quot;)
+
+# Контурный фильтр (как рисунок карандашом)
+contour = im.filter(ImageFilter.CONTOUR)
+contour.save(&quot;contour.png&quot;)
+
+# Поиск границ
+edges = im.filter(ImageFilter.FIND_EDGES)
+edges.save(&quot;edges.png&quot;)</code></pre>
+      </figure>
+      <p>Ещё раз: не недооценивайте возможность создавать цепочки преобразований для получения сложных эффектов.</p>
+      <h2 id="topic-4">🪄 IF EXIF и ещё пара трюков</h2>
+      <p>Изображения содержат не только пиксели, но и метаданные (EXIF), которые могут быть полезны.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code># Где-то раньше открыли картинку
+
+# Получаем метаданные изображения
+exif_data = image._getexif()
+
+if exif_data:
+    for tag_id, value in exif_data.items():
+        # Получаем имя тега
+        tag_name = ExifTags.TAGS.get(tag_id, tag_id)
+        print(f&quot;{tag_name}: {value}&quot;)
+
+        # Особенно интересные теги:
+        # 271 — производитель камеры
+        # 272 — модель камеры
+        # 306 — дата и время съёмки
+        # 36867 — дата и время оригинальной съёмки
+else:
+    print(&quot;Изображение не содержит EXIF-данных&quot;)</code></pre>
+      </figure>
+      <p>И ещё парочка примеров, чтобы у вас пробудился интерес исследовать библиотеку самостоятельно.</p>
+      <p>С помощью модуля ImageChops можно находить разницу между изображениями.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from PIL import Image, ImageChops
+
+im = Image.open(&quot;test_subjects.png&quot;)
+im2 = Image.open(&#x27;greyscale.png&#x27;)
+diff = ImageChops.difference(im, im2)  # Абсолютная разница пикселей
+diff.save(&quot;diff.png&quot;)</code></pre>
+      </figure>
+      <p>Откроем секрет, мы этим модулем частенько пользуемся при проверке задач, где необходимо сравнивать картинку-результат работы программы с эталонным. Если картинки полностью идентичны, дифф будет полностью чёрной.</p>
+      <p>С помощью модуля ImageStat можно получить некоторую статистическую информацию об изображении. Например, вот так можно получить средний цвет всех пикселей:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from PIL import ImageStat
+stat = ImageStat.Stat(im)
+avg = tuple(int(v) for v in stat.mean)  # Среднее по каналам
+Image.new(&quot;RGB&quot;, (200, 200), avg).save(&quot;avg_color.png&quot;)</code></pre>
+      </figure>
+      <h2 id="part-201">🌟 Итог: иногда надо заставить себя остановиться</h2>
+      <p>Можно практически бесконечно долго зарываться в функциональность библиотеки PIL, но надеемся, что мы сумели вас заинтересовать и дальше вы будете изучать документацию уже самостоятельно.</p>
+      <p>А на этом уроке мы с вами:</p>
+      <p>сделали несколько фильтров «руками»;</p>
+      <p>посмотрели, как это же (и многое другое) можно делать встроенными методами библиотеки;</p>
+      <p>от души покрутили изображения.</p>
+      <p>P. S. Лайфхак: тёмные круги от недосыпа под глазами в негативе будут светлыми.</p>
+      </article>
+      <nav class="lesson-pagination" aria-label="Переключение уроков">
+        <a class="chapter-next" href="pillow-drawing.html">Назад · Библиотека PIL. Рисование</a>
+        <a class="chapter-next" href="office-documents.html">Далее · Библиотеки для работы с документами</a>
+      </nav>
+    </main>
+  </div>
+</body>
+</html>

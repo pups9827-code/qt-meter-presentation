@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#090909">
+  <title>Обработка коллекций. Потоковый ввод — pupsiks</title>
+  <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../docs.css">
+  <script src="../docs.js" defer></script>
+</head>
+<body>
+  <header class="masthead">
+    <a class="brand" href="../../index.html"><img src="../../favicon.svg" alt="" width="38" height="38">pupsiks</a>
+    <a class="label" href="../index.html">Справочник Python</a>
+    <a class="home-link" href="../../index.html">На главную</a>
+  </header>
+  <div class="docs module">
+    <aside class="sidebar">
+      <nav aria-label="Разделы справочника" class="chapters">
+        <p class="label">Темы</p>
+        <ol>
+          <li><a href="../algorithms.html">Линейные алгоритмы и циклы</a></li>
+          <li><a href="../collections.html">Коллекции</a></li>
+          <li><a href="../files.html">Файлы и библиотеки</a></li>
+          <li><a href="../functions.html" aria-current="page">Функции</a></li>
+          <li><a href="../oop.html">ООП</a></li>
+        </ol>
+      </nav>
+    </aside>
+    <aside class="contents module-contents">
+      <nav aria-label="На этой странице">
+        <p class="label">На этой странице</p>
+        <a href="#topic-1">Функции all и any</a>
+        <a href="#topic-2">Поток ввода</a>
+        <a href="#topic-3">Поток вывода</a>
+      </nav>
+    </aside>
+    <main>
+      <header class="overview" id="overview">
+        <a class="lesson-back label" href="../functions.html#streams">Функции</a>
+        <h1>Обработка коллекций. Потоковый ввод</h1>
+        <p>Быть в потоке</p>
+      </header>
+
+      <article class="lesson-body">
+      <p>В фольклорных произведениях главный герой частенько останавливался на развилке перед дорожным знаком или камнем с указателями, где его ждал выбор из трёх стандартных путей. В программировании (не только на Python) тоже есть такое «магическое число». Операционные системы предоставляют три стандартных потока данных:</p>
+      <p>стандартный поток ввода stdin,</p>
+      <p>стандартный поток вывода stdout,</p>
+      <p>стандартный поток ошибок stderr.</p>
+      <p>Пришло время нам подробно познакомиться с первым из них, чуть прикоснуться ко второму и вскользь поговорить о третьем.</p>
+      <p>Но перед этим немного продолжим тему прошлого урока и поговорим ещё про две функции.</p>
+      <h2 id="topic-1">🌐 Всё или ничего что-нибудь</h2>
+      <p>В Python есть две функции обработки коллекций: all() и any():</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>all(iterable) возвращает True, если все элементы «истинные».
+any(iterable) возвращает True, если хотя бы один элемент «истинный».
+all([]) → True — нет ни одного плохого элемента — значит, все хорошие.
+any([]) → False — нет ни одного хорошего элемента — значит, ничего хорошего.</code></pre>
+      </figure>
+      <p>И хотя это не функции высшего порядка, но поговорить про них стоит сейчас, потому что именно в комбинации с лямбда-функциями они раскрываются на полную катушку.</p>
+      <p>Начнём с простых примеров. Как проверить, что все числа в списке положительные?</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+
+print(all(map(lambda x: x &gt; 0, numbers)))</code></pre>
+      </figure>
+      <p>Есть ли в тексте хоть одно «плохое» слово?</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>bad_words = {&quot;фу&quot;, &quot;бее&quot;, &quot;кхм&quot;}
+text = &quot;пюре из шпината оказалось фу какая гадость&quot;
+print(any(w in text.split() for w in bad_words))  # True</code></pre>
+      </figure>
+      <p>Все ли ученики сделали домашку?</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>students = [
+    {&quot;name&quot;: &quot;Аня&quot;, &quot;hw_done&quot;: True},
+    {&quot;name&quot;: &quot;Марат&quot;, &quot;hw_done&quot;: True},
+    {&quot;name&quot;: &quot;Боря&quot;, &quot;hw_done&quot;: False},
+]
+if all(s[&quot;hw_done&quot;] for s in students):
+    print(&quot;Празднуем! Все молодцы!&quot;)
+else:
+    print(&quot;Кому-то тортик не достанется...&quot;)  # Боря, мы на тебя смотрим</code></pre>
+      </figure>
+      <p>Более сложные проверки:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>emails = [&quot;vasya@example.com&quot;, &quot;pupkin@@mail.ru&quot;, &quot;no_at_symbol&quot;, &quot;kate@school.org&quot;]
+
+def looks_like_email(s):
+    return &#x27;@&#x27; in s and &#x27;.&#x27; in s.rsplit(&#x27;@&#x27;, 1)[-1]
+
+# «Все корректны?»
+print(all(looks_like_email(e) for e in emails))  # False
+
+# «Хотя бы один косячный?»
+print(any(not looks_like_email(e) for e in emails))  # True</code></pre>
+      </figure>
+      <p>А теперь обещанная комбинация с лямбда-функциями. Делаем программу проверки паролей по расширяемому набору правил:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>passwords = [&quot;Qwerty123!&quot;, &quot;12345&quot;, &quot;Чёрт_побери42!&quot;, &quot;justletters&quot;]
+rules = [
+    lambda s: len(s) &gt;= 8,                                    # Длина не как у твита
+    lambda s: any(map(str.isdigit, s)),                       # Есть цифры?
+    lambda s: any(map(str.isalpha, s)),                       # Есть буквы?
+    lambda s: any(map(lambda ch: ch in &quot;!@#$%^&amp;*()_+-=&quot;, s))  # Спецсимволы тоже в клубе
+]
+
+is_strong = lambda p: all(rule(p) for rule in rules)
+
+for p in passwords:
+    print(f&quot;{p!r} →&quot;, &quot;OK&quot; if is_strong(p) else &quot;NOPE&quot;)
+# &#x27;Qwerty123!&#x27; → OK
+# &#x27;12345&#x27; → NOPE
+# &#x27;Чёрт_побери42!&#x27; → OK
+# &#x27;justletters&#x27; → NOPE</code></pre>
+      </figure>
+      <p>Проверяем, есть ли сладости в корзине покупок:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>basket = [&quot;гречка&quot;, &quot;кефир&quot;, &quot;яблоки&quot;, &quot;маршмеллоу&quot;, &quot;морковь&quot;]
+
+is_candy = lambda x: any(map(lambda bad: bad in x.lower(), [&quot;конфета&quot;, &quot;мармелад&quot;, &quot;маршмеллоу&quot;, &quot;шоколад&quot;]))
+cheat_detected = any(map(is_candy, basket))
+
+print(&quot;🤫 Кто-то сорвался…&quot; if cheat_detected else &quot;🥦 Стальная дисциплина!&quot;)
+# 🤫 Кто-то сорвался...</code></pre>
+      </figure>
+      <p>Функции all() и any() можно и комбинировать друг с другом для проверки каких-нибудь комплексных условий. Например, мы хотим обработать информацию об учениках и проверить, есть ли хоть один, кто сдал все предметы на 60 баллов из 100 (или ещё лучше):</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>students = [
+    {&quot;name&quot;: &quot;Аня&quot;,  &quot;scores&quot;: {&quot;math&quot;: 70, &quot;russian&quot;: 80, &quot;python&quot;: 100}},
+    {&quot;name&quot;: &quot;Боря&quot;, &quot;scores&quot;: {&quot;math&quot;: 59, &quot;python&quot;: 100}},
+    {&quot;name&quot;: &quot;Вера&quot;, &quot;scores&quot;: {&quot;math&quot;: 90, &quot;python&quot;: 60}},
+]
+core = (&quot;math&quot;, &quot;russian&quot;, &quot;python&quot;)
+
+pass_core = lambda st: all(map(lambda sub: st[&quot;scores&quot;].get(sub, 0) &gt;= 60, core))
+has_hero  = any(map(pass_core, students))
+print(has_hero)  # True (да, есть такие)</code></pre>
+      </figure>
+      <p>Как и при составлении обычных условий, иногда бывает проще пойти от противного: написать «нет ни одного плохого» проще (или быстрее), чем «все хорошие».</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>all(p(x) for x in xs) == (not any(not p(x) for x in xs))
+any(p(x) for x in xs) == (not all(not p(x) for x in xs))</code></pre>
+      </figure>
+      <p>Используйте тот вариант, который читается ближе к человеческому языку.</p>
+      <p>Важная особенность all() и any() в том, что они «ленивые», то есть если понимают, что результат уже известен, то дальше коллекцию не проверяют. Это свойство очень важно при обработке большого количества данных. Обидно же обработать миллиард строк и узнать, что ошибка была в первой, правда?</p>
+      <h2 id="topic-2">💯 Всё стандартно</h2>
+      <p>Несмотря на то, что у вас всего одна консоль, она, если дополнительно ничего не настраивать, обрабатывает аж три потока:</p>
+      <p>sys.stdin — поток, из которого ваш скрипт читает. До этого вы с ним работали через обёртку в виде input(), который забирает из потока одну строку.</p>
+      <p>sys.stdout — поток, в который ваш скрипт пишет нормальные результаты. Мы с ним тоже работали через обертку print().</p>
+      <p>sys.stderr — поток для сообщений об ошибках, предупреждений, прогресс-баров и всего, что не является самим результатом.</p>
+      <p>Всё это — файловые объекты уровня Python (обёртки над файловыми дескрипторами 0, 1, 2 на уровне ОС). То есть с ними можно работать абсолютно так же, как и с обычными файлами, разве что их не надо открывать.</p>
+      <p>Вы можете спросить, зачем нам вообще разбираться со стандартным потоком ввода, если есть input() — он же классный? Он действительно супер, но бывают ситуации, когда его недостаточно. Иногда нужно написать программу, которая обрабатывает пользовательский ввод, при этом мы заранее не знаем, когда он закончится, и нет никакого явного маркера его завершения.</p>
+      <p>На самом деле такой маркер, конечно, есть, и поскольку поток ввода — это виртуальный файл, то и завершение ввода — маркер EOF (End Of File), такой маркер можно отправить в консоль с помощью комбинации клавиш Ctrl+D (Linux/macOS) или Ctrl+Z → Enter (Windows).</p>
+      <p>Для работы с потоками надо импортировать модуль sys. Давайте почитаем что-нибудь построчно с помощью прохода по строкам стандартного потока ввода циклом for:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>import sys
+
+for line in sys.stdin:               # Читаем до EOF
+    line = line.rstrip(&#x27;\n&#x27;)         # Не съедаем случайные пробелы, только \n
+    if not line:
+        continue                     # Пропускаем пустые
+    # Делаем дела, например просто:
+    print(line)</code></pre>
+      </figure>
+      <p>Что происходит?</p>
+      <p>Пока есть данные в потоке sys.stdin (то есть пока пользователь их вводит), программа будет получать вводимые строки в переменную line, убирать справа символы перевода строки и выводить их на печать.</p>
+      <p>Но если вы запустите эту программу, она будет работать вечно. Чтобы показать, что ввод закончен, пользователю недостаточно нажать Enter — компьютер не знает, завершил пользователь работу или будет ещё что-то вводить (при этом Enter превратится в пустую строку). Вместо этого вы должны отправить EOF (нажать Ctrl + D либо Ctrl + Z, затем Enter).</p>
+      <p>Когда у вас много данных, то, безусловно, лучше обрабатывать их построчно, но, если их немного или для работы выбранного алгоритма это необходимо, удобно считать всё в память сразу.</p>
+      <p>С помощью sys.stdin можно одной строкой кода прочитать весь ввод (о количестве строк которого мы ничего не знаем) в список. Реализуется это, например, так:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>data = list(map(str.strip, sys.stdin))</code></pre>
+      </figure>
+      <p>Кроме того, можно считать все строки (с сохранением символов перевода строки) в список вот таким образом:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>data = sys.stdin.readlines()</code></pre>
+      </figure>
+      <p>А считать многострочный текст из стандартного потока ввода в текстовую переменную можно вот так:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>str_data = sys.stdin.read()</code></pre>
+      </figure>
+      <p>Прям как с обычными не виртуальными файлами.</p>
+      <h2 id="topic-3">🚪 Все на вывод</h2>
+      <p>Если вам надоел обычный print(), можете выводить информацию непосредственно в поток вывода stdout. Синтаксис точно такой же, как и при работе с файлами:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code># print(&quot;hello&quot;)                   # Вместо простого вывода 
+
+import sys
+sys.stdout.write(&quot;hello\n&quot;)        # Без автопробелов и с ручным \n</code></pre>
+      </figure>
+      <p>Но тут нас поджидают подводные камни. Помните, на уроке про файлы мы говорили, что если не закрыть файл при записи, то можно потерять часть информации, потому что она сначала пишется в буфер, а только потом прилетает в файл? Так вот, с виртуальным файлом вывода это работает точно так же: сначала то, что мы хотим напечатать, складывается в некоторое промежуточное хранилище в памяти, а при его заполнении выливается в командную строку.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>import sys
+import time
+
+print(&quot;Демонстрация буферизации:&quot;)
+print(&quot;Это сообщение появится сразу.&quot;)
+
+# А вот это может зависнуть в буфере
+sys.stdout.write(&quot;Это сообщение может задержаться в буфере...&quot;)
+# sys.stdout.flush()  # Раскомментируй эту строку, чтобы сбросить буфер!
+
+time.sleep(2)  # Ждём 2 секунды
+sys.stdout.write(&quot; а это продолжение.\n&quot;)
+
+# Демонстрация проблемы в реальном времени
+print(&quot;\nДемонстрация прогресс-бара:&quot;)
+
+for i in range(11):
+    sys.stdout.write(f&quot;\rПрогресс: [{&#x27;#&#x27; * i}{&#x27;.&#x27; * (10 - i)}] {i * 10}%&quot;)
+    # sys.stdout.flush()  # Попробуй раскомментировать!
+    time.sleep(0.5)
+
+print(&quot;\nГотово!&quot;)</code></pre>
+      </figure>
+      <p>По умолчанию все три потока прикреплены к командной строке, это можно проверить вот так:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>import sys
+
+print(sys.stdin.isatty())
+print(sys.stdout.isatty())
+print(sys.stderr.isatty())</code></pre>
+      </figure>
+      <p>Но мы вольны перенаправлять эти потоки так, как нам нравится.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>import sys
+
+# Сохраним оригинальный stdout
+original_stdout = sys.stdout
+
+# Перенаправим stdout в файл
+with open(&#x27;output.txt&#x27;, &#x27;w&#x27;, encoding=&#x27;utf-8&#x27;) as f:
+    sys.stdout = f  # Теперь весь вывод пойдёт в файл!
+    print(&quot;Этот текст уйдёт в файл output.txt.&quot;)
+    print(&quot;А этот тоже!&quot;)
+    print(&quot;И даже этот!&quot;)
+
+# ВОЗВРАЩАЕМ ВСЁ, КАК БЫЛО! Это очень важно!
+sys.stdout = original_stdout
+
+print(&quot;А этот текст снова выводится на экран!&quot;)
+
+# Проверим что записалось в файл
+with open(&#x27;output.txt&#x27;, &#x27;r&#x27;, encoding=&#x27;utf-8&#x27;) as f:
+    content = f.read()
+    print(&quot;Содержимое файла:&quot;)
+    print(content)</code></pre>
+      </figure>
+      <p>Напоследок несколько слов про то, почему существует поток ошибок stderr, в который можно писать абсолютно так же, как и в stdout. Представьте, что у вас есть приложение, которым пользуется миллион пользователей, и вы логируете все их действия. И раз примерно в миллиард операций возникает какая-нибудь ошибка. Что вам приятнее: разбирать для её поиска лог из миллиарда записей или из одной?</p>
+      <h2 id="part-177">🌟 Итог: золотой стандарт</h2>
+      <p>Сегодня мы научились:</p>
+      <p>Проверять, всё ли хорошо, с помощью функции all().</p>
+      <p>Узнавать, случилось ли хоть что-то позитивное, с помощью функции any().</p>
+      <p>А ещё поговорили про потоки ввода, вывода и ошибок.</p>
+      <p>Умение применять правильные возможности языка позволит вам писать лаконичные и читаемые программы. Знание потоков вам тоже обязательно пригодится (не только для решения задач этого урока).</p>
+      <p>P. S. Стандартный поток ошибок stderr в отличие от stdout по умолчанию работает в небуферизованном режиме, потому что, когда приходят важные вести, нет сил себя сдерживать.</p>
+      </article>
+      <nav class="lesson-pagination" aria-label="Переключение уроков">
+        <a class="chapter-next" href="higher-order-functions.html">Назад · Функции высшего порядка</a>
+        <a class="chapter-next" href="typing-and-docstrings.html">Далее · Практика по функциям. Аннотация типов. Документирование</a>
+      </nav>
+    </main>
+  </div>
+</body>
+</html>

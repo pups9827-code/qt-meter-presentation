@@ -1,0 +1,565 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#090909">
+  <title>ООП 5. Dataclasses — pupsiks</title>
+  <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../docs.css">
+  <script src="../docs.js" defer></script>
+</head>
+<body>
+  <header class="masthead">
+    <a class="brand" href="../../index.html"><img src="../../favicon.svg" alt="" width="38" height="38">pupsiks</a>
+    <a class="label" href="../index.html">Справочник Python</a>
+    <a class="home-link" href="../../index.html">На главную</a>
+  </header>
+  <div class="docs module">
+    <aside class="sidebar">
+      <nav aria-label="Разделы справочника" class="chapters">
+        <p class="label">Темы</p>
+        <ol>
+          <li><a href="../algorithms.html">Линейные алгоритмы и циклы</a></li>
+          <li><a href="../collections.html">Коллекции</a></li>
+          <li><a href="../files.html">Файлы и библиотеки</a></li>
+          <li><a href="../functions.html">Функции</a></li>
+          <li><a href="../oop.html" aria-current="page">ООП</a></li>
+        </ol>
+      </nav>
+    </aside>
+    <aside class="contents module-contents">
+      <nav aria-label="На этой странице">
+        <p class="label">На этой странице</p>
+        <a href="#topic-1">Упрощаем код с dataclass</a>
+        <a href="#topic-2">Значения по умолчанию</a>
+        <a href="#topic-3">Дополнительные настройки</a>
+        <a href="#topic-4">Создание класса на лету</a>
+        <a href="#topic-5">Наследование с dataclass</a>
+        <a href="#topic-6">Перечисления</a>
+      </nav>
+    </aside>
+    <main>
+      <header class="overview" id="overview">
+        <a class="lesson-back label" href="../oop.html#dataclasses">ООП</a>
+        <h1>ООП 5. Dataclasses</h1>
+        <p>Избавляемся от рутины (без нейросетей)</p>
+      </header>
+
+      <article class="lesson-body">
+      <p>У нас новое задание. Теперь надо создать приложение для школьной столовой, а значит, что нужен класс, который хранит информацию о каждом блюде: название, калорийность, цена. До этого момента мы писали бы какой-то такой код:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>class Dish:
+    def __init__(self, name, calories, price):
+        self.name = name
+        self.calories = calories
+        self.price = price
+
+    def __repr__(self):
+        return f&quot;Dish(name={self.name!r}, calories={self.calories}, price={self.price})&quot;
+
+    def __eq__(self, other):
+        if not isinstance(other, Dish):
+            return NotImplemented
+        return (self.name == other.name and 
+                self.calories == other.calories and 
+                self.price == other.price)</code></pre>
+      </figure>
+      <p>Код ещё почти ничего полезного не делает, а буковок уже получилось многовато, не правда ли?</p>
+      <p>А что, если для нашего приложения надо написать не один десяток таких классов? Каждый раз нас будет ждать примерно одно и то же, только имена полей будут меняться.</p>
+      <p>К счастью, эра самописных конструкторов подходит к концу. В Python 3.7 появился декоратор @dataclass, про который мы сегодня и поговорим.</p>
+      <p>Необходимость в чём-то похожем на @dataclass созрела уже довольно давно, да и в других языках программирования идея автоматической генерации шаблонного кода (его ещё называют boilerplate) уже была хотя бы частично решена — в Java есть Lombok, в Kotlin — data classes, в Scala — case classes.</p>
+      <p>Программисты в Python долго смотрели на это богатство и шли на разные ухищрения, используя:</p>
+      <p>namedtuple — удобно, но это кортеж, а значит, неизменяемый;</p>
+      <p>attr — хорошая библиотека, но надо устанавливать отдельно;</p>
+      <p>просто словари — тоже, в общем, рабочий способ, но IDE не подсказывает нормально ключи.</p>
+      <h2 id="topic-1">🤐 Без лишних слов</h2>
+      <p>Хватит ходить вокруг да около, давайте писать (а точнее, давайте не писать лишний) код. Для начала импортируем нужный декоратор:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from dataclasses import dataclass</code></pre>
+      </figure>
+      <p>Вот так теперь будет выглядеть наш класс для блюда в столовой:</p>
+      <p>@dataclass</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>class Dish:
+    name: str
+    calories: int
+    price: float</code></pre>
+      </figure>
+      <p>КОД — ВСË! Пять строчек, если считать декоратор, и у нас есть полноценный класс с:</p>
+      <p>автоматическим .__init__(), который всё бережно разложит по атрибутам класса;</p>
+      <p>красивым __repr__ для отладки;</p>
+      <p>работающим оператором равенства __eq__, который вернёт True для двух объектов класса Dish, если они имеют одинаковые значения для всех атрибутов, и False в противном случае.</p>
+      <p>Как это работает: когда Python видит декоратор @dataclass, он говорит: «О, тут аннотации типов! Сейчас я по ним создам все нужные методы». Он смотрит на name: str, calories: int и так далее, и автоматически генерирует код.</p>
+      <p>Это как если бы у нас был робот-помощник, который смотрит на чертёж дома и сам строит фундамент, стены и крышу. Но чертеж рисовать всё равно нужно.</p>
+      <p>Давайте ещё пример:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from dataclasses import dataclass</code></pre>
+      </figure>
+      <p>@dataclass</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>class VideoGame:
+    title: str                    # Название игры
+    genre: str                    # Жанр
+    year: int                     # Год выхода
+    rating: float                 # Оценка от 0 до 10
+    is_multiplayer: bool          # Есть ли мультиплеер
+    platforms: list               # На каких платформах
+
+
+# Создаём легендарную игру
+minecraft = VideoGame(
+    title=&quot;Minecraft&quot;,
+    genre=&quot;Песочница&quot;,
+    year=2011,
+    rating=9.5,
+    is_multiplayer=True,
+    platforms=[&quot;PC&quot;, &quot;Xbox&quot;, &quot;PlayStation&quot;, &quot;Switch&quot;, &quot;Mobile&quot;, &quot;Холодильник Samsung&quot;]
+)
+
+print(minecraft)
+# VideoGame(title=&#x27;Minecraft&#x27;, genre=&#x27;Песочница&#x27;, year=2011, rating=9.5, 
+# is_multiplayer=True, platforms=[&#x27;PC&#x27;, &#x27;Xbox&#x27;, &#x27;PlayStation&#x27;, &#x27;Switch&#x27;, &#x27;Mobile&#x27;, &#x27;Холодильник Samsung&#x27;])
+
+# Можно обращаться к полям как обычно
+print(f&quot;{minecraft.title} вышел в {minecraft.year} году&quot;)
+print(f&quot;Рейтинг: {minecraft.rating}/10&quot;)
+print(f&quot;Платформы: {&#x27;, &#x27;.join(minecraft.platforms)}&quot;)</code></pre>
+      </figure>
+      <p>Важное напоминание про аннотации типов. Вы же помните, что name: str, age: int — это подсказки для нас и IDE, а сам Python это никак не проверяет.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from dataclasses import dataclass</code></pre>
+      </figure>
+      <p>@dataclass</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>class Confusion:
+    definitely_a_number: int    # Тут точно должно быть число, да?
+
+# А вот и нет! Python такой: «Мне всё равно, делай что хочешь»
+weird = Confusion(definitely_a_number=&quot;это строка, лол&quot;)
+print(weird)  # Confusion(definitely_a_number=&#x27;это строка, лол&#x27;)
+
+# Аннотации — это как записка «Осторожно, хрупкое!» на коробке.
+# Почтальон всё равно может её бросить.</code></pre>
+      </figure>
+      <p>Если нужна строгая проверка типов, используйте инструменты вроде mypy или pydantic (но это уже другая история).</p>
+      <h2 id="topic-2">💁 Общеизвестные факты</h2>
+      <p>В мире не так много неизменных вещей, одна из них — писать меньше кода, сохраняя его функциональность. Например, не хочется указывать все параметры при создании объекта. Например, большинство котиков пушистые, так зачем каждый раз это писать?</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from dataclasses import dataclass</code></pre>
+      </figure>
+      <p>@dataclass</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>class SmartCat:
+    name: str                           # Имя — обязательно!
+    age: int                            # Возраст — тоже обязательно!
+    color: str = &quot;полосатый&quot;            # Если не указать, будет полосатый
+    is_fluffy: bool = True              # По умолчанию все котики пушистые
+    favorite_food: str = &quot;Milk&quot;         # Классика жанра
+    lives_remaining: int = 9            # Как положено котику
+
+# Можно создать котика, указав только имя и возраст
+lazy_cat = SmartCat(name=&quot;Васька&quot;, age=2)
+print(lazy_cat)
+# SmartCat(name=&#x27;Васька&#x27;, age=2, color=&#x27;полосатый&#x27;, is_fluffy=True, 
+# favorite_food=&#x27;Milk&#x27;, lives_remaining=9)
+
+# А можно переопределить что-то
+unique_cat = SmartCat(
+    name=&quot;Сфинкс Геннадий&quot;, 
+    age=4, 
+    color=&quot;лысый&quot;,           # Технически это не цвет, но ладно
+    is_fluffy=False,         # Совсем не пушистый!
+    favorite_food=&quot;Икра&quot;,    # Аристократ
+    lives_remaining=8        # Был инцидент с огурцом
+)
+print(unique_cat)</code></pre>
+      </figure>
+      <p>Нужно помнить о том, что все поля без значения по умолчанию должны объявляться до полей с значением по умолчанию. Это правило похоже на параметры функций в Python: нельзя после параметра с дефолтом объявить параметр без дефолта. Если попробовать нарушить, получим ошибку:</p>
+      <p>@dataclass</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>class Bad:
+    a: int = 10
+    b: int       # Упс, поле без дефолта после поля с дефолтом</code></pre>
+      </figure>
+      <p>При попытке запустить скрипт с таким классом Python вежливо ругнётся: TypeError: non-default argument &#x27;b&#x27; follows default argument &#x27;a&#x27;. Исправляется просто: b нужно объявить выше a, или дать b тоже какое-то значение по умолчанию.</p>
+      <p>Очень важное напоминание: нельзя использовать изменяемые объекты в качестве значений по умолчанию.</p>
+      <p>В этот раз Python более настойчив и даже не позволит нам выстрелить себе в ногу:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from dataclasses import dataclass</code></pre>
+      </figure>
+      <p>@dataclass</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>class BrokenStudent:
+    name: str
+    grades: list = []  # ОШИБКА! Python будет ругаться!</code></pre>
+      </figure>
+      <p>Если мы попробуем запустить этот код, Python выдаст:</p>
+      <p>ValueError: mutable default value: list is not allowed: use default_factory</p>
+      <p>Если бы Python разрешил такое, то все студенты делили бы один и тот же список оценок! Добавил пятёрку Васе — она появилась у всех. Хаос, потому что с двойками это тоже работает!</p>
+      <p>Для изменяемых значений по умолчанию используй field() с параметром default_factory:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from dataclasses import dataclass, field</code></pre>
+      </figure>
+      <p>@dataclass</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>class Student:
+    name: str
+    age: int
+    grades: list = field(default_factory=list)  # Создаёт новый пустой список для каждого студента
+    friends: set = field(default_factory=set)   # И новое пустое множество тоже
+
+# Теперь всё работает правильно!
+vasya = Student(name=&quot;Вася&quot;, age=16)
+petya = Student(name=&quot;Петя&quot;, age=15)
+
+# У каждого свой список оценок
+vasya.grades.append(5)
+vasya.grades.append(4)
+petya.grades.append(2)  # Петя, учи уроки!
+
+print(f&quot;Оценки Васи: {vasya.grades}&quot;)   # [5, 4]
+print(f&quot;Оценки Пети: {petya.grades}&quot;)   # [2]
+# Списки разные! Каждому своё!</code></pre>
+      </figure>
+      <p>Кстати, field() полезна не только для фабрик. С её помощью можно настроить и другие аспекты поля, но об этом чуть ниже.</p>
+      <h2 id="topic-3">🎓 Экспертный режим</h2>
+      <p>Декоратор @dataclass умеет не только генерировать методы по умолчанию, но и позволяет настроить поведение класса под свои нужды. Для этого у декоратора есть несколько параметров. Перечислим главные из них:</p>
+      <p>repr — отвечает за автогенерацию метода .__repr__(). По умолчанию repr=True, и dataclass сделает красивое строковое представление объекта. Если поставить repr=False, метод .__repr__() не будет сгенерирован вовсе. Это может пригодиться, если вы хотите определить свой вручную или если отображать объект не имеет смысла.</p>
+      <p>eq — (внезапно) отвечает за метод равенства .__eq__(). По умолчанию eq=True, и объекты сравниваются по всем полям. eq=False отключает автогенерацию сравнения: тогда a == b будет True только если a is b. Отключать это имеет смысл редко, разве что ваш класс несравним по логике или вы хотите сами реализовать особое сравнение.</p>
+      <p>order — включает генерацию методов сравнения .__lt__(), .__le__(), .__gt__(), .__ge__(). По умолчанию order=False. Если включить, dataclass сгенерирует эти методы, сравнивая объекты лексикографически по всем полям в порядке их объявления. Важно: для order=True требуется, чтобы eq=True (иначе неясно, как сравнивать). Также все поля должны поддерживать сравнение, иначе при попытке сравнить объекты получите ошибку. Пример использования:</p>
+      <p>@dataclass(order=True)</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>class Knight:
+    name: str
+    level: int
+
+
+k1 = Knight(&quot;Ланселот&quot;, 5)
+k2 = Knight(&quot;Артур&quot;, 7)
+print(k1 &lt; k2)   # Сработает __lt__, сравнение сначала по name, затем по level</code></pre>
+      </figure>
+      <p>frozen — делает ваши объекты неизменяемыми (иммутабельными) после создания. Если frozen=True, то любой попытке присвоить значение атрибуту экземпляра после инициализации бросится ошибка FrozenInstanceError. При frozen=True dataclass автоматически реализует метод .__hash__() (по умолчанию, если eq=True). Иначе говоря, «замороженные» экземпляры можно класть в set или использовать как ключи в dict.</p>
+      <p>unsafe_hash — если очень нужно, можно насильно включить метод .__hash__() даже для изменяемых dataclass. Но слово unsafe (небезопасный) прозрачно намекает: разработчик берёт на себя ответственность не менять объект, пока он используется как ключ в словаре, иначе словарь сломается. Честно говоря, лучше не включать этот флажок без крайней необходимости.</p>
+      <p>init — по умолчанию True, что заставляет @dataclass генерировать стандартный .__init__(). Обычно не отключают, разве что у вас специфический случай: например, вы хотите определить свой .__init__() вручную или использовать dataclass в качестве класса-наследника, где конструктор уже задан в родителе.</p>
+      <p>match_args — параметр, появившийся в Python 3.10. По умолчанию True. Он отвечает за интеграцию со структурным сопоставлением (match/case). Когда match_args=True, dataclass определяет специальный атрибут __match_args__, благодаря которому вы можете распаковывать объект в match как кортеж из полей. Например:</p>
+      <p>@dataclass</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>class Point:
+    x: int
+    y: int
+
+p = Point(4, 5)
+match p:
+    case Point(a, b):
+        print(f&quot;Распаковался в a={a}, b={b}&quot;)</code></pre>
+      </figure>
+      <p>kw_only — ещё одно новшество Python 3.10. Если указать kw_only=True, то все поля dataclass станут именованными параметрами (keyword-only) в сгенерированном .__init__(). То есть при создании объекта придётся явно писать ClassName(field=value), передавая значения по имени. Это бывает полезно, когда у класса очень много полей и легко перепутать порядок аргументов или при наследовании (чтобы избежать проблем с порядком параметров).</p>
+      <p>slots — если указать slots=True, у сгенерированного класса будут определены __slots__ для полей. Это означает, что экземпляры класса не будут иметь обычный __dict__ (словарь атрибутов), а хранение данных станет более компактным и немного более быстрым. Минус — нельзя добавлять новые атрибуты динамически (да обычно это и не требуется). Этот параметр пригодится, если вы собираетесь создавать миллионы объектов и важна каждая капля памяти. Для обычных программ выигрыш от slots минимален, так что без крайней нужды можно о нём не беспокоиться.</p>
+      <p>Как видите, настроек много — на все случаи жизни. Чаще всего, конечно, достаточно стандартных, но приятно, что при необходимости можно одним аргументиком включить, например, полный порядок сравнения или сделать объекты неизменяемыми.</p>
+      <h2 id="part-192">🌾 Полюшко-поле</h2>
+      <p>Параметры декоратора @dataclass задают поведение по умолчанию для всех полей. Если нужен более тонкий контроль, используйте field():</p>
+      <p>Параметр	По умолчанию	Что делает</p>
+      <p>default	не задано	Значение по умолчанию</p>
+      <p>default_factory	не задано	Функция, создающая значение по умолчанию</p>
+      <p>init	True	Включать ли поле в .__init__()</p>
+      <p>repr	True	Включать ли поле в .__repr__()</p>
+      <p>compare	True	Использовать ли поле при сравнении</p>
+      <p>hash	None	Использовать ли поле при хешировании</p>
+      <p>kw_only	False	Только keyword-аргумент (с Python 3.10)</p>
+      <p>Пример:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from dataclasses import dataclass, field</code></pre>
+      </figure>
+      <p>@dataclass</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>class SuperHero:
+    # Обычное поле с значением по умолчанию
+    name: str = &quot;Неизвестный герой&quot;
+
+    # Поле, которое НЕ попадёт в __init__ (нельзя задать при создании)
+    secret_identity: str = field(default=&quot;Засекречено&quot;, init=False)
+
+    # Поле, которое НЕ будет показываться в __repr__
+    embarrassing_weakness: str = field(default=&quot;Щекотка&quot;, repr=False)
+
+    # Поле, которое НЕ участвует в сравнении
+    mood: str = field(default=&quot;Героический&quot;, compare=False)
+
+    # Поле с фабрикой для создания изменяемого значения
+    powers: list = field(default_factory=list)
+
+    # Поле с хитрой фабрикой
+    catchphrase: str = field(default_factory=lambda: &quot;К бою!&quot;)
+
+
+# Создаём супергероя
+spider_man = SuperHero(name=&quot;Человек-Паук&quot;)
+# Заметь: secret_identity мы не можем указать в конструкторе!
+
+print(spider_man)
+# SuperHero(name=&#x27;Человек-Паук&#x27;, secret_identity=&#x27;Засекречено&#x27;, 
+# mood=&#x27;Героический&#x27;, powers=[], catchphrase=&#x27;К бою!&#x27;)
+# embarrassing_weakness не показывается!
+
+# Но мы можем изменить secret_identity напрямую
+spider_man.secret_identity = &quot;Питер Паркер&quot;
+spider_man.powers = [&quot;Паутина&quot;, &quot;Паучье чутьё&quot;, &quot;Прилипание к стенам&quot;]</code></pre>
+      </figure>
+      <h2 id="topic-4">👻 Из ниоткуда</h2>
+      <p>Можно пойти ещё дальше (и в некоторых случаях приходится) и обойтись вообще без объявления класса в исходном коде, создавая его динамически.</p>
+      <p>Это случай, когда нам захотелось сгенерировать класс на лету, например, в зависимости от входных данных. С dataclass такое возможно с помощью функции make_dataclass().</p>
+      <p>make_dataclass() — это фабричная функция, которая создаёт новый класс dataclass по заданному имени и списку полей. Проще всего показать на примере:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from dataclasses import make_dataclass, field
+
+# Создаём класс на лету
+MyClass = make_dataclass(&quot;MyClass&quot;, [(&quot;x&quot;, int), (&quot;y&quot;, int, field(default=0))])
+
+obj = MyClass(42)  
+print(obj)        # Вывод: MyClass(x=42, y=0)
+obj.y = 99        # Поле y было с дефолтом 0, мы можем изменить значение
+print(obj)        # Вывод: MyClass(x=42, y=99)</code></pre>
+      </figure>
+      <p>Функция make_dataclass() первым параметром принимает имя класса (строкой), вторым — список полей. Каждый элемент списка — это либо имя и тип поля, либо кортеж из имени, типа и дополнительной информации (например, field(default=...) или field(default_factory=...).</p>
+      <p>Дополнительно можно передать аргумент bases (кортеж базовых классов, если хотим, чтобы наш новый класс был наследником каких-то классов) и namespace — словарь с дополнительными атрибутами или методами класса.</p>
+      <p>Проще говоря, make_dataclass() делает то же самое, что и декоратор, но в программном стиле: вы описываете класс данными, а функция возвращает готовый класс-объект. Это довольно специфичная возможность: в учебных задачах вы вряд ли будете её использовать. Однако в продвинутом коде, где нужно генерировать структуры динамически (например, конструировать классы на основе входных JSON-схем или ещё каких-нибудь данных), такая магия может пригодиться.</p>
+      <h2 id="part-254">🏆 Всё еще достоин</h2>
+      <p>Использование dataclass вовсе не ограничивает нас в функциональности класса. Это всё тот же Python-класс, которому просто помогли с бытовухой. Можно спокойно добавлять собственные методы, свойства, классовые методы — всё, что душе угодно.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from dataclasses import dataclass, field</code></pre>
+      </figure>
+      <p>@dataclass</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>class Student:
+    name: str
+    grades: list[int] = field(default_factory=list)
+
+    def add_grade(self, grade: int) -&gt; None:
+        &quot;&quot;&quot;Добавить новую оценку студенту.&quot;&quot;&quot;
+        self.grades.append(grade)
+
+    def average(self) -&gt; float:
+        &quot;&quot;&quot;Рассчитать средний балл.&quot;&quot;&quot;
+        return sum(self.grades) / len(self.grades) if self.grades else 0.0
+
+# Пример использования:
+s = Student(name=&quot;Вася&quot;)
+s.add_grade(5)
+s.add_grade(4)
+print(s.grades)     # [5, 4]
+print(s.average())  # 4.5</code></pre>
+      </figure>
+      <p>Стоит упомянуть особый метод .__post_init__(). Если его определить, он будет вызван автоматически сразу после сгенерированного .__init__(). Это полезно, когда нужно выполнить дополнительную инициализацию или проверку полей. Например:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from dataclasses import dataclass</code></pre>
+      </figure>
+      <p>@dataclass</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>class User:
+    username: str
+
+    def __post_init__(self):
+        # Всех новых пользователей храним с ником в нижнем регистре
+        self.username = self.username.lower()</code></pre>
+      </figure>
+      <p>Теперь при создании User(&quot;KittyKat«) в конструкторе сохранится «KittyKat», а затем .__post_init__() тут же преобразует username в «kittykat». Можно делать любые проверки и преобразования: например, убедиться, что возраст не отрицательный, обрезать пробелы в строках и т. д. Главное — помнить, что .__post_init__() получает уже полностью созданный объект, и в нём доступны все поля, включая те, что имеют значение по умолчанию, даже если их не передали в конструктор.</p>
+      <p>Ещё .__post_init__() часто используют в комбинации с полями, помеченными как init=False. Такие поля не попадают в конструктор, но их можно вычислить или установить как раз в .__post_init__(). Однако чтобы не погрязнуть в деталях, достаточно знать, что этот метод — наш помощник для любой дополнительной работы сразу после создания объекта.</p>
+      <h2 id="topic-5">⚜️ Дворянские корни</h2>
+      <p>Dataclasses поддерживают наследование, и это работает почти так же, как с обычными классами. Почти. Есть пара нюансов, о которых нужно знать.</p>
+      <p>Сначала пример без подвоха:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from dataclasses import dataclass</code></pre>
+      </figure>
+      <p>@dataclass</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>class Person:
+    name: str
+    age: int</code></pre>
+      </figure>
+      <p>@dataclass</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>class Student(Person):
+    school: str   # Добавляем новое поле
+
+
+s = Student(&quot;Иван&quot;, 16, &quot;Школа №1&quot;)
+print(s)  # Student(name=&#x27;Иван&#x27;, age=16, school=&#x27;Школа №1&#x27;)
+print(isinstance(s, Person))  # True, студент является Person благодаря наследованию</code></pre>
+      </figure>
+      <p>Мы видим, что .__repr__() подтянул поля и из базового класса, и из наследника. Сравнение (.__eq__()) тоже будет учитывать все поля (Student сравнивается как Person + school).</p>
+      <p>Первый подвох. Помните правило про поля с дефолтами? Оно действует и при наследовании. Если в базовом классе есть поля с значениями по умолчанию, а в подклассе появляются новые поля без дефолтов, Python опять-таки бросит ошибку (нельзя же параметр без значения ставить после параметра с значением). В Python 3.10 эту проблему решили — можно объявить в базовом классе @dataclass(kw_only=True), тогда все его поля станут требоваться только по имени, а у наследника спокойно добавятся новые позиционные поля.</p>
+      <p>Ещё момент: если в базовом классе определён .__post_init__() для дополнительной инициализации, то в наследнике при переопределении не забудьте вызвать super().__post_init__(), чтобы базовый класс тоже выполнил свою работу. Это стандартная практика при наследовании — dataclass тут не исключение.</p>
+      <p>А как насчёт наследования от обычного (не dataclass) класса? Такое тоже возможно. В этом случае @dataclass сгенерирует .__init__() только для своих полей, а начальную инициализацию базового класса придётся вызывать самому. Обычно это делают либо вызовом super().__init__() в .__post_init__(), либо вообще отключают автогенерацию конструктора (init=False) и пишут .__init__() вручную. Но это уже экзотика. В подавляющем большинстве случаев вы будете наследовать один dataclass от другого, и это довольно удобно.</p>
+      <h2 id="topic-6">⚖️ Без лишних вариантов</h2>
+      <p>О нет, ещё одна вымышленная ситуация: ты пишешь игру, и у персонажа есть класс: «Воин», «Маг» или «Разбойник». Можно хранить это как строку:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>character_class = &quot;маг&quot;
+
+# Но что если кто-то напишет:
+character_class = &quot;Маг&quot;   # С большой буквы
+character_class = &quot;mag&quot;   # На английском
+character_class = &quot;МАГГГ&quot; # С опечаткой
+character_class = &quot;космонавт&quot;  # Вообще что-то не то</code></pre>
+      </figure>
+      <p>Строки ненадёжны. Опечатался — и всё сломалось. А ошибку найти не всегда просто.</p>
+      <p>Enum (перечисление) — это способ создать фиксированный набор значений. Если написал что-то не то — Python сразу ругается.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from enum import Enum
+
+class Color(Enum):
+    RED = &quot;красный&quot;
+    GREEN = &quot;зелёный&quot;
+    BLUE = &quot;синий&quot;
+
+# Используем
+favorite_color = Color.RED
+
+print(favorite_color)         # Color.RED
+print(favorite_color.name)    # RED (имя константы)
+print(favorite_color.value)   # красный (значение)
+
+# Сравнение работает!
+if favorite_color == Color.RED:
+    print(&quot;Красный — цвет ошибки! 🔴&quot;)
+
+# Попробуем что-то несуществующее:
+try:
+    wrong_color = Color.PURPLE  # AttributeError!
+except AttributeError as e:
+    print(f&quot;Такого цвета нет: {e}&quot;)
+
+# Перебор всех значений
+print(&quot;Все доступные цвета:&quot;)
+for color in Color:
+    print(f&quot;  - {color.name}: {color.value}&quot;)</code></pre>
+      </figure>
+      <p>Если значения не важны, можно использовать auto():</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from enum import Enum, auto
+
+class Direction(Enum):
+    NORTH = auto()  # 1
+    SOUTH = auto()  # 2
+    EAST = auto()   # 3
+    WEST = auto()   # 4
+
+print(Direction.NORTH.value)  # 1
+print(Direction.WEST.value)   # 4
+
+# Полезно, когда важны только имена
+class Status(Enum):
+    PENDING = auto()
+    APPROVED = auto()
+    REJECTED = auto()
+    CANCELLED = auto()</code></pre>
+      </figure>
+      <p>Иногда нужно, чтобы Enum вёл себя как число или строка. Для этого есть специальные встроенные классы:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from enum import IntEnum, StrEnum
+
+class HttpStatus(IntEnum):
+    &quot;&quot;&quot;HTTP статусы как числа&quot;&quot;&quot;
+    OK = 200
+    CREATED = 201
+    BAD_REQUEST = 400
+    NOT_FOUND = 404
+    INTERNAL_ERROR = 500
+
+# Можно сравнивать с числами напрямую!
+status = HttpStatus.OK
+print(status == 200)  # True!
+print(status + 1)     # 201
+
+# Можно использовать в математических операциях
+if status &lt; 400:
+    print(&quot;Всё хорошо!&quot;)
+
+class Planet(StrEnum):
+    &quot;&quot;&quot;Планеты как строки (Python 3.11+)&quot;&quot;&quot;
+    MERCURY = &quot;Меркурий&quot;
+    VENUS = &quot;Венера&quot;
+    EARTH = &quot;Земля&quot;
+    MARS = &quot;Марс&quot;
+
+# Можно использовать как обычную строку
+planet = Planet.EARTH
+print(f&quot;Мы живём на планете {planet}!&quot;)  # Мы живём на планете Земля!
+print(planet.upper())  # ЗЕМЛЯ</code></pre>
+      </figure>
+      <p>Иногда значения нужно комбинировать. Например, права доступа, тогда можно использовать не Enum, а Flag:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from enum import Flag, auto
+
+class Permission(Flag):
+    &quot;&quot;&quot;Права доступа&quot;&quot;&quot;
+    NONE = 0
+    READ = auto()      # 1
+    WRITE = auto()     # 2
+    EXECUTE = auto()   # 4
+    DELETE = auto()    # 8
+
+    # Комбинации
+    READ_WRITE = READ | WRITE
+    FULL = READ | WRITE | EXECUTE | DELETE
+
+# Можно комбинировать!
+user_permissions = Permission.READ | Permission.WRITE
+
+print(user_permissions)  # Permission.READ|WRITE
+
+# Проверяем наличие права
+if Permission.READ in user_permissions:
+    print(&quot;Может читать&quot;)
+
+if Permission.DELETE in user_permissions:
+    print(&quot;Может удалять&quot;)
+else:
+    print(&quot;Не может удалять&quot;)
+
+# Добавляем право
+user_permissions |= Permission.DELETE
+print(f&quot;Теперь права: {user_permissions}&quot;)
+
+# Убираем право
+user_permissions &amp;= ~Permission.WRITE
+print(f&quot;После удаления WRITE: {user_permissions}&quot;)</code></pre>
+      </figure>
+      <p>При этом и Enum и Flag всё ещё обычные питонячьи классы.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from enum import Enum
+
+class Weekday(Enum):
+    MONDAY = 1
+    TUESDAY = 2
+    WEDNESDAY = 3
+    THURSDAY = 4
+    FRIDAY = 5
+    SATURDAY = 6
+    SUNDAY = 7
+
+    def is_weekend(self) -&gt; bool:
+        return self in (Weekday.SATURDAY, Weekday.SUNDAY)
+
+    def is_workday(self) -&gt; bool:
+        return not self.is_weekend()
+
+    def next_day(self) -&gt; &#x27;Weekday&#x27;:
+        &quot;&quot;&quot;Следующий день&quot;&quot;&quot;
+        if self.value == 7:
+            return Weekday.MONDAY
+        return Weekday(self.value + 1)</code></pre>
+      </figure>
+      <h2 id="part-460">🌟 Итог: краткость — сестра таланта</h2>
+      <p>Мы проделали немалый путь: от ручного создания классов к декоратору, который делает всё скучное за нас. @dataclass позволяет избавиться от шаблонного кода и сосредоточиться на самой сути — данных и логике работы с ними. Вместо того, чтобы раз за разом писать .__init__() или .__repr__(), мы пишем то, что реально важно для решения задачи.</p>
+      <p>Конечно, dataclass — не серебряная пуля. Но в контексте хранения данных и простых объектов он стал настоящим спасением от тонны повторяющегося кода. Сегодня это стандарт де-факто для Python-разработчиков, когда речь идёт о классах данных. Кроме того, модуль dataclasses предоставляет функции asdict() и astuple(), которые одним вызовом превращают dataclass-объект в словарь или кортеж.</p>
+      <p>P. S. Бойлерплейтили, бойлерплейтили да и выбойлерплейтили.</p>
+      </article>
+      <nav class="lesson-pagination" aria-label="Переключение уроков">
+        <a class="chapter-next" href="inheritance.html">Назад · ООП 4. Наследование</a>
+        <a class="chapter-next" href="class-design.html">Далее · ООП 6. Проектирование классов (ПВЗ)</a>
+      </nav>
+    </main>
+  </div>
+</body>
+</html>

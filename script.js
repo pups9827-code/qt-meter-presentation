@@ -119,3 +119,27 @@ collection.addEventListener('close', () => {
   selectPanel(panels[0]);
   openCollection.focus({ preventScroll: true });
 });
+
+const guideLink = document.querySelector('.python-content .collection-link');
+let guideExit;
+
+guideLink.addEventListener('click', (event) => {
+  if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey ||
+      event.altKey || event.shiftKey || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  event.preventDefault();
+  if (guideExit) return;
+
+  guideExit = document.body.animate([{ opacity: 1 }, { opacity: 0 }], {
+    duration: 420,
+    easing: 'ease',
+    fill: 'forwards',
+  });
+  guideExit.onfinish = () => location.assign(guideLink.href);
+});
+
+// A page restored with Back keeps its animations, including their final frame.
+window.addEventListener('pageshow', () => {
+  guideExit?.cancel();
+  guideExit = undefined;
+});

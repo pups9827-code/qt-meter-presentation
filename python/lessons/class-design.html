@@ -1,0 +1,918 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#090909">
+  <title>ООП 6. Проектирование классов (ПВЗ) — pupsiks</title>
+  <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../docs.css">
+  <script src="../docs.js" defer></script>
+</head>
+<body>
+  <header class="masthead">
+    <a class="brand" href="../../index.html"><img src="../../favicon.svg" alt="" width="38" height="38">pupsiks</a>
+    <a class="label" href="../index.html">Справочник Python</a>
+    <a class="home-link" href="../../index.html">На главную</a>
+  </header>
+  <div class="docs module">
+    <aside class="sidebar">
+      <nav aria-label="Разделы справочника" class="chapters">
+        <p class="label">Темы</p>
+        <ol>
+          <li><a href="../algorithms.html">Линейные алгоритмы и циклы</a></li>
+          <li><a href="../collections.html">Коллекции</a></li>
+          <li><a href="../files.html">Файлы и библиотеки</a></li>
+          <li><a href="../functions.html">Функции</a></li>
+          <li><a href="../oop.html" aria-current="page">ООП</a></li>
+        </ol>
+      </nav>
+    </aside>
+    <aside class="contents module-contents">
+      <nav aria-label="На этой странице">
+        <p class="label">На этой странице</p>
+        <a href="#topic-1">Свойство экземпляра класса</a>
+        <a href="#topic-2">Проектирование сверху-вниз</a>
+        <a href="#topic-3">Проектирование снизу-вверх</a>
+        <a href="#topic-4">Соединение способов проектирования</a>
+        <a href="#topic-5">Проверка стрессом</a>
+      </nav>
+    </aside>
+    <main>
+      <header class="overview" id="overview">
+        <a class="lesson-back label" href="../oop.html#class-design">ООП</a>
+        <h1>ООП 6. Проектирование классов (ПВЗ)</h1>
+        <p>В шапочке архитектора</p>
+      </header>
+
+      <article class="lesson-body">
+      <p>Сегодня мы не просто будем писать код, а займёмся тем, за что сеньоры получают свои большие зарплаты и выгорание в 30 лет. Мы будем проектировать.</p>
+      <p>Когда мы пишем программу из трёх строчек — норм, можно жить и без плана. Но когда у нас большая система для автоматизации чего-то относительно большого, например, пункта выдачи заказов (ПВЗ), где есть товары, посылки, клиенты, полки, сотрудники, возвраты и ещё куча всего, — без проектирования можно утонуть в коде примерно к обеду второго дня.</p>
+      <p>Если рассматривать крайние точки, то тут у самурая целых два пути. Дадим жизненную аналогию со строительством дома:</p>
+      <p>Сверху-вниз (Top-Down): Вы надеваете каску, берёте чертежи, смотрите на пустой пустырь и говорите: «Здесь будет 50-этажный небоскрёб. У него будут окна, двери и лифт». Вы ещё понятия не имеете, из какого кирпича будут стены и какой фирмы будет унитаз на 42-м этаже. Вы определяете общую структуру и интерфейсы, а детали прорабатываете потом. Это путь Архитектора.</p>
+      <p>Снизу-вверх (Bottom-Up): Вы находите на земле классный кирпич. Потом находите доску. Думаете: «О, если скрепить их скотчем, получится табуретка!». Потом из табуреток собираете стену. Из стен — комнату. И так, пока не получится нечто. Вы идёте от деталей к системе. Это путь Инженера-изобретателя (или безумного учёного).</p>
+      <p>В реальной жизни (и в Python) мы постоянно мечемся между этими двумя подходами. Если использовать только первый — вы погрязнете в абстракциях и никогда не напишете рабочий код. Если только второй — получите «спагетти-монстра», который развалится, если на него косо посмотреть.</p>
+      <p>Сегодня мы построим наш ПВЗ обоими способами, столкнём их лбами и посмотрим, что выживет.</p>
+      <h2 id="topic-1">🥦 Полезное свойство</h2>
+      <p>Бывают случаи, когда хочется, чтобы у объекта был атрибут, а на самом деле за ним пряталась какая-то логика: вычисления, проверки, преобразования. Один из способов это сделать — применить пару методов: set_field(self,value) и get_field(). Это такой Java-стиль, который в большинстве случаев приемлем, но есть и питонячий подход.</p>
+      <p>Для установки значения есть декоратор @property. Он позволяет написать метод, который снаружи выглядит как обычный атрибут, а внутри может делать, что угодно: считать, валидировать, логировать, петь и плясать.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from dataclasses import dataclass</code></pre>
+      </figure>
+      <p>@dataclass</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>class Person:
+    name: str
+    age: int
+
+    @property
+    def age_in_days(self):
+        return self.age * 365
+
+p = Person(&quot;Alice&quot;, 30)
+print(p.age_in_days)  # 10950</code></pre>
+      </figure>
+      <p>Снаружи это выглядит так, будто у объекта просто есть поле age_in_days. Но каждый раз, когда мы делаем p.age_in_days, Python под капотом вызывает метод age_in_days() без аргументов и возвращает результат.</p>
+      <p>С dataclass это заходит особенно хорошо: dataclass отвечает за «где хранить данные», а @property — за «как красиво к ним относиться».</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from dataclasses import dataclass</code></pre>
+      </figure>
+      <p>@dataclass</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>class Rectangle:
+    width: float
+    height: float
+
+    @property
+    def area(self) -&gt; float:
+        &quot;&quot;&quot;Площадь прямоугольника.&quot;&quot;&quot;
+        return self.width * self.height
+
+    @property
+    def perimeter(self) -&gt; float:
+        &quot;&quot;&quot;Периметр прямоугольника.&quot;&quot;&quot;
+        return 2 * (self.width + self.height)
+
+
+rect = Rectangle(4, 5)
+
+print(rect.area)      # 20
+print(rect.perimeter) # 18</code></pre>
+      </figure>
+      <p>Не реже, чем читать поля, возникает желание поля писать. Тут нам приходит на помощь ещё один декоратор — @field_name.setter. Он позволяет написать метод, который будет вызываться при присваивании значения полю.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from dataclasses import dataclass</code></pre>
+      </figure>
+      <p>@dataclass</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>class Person:
+    name: str
+    _age: int  # Подчёркивание намекает: это «внутреннее» поле
+
+    @property
+    def age(self) -&gt; int:
+        &quot;&quot;&quot;Возраст: красивое публичное свойство.&quot;&quot;&quot;
+        return self._age
+
+    @age.setter
+    def age(self, value: int):
+        &quot;&quot;&quot;Сеттер с валидацией.&quot;&quot;&quot;
+        if value &lt; 0:
+            raise ValueError(&quot;Возраст не может быть отрицательным, даже в душЕ&quot;)
+        if value &gt; 150:
+            raise ValueError(&quot;Скорее всего, это не человек, а страшный баг&quot;)
+        self._age = value
+
+p = Person(name=&quot;Алиса&quot;, _age=20)
+
+print(p.age)  # 20
+
+p.age = 25    # ок
+print(p.age)  # 25
+
+p.age = -5  # ValueError: Возраст не может быть отрицательным, даже в душЕ</code></pre>
+      </figure>
+      <p>Тут происходит магия... ой, инженерия UX: мы позволяем писать p.age = 25, как будто это обычное поле, но на деле через это проходят проверки, и никто не сможет случайно записать туда «минус миллион лет».</p>
+      <h2 id="topic-2">🚁 С вертолёта лучше видно</h2>
+      <p>Подход «сверху-вниз» — это когда вы чувствуете себя боссом. Вы не думаете о том, как хранить вес посылки, надо ли ставить какое-нибудь ограничение на максимальный вес на полке, — вы думаете о сущностях и их отношениях.</p>
+      <p>В этом нам поможет модуль abc (Abstract Base Classes). Нет, это не азбука, это способ сказать Python: «Я обещаю, что эта штука будет работать вот так, но как именно, я пока не знаю». Класс, объекты которого не будут создаваться, и который будет использован только как шаблон для наследников, наследуют от класса ABC, а если мы хотим сделать метод, который надо обязательно переопределить в классе-наследнике, то надо пометить его декоратором @abstractmethod.</p>
+      <p>На самом деле всё немного сложнее и модуль используется много для чего, но сейчас сосредоточимся только на той части, которая нам нужна.</p>
+      <p>Давайте подумаем, что такое ПВЗ в самом абстрактном смысле? Это место, где:</p>
+      <p>Хранятся Объекты (посылки).</p>
+      <p>Работают Агенты (сотрудники).</p>
+      <p>Приходят Клиенты (потребители).</p>
+      <p>Происходят Транзакции (выдача, возврат).</p>
+      <p>Мы не знаем, как зовут сотрудника. Мы не знаем, что в посылке. Нам всё равно. Мы пишем Контракты.</p>
+      <p>Концепция абстрактных классов пришла к нам из Simula 67 и Smalltalk. Раньше программисты просто договаривались на словах: «Эй, этот объект точно будет иметь метод run()». Потом, конечно, это забывалось, и программа падала. ABC — это способ заставить других (и себя) соблюдать контракт.</p>
+      <p>Строим каркас:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from abc import ABC, abstractmethod
+from typing import List, Optional
+from datetime import datetime
+
+
+class IIdentifiable(ABC):
+    &quot;&quot;&quot;
+    Интерфейс для всего, что имеет уникальный ID.
+    Потому что в ПВЗ без бумажки (и ID) ты букашка.
+    &quot;&quot;&quot;
+    @property
+    @abstractmethod
+    def id(self) -&gt; str:
+        pass
+
+
+class IStorageUnit(ABC):
+    &quot;&quot;&quot;
+    Абстрактное место, куда можно положить посылку.
+    Это может быть полка, сейф, или просто пол в углу.
+    &quot;&quot;&quot;
+    @abstractmethod
+    def store_item(self, item: &#x27;Parcel&#x27;) -&gt; bool:
+        &quot;&quot;&quot;Попытаться запихнуть предмет. Вернёт True, если влезло.&quot;&quot;&quot;
+        pass
+
+    @abstractmethod
+    def retrieve_item(self, item_id: str) -&gt; Optional[&#x27;Parcel&#x27;]:
+        &quot;&quot;&quot;Достать предмет, если он там есть.&quot;&quot;&quot;
+        pass
+
+    @abstractmethod
+    def get_items(self) -&gt; List[&#x27;Parcel&#x27;]:
+        &quot;&quot;&quot;Получить список всех предметов на полке.&quot;&quot;&quot;
+        pass
+
+    @abstractmethod
+    def get_capacity(self) -&gt; float:
+        &quot;&quot;&quot;Получить вместимость полки.&quot;&quot;&quot;
+        pass
+
+    @abstractmethod
+    def get_current_load(self) -&gt; float:
+        &quot;&quot;&quot;Получить текущую загрузку полки.&quot;&quot;&quot;
+        pass
+
+
+class Human(IIdentifiable):
+    &quot;&quot;&quot;
+    Базовый класс для всех кожаных мешков в нашей системе.
+    Заметьте, мы наследуемся от IIdentifiable, требуя наличие ID (паспорта).
+    &quot;&quot;&quot;
+    def __init__(self, name: str, passport_id: str):
+        self.name = name
+        self._passport_id = passport_id
+
+    @property
+    def id(self) -&gt; str:
+        return self._passport_id
+
+    def speak(self, phrase: str):
+        print(f&quot;{self.name} говорит: {phrase}&quot;)</code></pre>
+      </figure>
+      <p>Пока мы даже не знаем, что такое Parcel, но уже используем его в аннотациях типов (в кавычках). Это и есть Top-Down. Мы проектируем связи, а не кишки.</p>
+      <p>Смотрите, что мы сделали. Мы ещё не написали ни строчки логики того, как именно посылка кладётся на полку. Но мы уже определили правила игры. Если завтра мы захотим сделать ПВЗ полностью роботизированным, нам не придется переписывать интерфейс IStorageUnit. Невозмутимая роборука будет работать с теми же методами .store_item(), что и грустные грузчики.</p>
+      <p>У проектирования сверху вниз есть определенные плюсы:</p>
+      <p>Вы видите всю систему целиком.</p>
+      <p>Легко делить работу в команде («Ты пишешь класс Полки по этому интерфейсу, а я — класс Клиента»).</p>
+      <p>Меньше шансов забыть важную функциональность.</p>
+      <p>Но есть и минусы:</p>
+      <p>Можно увлечься и создать «Абстрактную Фабрику Абстрактных Бобылей», которая ничего не делает.</p>
+      <p>Сложно тестировать, пока не напишешь конкретные реализации.</p>
+      <h2 id="topic-3">⚛️ От атомов к материи</h2>
+      <p>Теперь снимем белый халат Архитектора и наденем промасленную робу Инженера. Забудем про «системы». Давайте посмотрим на вещи.</p>
+      <p>Что у нас реально есть физически?</p>
+      <p>Коробка. У неё есть вес, размер и наклейка «Осторожно, стекло» (которую все игнорируют).</p>
+      <p>Сканер штрихкодов. Он делает «ПИ-И-ИП».</p>
+      <p>Полка. Она деревянная и пыльная.</p>
+      <p>При подходе «Снизу-вверх» мы создаём маленькие, самодостаточные компоненты, которые идеально делают одну простую вещь. А потом собираем из них Мегазода.</p>
+      <p>Здесь нам идеально пригодятся @dataclass, о которых мы говорили совсем недавно, чтобы не писать лишнего кода руками, как пещерные люди.</p>
+      <p>Создаём атомы:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from dataclasses import dataclass, field
+from enum import Enum, auto
+import datetime as dt
+import random
+
+# Определим состояния посылки.
+class ParcelStatus(Enum):
+    CREATED = auto()      # Только создана
+    IN_TRANSIT = auto()   # Едет в фуре с арбузами
+    ARRIVED = auto()      # Приехала в ПВЗ
+    ISSUED = auto()       # Отдана счастливому владельцу
+    LOST = auto()         # «Ой, я не знаю, где она, пишите в поддержку»
+    RETURNED = auto()     # Клиенту не подошёл цвет</code></pre>
+      </figure>
+      <p>@dataclass</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>class Dimensions:
+    &quot;&quot;&quot;Габариты. Потому что посылки живут в 3D мире.&quot;&quot;&quot;
+    length: float
+    width: float
+    height: float
+
+    def volume(self) -&gt; float:
+        return self.length * self.width * self.height</code></pre>
+      </figure>
+      <p>@dataclass(order=True)</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>class Parcel:
+    &quot;&quot;&quot;
+    Наша фундаментальная единица материи — ПОСЫЛКА.
+    order=True позволяет нам сравнивать посылки (например, по весу или ID).
+    &quot;&quot;&quot;
+    tracking_number: str
+    weight_kg: float
+    dims: Dimensions
+    cost: float
+    # По умолчанию посылка только создана
+    status: ParcelStatus = field(default=ParcelStatus.CREATED)
+    # Список истории перемещений. 
+    # Не забываем про default_factory
+    history: list[str] = field(default_factory=list)
+
+    def change_status(self, new_status: ParcelStatus, comment: str = &quot;&quot;):
+        self.status = new_status
+        timestamp = dt.datetime.now().strftime(&quot;%Y-%m-%d %H:%M:%S&quot;)
+        log_entry = f&quot;[{timestamp}] Статус изменён на {new_status.name}. {comment}&quot;
+        self.history.append(log_entry)
+        print(f&quot;📦 Посылка {self.tracking_number}: {new_status.name}&quot;)
+
+    def __post_init__(self):
+        # Этот метод вызывается сразу после создания датакласса.
+        # Отличное место для валидации.
+        if self.weight_kg &gt; 30:
+            print(f&quot;⚠️ ВНИМАНИЕ: Посылка {self.tracking_number} тяжёлая ({self.weight_kg} кг)! Нужен грузчик.&quot;)
+
+
+# Тестируем наш атом (Bottom-Up позволяет тестировать сразу!)
+dim = Dimensions(10, 20, 5)
+p1 = Parcel(&quot;MARKET-123&quot;, 2.5, dim, 1500.00)
+p1.change_status(ParcelStatus.IN_TRANSIT, &quot;Выехала из Сортировочного Центра&quot;)
+print(p1)</code></pre>
+      </figure>
+      <p>Мы создали Dimensions и Parcel. Они ничего не знают про ПВЗ, про сотрудников или про бизнес-логику. Они просто данные и методы для работы с этими данными.</p>
+      <p>Это и есть Инкапсуляция в действии. Посылка сама знает свою историю. Нам не нужна внешняя база данных, чтобы спросить у посылки: «Где ты была?».</p>
+      <p>Плюсы Bottom-Up:</p>
+      <p>Вы сразу получаете рабочий код. Это мотивирует.</p>
+      <p>Компоненты легко переиспользовать (класс Parcel можно забрать в проект для логистической компании).</p>
+      <p>Легче писать тесты (тестируем посылку в вакууме).</p>
+      <p>Очевидно, есть и минусы:</p>
+      <p>В конце может оказаться, что ваши идеальные «кирпичи» не подходят друг к другу. Например, у Parcel нет поля owner_id, а мы уже написали 100500 строк кода. Придётся переписывать.</p>
+      <h2 id="topic-4">⚔️ Война миров</h2>
+      <p>Теперь самое интересное. Мы берём наши абстракции из Top-Down и наполняем их мясом из Bottom-Up.</p>
+      <p>Нам нужно спроектировать ПВЗ (Point of Pickup). Здесь мы применим принцип Композиции (Composition over Inheritance).</p>
+      <p>Напоминание: Наследование — это когда объект является чем-то (Собака является Животным). Композиция — это когда объект имеет что-то (У Собаки есть Хвост). В современном программировании мы стараемся предпочитать Композицию, потому что она гибче.</p>
+      <p>Наш ПВЗ имеет склад. Имеет сотрудников. Но он не является складом.</p>
+      <p>Попробуем собрать наш ПВЗ:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>class Shelf(IStorageUnit):
+    &quot;&quot;&quot;Конкретная реализация полки.&quot;&quot;&quot;
+
+    def __init__(self, capacity_kg: float):
+        self.capacity_kg = capacity_kg
+        self.current_load = 0.0
+        self.items: dict[str, Parcel] = {}
+
+    def store_item(self, item: Parcel) -&gt; bool:
+        # Не принимаем замороженные товары на обычную полку
+        if isinstance(item, FrozenParcel):
+            print(f&quot;Обычная полка не подходит для заморозки {item.tracking_number}!&quot;)
+            return False
+
+        if self.current_load + item.weight_kg &gt; self.capacity_kg:
+            print(f&quot;Полка трещит! Нельзя положить {item.tracking_number} (перегруз).&quot;)
+            return False
+
+        self.items[item.tracking_number] = item
+        self.current_load += item.weight_kg
+        print(f&quot;✅ Посылка {item.tracking_number} положена на полку (нагрузка: {self.current_load:.1f}/{self.capacity_kg} кг).&quot;)
+        return True
+
+    def retrieve_item(self, item_id: str) -&gt; Optional[Parcel]:
+        item = self.items.pop(item_id, None)
+        if item:
+            self.current_load -= item.weight_kg
+            print(f&quot;📤 Посылка {item_id} снята с полки.&quot;)
+        return item
+
+    def get_items(self) -&gt; list[Parcel]:
+        return list(self.items.values())
+
+    def get_capacity(self) -&gt; float:
+        return self.capacity_kg
+
+    def get_current_load(self) -&gt; float:
+        return self.current_load
+
+
+class Employee(Human):
+    &quot;&quot;&quot;
+    Сотрудник ПВЗ.
+    У него есть уровень стрессоустойчивости.
+    &quot;&quot;&quot;
+    def __init__(self, name: str, passport_id: str, stress_level: int = 0):
+        super().__init__(name, passport_id)
+        self.stress_level = stress_level
+
+    def work(self):
+        self.stress_level += 10
+        if self.stress_level &gt; 100:
+            self.speak(&quot;Я УВОЛЬНЯЮСЬ! ГДЕ МОЯ ТРУДОВАЯ?!&quot;)
+        else:
+            self.speak(&quot;Пакет нужен?&quot;)
+
+
+class PickupPoint:
+    &quot;&quot;&quot;
+    А вот и наш Бог-объект. Он собирает всё воедино.
+    &quot;&quot;&quot;
+    def __init__(self, address: str, manager: Employee):
+        self.address = address
+        self.manager = manager
+        # ПВЗ состоит из полок (Композиция)
+        self.shelves: list[IStorageUnit] = [] 
+        self.queue: list[Human] = []
+
+    def add_shelf(self, shelf: IStorageUnit):
+        self.shelves.append(shelf)
+
+    def receive_parcel(self, parcel: Parcel):
+        &quot;&quot;&quot;Процесс приёмки товара от курьера.&quot;&quot;&quot;
+        print(f&quot;\n🚚 Приёмка посылки {parcel.tracking_number}...&quot;)
+        parcel.change_status(ParcelStatus.ARRIVED)
+
+        # Пытаемся распихать по полкам
+        stored = False
+        for shelf in self.shelves:
+            if shelf.store_item(parcel):
+                stored = True
+                break
+
+        if not stored:
+            print(&quot;😱 АЛАРМ! Места нет! Посылка валяется на полу.&quot;)
+            parcel.change_status(ParcelStatus.LOST, &quot;Потерялась в горе мусора на полу.&quot;)
+
+    def serve_client(self, client_id: str, parcel_track: str):
+        &quot;&quot;&quot;Менеджер пытается найти посылку и отдать её.&quot;&quot;&quot;
+        print(f&quot;\n👤 Клиент {client_id} хочет забрать {parcel_track}.&quot;)
+        self.manager.work()  # Менеджер устаёт
+
+        found_parcel = None
+        # Ищем по всем полкам
+        for shelf in self.shelves:
+            found_parcel = shelf.retrieve_item(parcel_track)
+            if found_parcel:
+                break
+
+        if found_parcel:
+            found_parcel.change_status(ParcelStatus.ISSUED)
+            print(f&quot;🎉 Ура! Выдали посылку клиенту.&quot;)
+        else:
+            print(f&quot;🤷‍♂️ Не нашли. Приходите завтра.&quot;)
+            self.manager.speak(&quot;Вас много, а я одна!&quot;)</code></pre>
+      </figure>
+      <h2 id="topic-5">🤡 Жизнь — сложная и разнообразная</h2>
+      <p>Вы думали это всё? Ха! Жизнь всегда сложнее кода. Давайте добавим немного хаоса и посмотрим, как наш дизайн справится. Генерируем проблемы.</p>
+      <p>Внезапно бизнес решил, что люди хотят мерить одежду. Примерочная — это тоже вид IStorageUnit, но в ней хранятся не посылки, а люди. Ой-ёй. Наш IStorageUnit.store_item принимает Parcel.</p>
+      <p>Ошибка проектирования Top-Down! Мы слишком жёстко привязались к типам.</p>
+      <p>Решение: Нам нужно сделать методы более обобщёнными. Или признать, что Примерочная — это НЕ Склад. Скорее всего, второе. Примерочная — это ресурс.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>class FittingRoom:
+    def __init__(self):
+        self.is_occupied = False
+        self.current_human: Optional[Human] = None
+
+    def enter(self, human: Human):
+        if self.is_occupied:
+            print(f&quot;🚫 Занято! {human.name}, ждите в очереди.&quot;)
+        else:
+            self.is_occupied = True
+            self.current_human = human
+            print(f&quot;帘 {human.name} зашел в примерочную. Шурх-шурх.&quot;)
+
+    def leave(self):
+        if self.is_occupied:
+            print(f&quot;🚪 {self.current_human.name} вышел. &#x27;Ну как, полнит?&#x27;&quot;)
+            self.current_human = None
+            self.is_occupied = False</code></pre>
+      </figure>
+      <p>Мы просто добавляем fitting_rooms: list[FittingRoom] в наш класс PickupPoint. Композиция нас спасла! Нам не пришлось ломать иерархию наследования.</p>
+      <p>Только выдохнули, как бизнес снова прибегает и с порога заявляет — хотим продавать мороженое! (И снова убегат). Значит, у нас появляется особый тип посылок — Заморозка. Она тает, если лежит на обычной полке.</p>
+      <p>Нам нужен новый тип полки Fridge (Холодильник). И новый тип посылки FrozenParcel.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>class FrozenParcel(Parcel):
+    def __post_init__(self):
+        super().__post_init__()
+        self.max_temp_c = -5.0
+
+class Fridge(IStorageUnit):
+    def store_item(self, item: Parcel) -&gt; bool:
+        # Проверка типов в Python (isinstance)
+        if not isinstance(item, FrozenParcel):
+            print(&quot;❄️ Эй! Зачем вы кладёте утюг в холодильник?&quot;)
+            return False
+        print(&quot;❄️ Заморозка положена в холод.&quot;)
+        # ... логика хранения ...
+        return True
+
+    def retrieve_item(self, item_id: str) -&gt; Optional[Parcel]:
+        # ... логика ...
+        pass</code></pre>
+      </figure>
+      <p>Благодаря тому, что Fridge реализует интерфейс IStorageUnit, нашему классу PickupPoint вообще фиолетово, холодильник это или полка. Он просто пробегается циклом for shelf in self.shelves и вызывает store_item.</p>
+      <p>Как вы поняли, это явное проявление полиморфизма. Один интерфейс — разное поведение. Код PickupPoint не меняется, а возможности растут. Это магия хорошего дизайна. ✨</p>
+      <h2 id="part-404">🎬 Финальный дубль</h2>
+      <p>Давайте запустим этот цирк и посмотрим, как оно работает вместе.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from abc import ABC, abstractmethod
+from typing import List, Optional
+from datetime import datetime
+from dataclasses import dataclass, field
+from enum import Enum, auto
+
+
+# ЧАСТЬ 1: TOP-DOWN — Абстракции и интерфейсы
+
+class IIdentifiable(ABC):
+    &quot;&quot;&quot;
+    Интерфейс для всего, что имеет уникальный ID.
+    Потому что в ПВЗ без бумажки (и ID) ты букашка.
+    &quot;&quot;&quot;
+    @property
+    @abstractmethod
+    def id(self) -&gt; str:
+        pass
+
+
+class IStorageUnit(ABC):
+    &quot;&quot;&quot;
+    Абстрактное место, куда можно положить посылку.
+    Это может быть полка, сейф, или просто пол в углу.
+    &quot;&quot;&quot;
+    @abstractmethod
+    def store_item(self, item: &#x27;Parcel&#x27;) -&gt; bool:
+        &quot;&quot;&quot;Попытаться запихнуть предмет. Вернёт True, если влезло.&quot;&quot;&quot;
+        pass
+
+    @abstractmethod
+    def retrieve_item(self, item_id: str) -&gt; Optional[&#x27;Parcel&#x27;]:
+        &quot;&quot;&quot;Достать предмет, если он там есть.&quot;&quot;&quot;
+        pass
+
+    @abstractmethod
+    def get_items(self) -&gt; List[&#x27;Parcel&#x27;]:
+        &quot;&quot;&quot;Получить список всех предметов на полке.&quot;&quot;&quot;
+        pass
+
+    @abstractmethod
+    def get_capacity(self) -&gt; float:
+        &quot;&quot;&quot;Получить вместимость полки.&quot;&quot;&quot;
+        pass
+
+    @abstractmethod
+    def get_current_load(self) -&gt; float:
+        &quot;&quot;&quot;Получить текущую загрузку полки.&quot;&quot;&quot;
+        pass
+
+
+class Human(IIdentifiable):
+    &quot;&quot;&quot;
+    Базовый класс для всех кожаных мешков в нашей системе.
+    Заметьте, мы наследуемся от IIdentifiable, требуя наличие ID (паспорта).
+    &quot;&quot;&quot;
+    def __init__(self, name: str, passport_id: str):
+        self.name = name
+        self._passport_id = passport_id
+
+    @property
+    def id(self) -&gt; str:
+        return self._passport_id
+
+    def speak(self, phrase: str):
+        print(f&quot;{self.name} говорит: {phrase}&quot;)
+
+
+# ЧАСТЬ 2: BOTTOM-UP — Конкретные данные и классы
+
+class ParcelStatus(Enum):
+    &quot;&quot;&quot;Состояния посылки в системе.&quot;&quot;&quot;
+    CREATED = auto()      # Только создана
+    IN_TRANSIT = auto()   # Едет в фуре с арбузами
+    ARRIVED = auto()      # Приехала в ПВЗ
+    ISSUED = auto()       # Отдана счастливому владельцу
+    LOST = auto()         # «Ой, я не знаю, где она, пишите в поддержку!»
+    RETURNED = auto()     # Клиенту не подошёл цвет</code></pre>
+      </figure>
+      <p>@dataclass</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>class Dimensions:
+    &quot;&quot;&quot;Габариты. Потому что посылки живут в 3D мире.&quot;&quot;&quot;
+    length: float
+    width: float
+    height: float
+
+    def volume(self) -&gt; float:
+        return self.length * self.width * self.height</code></pre>
+      </figure>
+      <p>@dataclass(order=True)</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>class Parcel:
+    &quot;&quot;&quot;
+    Наша фундаментальная единица материи — ПОСЫЛКА.
+    order=True позволяет нам сравнивать посылки (например, по весу или ID).
+    &quot;&quot;&quot;
+    tracking_number: str
+    weight_kg: float
+    dims: Dimensions
+    cost: float
+    status: ParcelStatus = field(default=ParcelStatus.CREATED)
+    history: list[str] = field(default_factory=list)
+
+    def change_status(self, new_status: ParcelStatus, comment: str = &quot;&quot;):
+        self.status = new_status
+        timestamp = datetime.now().strftime(&quot;%Y-%m-%d %H:%M:%S&quot;)
+        log_entry = f&quot;[{timestamp}] Статус изменен на {new_status.name}. {comment}&quot;
+        self.history.append(log_entry)
+        print(f&quot;📦 Посылка {self.tracking_number}: {new_status.name}&quot;)
+
+    def __post_init__(self):
+        &quot;&quot;&quot;Валидация после создания объекта.&quot;&quot;&quot;
+        if self.weight_kg &gt; 30:
+            print(f&quot;⚠️ ВНИМАНИЕ: Посылка {self.tracking_number} тяжёлая ({self.weight_kg} кг)! Нужен грузчик.&quot;)
+
+
+class FrozenParcel(Parcel):
+    &quot;&quot;&quot;Специальный тип посылки — замороженная.&quot;&quot;&quot;
+    def __post_init__(self):
+        super().__post_init__()
+        self.max_temp_c = -5.0
+        print(f&quot;❄️ Внимание! {self.tracking_number} требует холодильника!&quot;)
+
+
+# ЧАСТЬ 3  Конкретные реализации хранилищ
+
+class Shelf(IStorageUnit):
+    &quot;&quot;&quot;Конкретная реализация полки.&quot;&quot;&quot;
+
+    def __init__(self, capacity_kg: float):
+        self.capacity_kg = capacity_kg
+        self.current_load = 0.0
+        self.items: dict[str, Parcel] = {}
+
+    def store_item(self, item: Parcel) -&gt; bool:
+        # Не принимаем замороженные товары на обычную полку
+        if isinstance(item, FrozenParcel):
+            print(f&quot;Обычная полка не подходит для заморозки {item.tracking_number}!&quot;)
+            return False
+
+        if self.current_load + item.weight_kg &gt; self.capacity_kg:
+            print(f&quot;Полка трещит! Нельзя положить {item.tracking_number} (перегруз).&quot;)
+            return False
+
+        self.items[item.tracking_number] = item
+        self.current_load += item.weight_kg
+        print(f&quot;✅ Посылка {item.tracking_number} положена на полку (нагрузка: {self.current_load:.1f}/{self.capacity_kg} кг).&quot;)
+        return True
+
+    def retrieve_item(self, item_id: str) -&gt; Optional[Parcel]:
+        item = self.items.pop(item_id, None)
+        if item:
+            self.current_load -= item.weight_kg
+            print(f&quot;📤 Посылка {item_id} снята с полки.&quot;)
+        return item
+
+    def get_items(self) -&gt; list[Parcel]:
+        return list(self.items.values())
+
+    def get_capacity(self) -&gt; float:
+        return self.capacity_kg
+
+    def get_current_load(self) -&gt; float:
+        return self.current_load
+
+
+class Fridge(IStorageUnit):
+    &quot;&quot;&quot;Холодильник для замороженных товаров.&quot;&quot;&quot;
+
+    def __init__(self, capacity_kg: float = 50.0):
+        self.capacity_kg = capacity_kg
+        self.current_load = 0.0
+        self.items: dict[str, Parcel] = {}
+        self.temperature_c = -18.0
+
+    def store_item(self, item: Parcel) -&gt; bool:
+        # Холодильник принимает ТОЛЬКО замороженные товары
+        if not isinstance(item, FrozenParcel):
+            print(f&quot;Эй! Зачем вы кладёте {item.tracking_number} в холодильник? Это не заморозка!&quot;)
+            return False
+
+        if self.current_load + item.weight_kg &gt; self.capacity_kg:
+            print(f&quot;Холодильник забит! {item.tracking_number} не влезет.&quot;)
+            return False
+
+        self.items[item.tracking_number] = item
+        self.current_load += item.weight_kg
+        print(f&quot;❄️ Заморозка {item.tracking_number} положена в холодильник при {self.temperature_c}°C.&quot;)
+        return True
+
+    def retrieve_item(self, item_id: str) -&gt; Optional[Parcel]:
+        item = self.items.pop(item_id, None)
+        if item:
+            self.current_load -= item.weight_kg
+            print(f&quot;❄️ Заморозка {item_id} извлечена из холодильника.&quot;)
+        return item
+
+    def get_items(self) -&gt; list[Parcel]:
+        return list(self.items.values())
+
+    def get_capacity(self) -&gt; float:
+        return self.capacity_kg
+
+    def get_current_load(self) -&gt; float:
+        return self.current_load
+
+
+# ЧАСТЬ 4:  Персонал
+
+class Employee(Human):
+    &quot;&quot;&quot;
+    Сотрудник ПВЗ.
+    У него есть уровень стрессоустойчивости.
+    &quot;&quot;&quot;
+    def __init__(self, name: str, passport_id: str, stress_level: int = 0):
+        super().__init__(name, passport_id)
+        self.stress_level = stress_level
+
+    def work(self):
+        self.stress_level += 10
+        if self.stress_level &gt; 100:
+            self.speak(&quot;Я УВОЛЬНЯЮСЬ! ГДЕ МОЯ ТРУДОВАЯ?!&quot;)
+        else:
+            self.speak(&quot;Пакет нужен?&quot;)
+
+
+# ЧАСТЬ 5: КОМПОЗИЦИЯ — Примерочная (дополнительная функциональность)
+
+
+class FittingRoom:
+    &quot;&quot;&quot;Примерочная для клиентов.&quot;&quot;&quot;
+
+    def __init__(self):
+        self.is_occupied = False
+        self.current_human: Optional[Human] = None
+
+    def enter(self, human: Human):
+        if self.is_occupied:
+            print(f&quot;Занято! {human.name}, ждите в очереди.&quot;)
+        else:
+            self.is_occupied = True
+            self.current_human = human
+            print(f&quot;{human.name} зашёл в примерочную. Шурх-шурх.&quot;)
+
+    def leave(self):
+        if self.is_occupied and self.current_human:
+            print(f&quot;{self.current_human.name} вышел. &#x27;Ну как, полнит?&#x27;&quot;)
+            self.current_human = None
+            self.is_occupied = False
+
+
+# ЧАСТЬ 6: ГЛАВНЫЙ КЛАСС — Пункт Выдачи Заказов (композиция всего)
+
+class PickupPoint:
+    &quot;&quot;&quot;
+    Главный объект, который собирает всё воедино.
+    Использует композицию для объединения компонентов.
+    &quot;&quot;&quot;
+
+    def __init__(self, address: str, manager: Employee):
+        self.address = address
+        self.manager = manager
+        self.shelves: list[IStorageUnit] = []
+        self.fitting_rooms: list[FittingRoom] = []
+        self.queue: list[Human] = []
+
+    def add_shelf(self, shelf: IStorageUnit):
+        &quot;&quot;&quot;Добавить хранилище (полку, холодильник и т. д.)&quot;&quot;&quot;
+        self.shelves.append(shelf)
+        print(f&quot;🏗️ Добавлено хранилище в ПВЗ на {self.address}&quot;)
+
+    def add_fitting_room(self):
+        &quot;&quot;&quot;Добавить примерочную.&quot;&quot;&quot;
+        room = FittingRoom()
+        self.fitting_rooms.append(room)
+        print(f&quot;🏗️ Примерочная #{len(self.fitting_rooms)} установлена&quot;)
+
+    def receive_parcel(self, parcel: Parcel):
+        &quot;&quot;&quot;Процесс приёмки товара от курьера.&quot;&quot;&quot;
+        print(f&quot;\n🚚 Приёмка посылки {parcel.tracking_number}...&quot;)
+        parcel.change_status(ParcelStatus.ARRIVED)
+
+        # Пытаемся распихать по полкам
+        stored = False
+        for shelf in self.shelves:
+            if shelf.store_item(parcel):
+                stored = True
+                break
+
+        if not stored:
+            print(&quot;😱 АЛАРМ! Места нет! Посылка валяется на полу.&quot;)
+            parcel.change_status(ParcelStatus.LOST, &quot;Потерялась в горе мусора на полу.&quot;)
+
+    def serve_client(self, client_id: str, parcel_track: str):
+        &quot;&quot;&quot;Менеджер пытается найти посылку и отдать её.&quot;&quot;&quot;
+        print(f&quot;\n👤 Клиент {client_id} хочет забрать {parcel_track}.&quot;)
+        self.manager.work()  # Менеджер устаёт
+
+        found_parcel = None
+        # Ищем по всем полкам
+        for shelf in self.shelves:
+            found_parcel = shelf.retrieve_item(parcel_track)
+            if found_parcel:
+                break
+
+        if found_parcel:
+            found_parcel.change_status(ParcelStatus.ISSUED)
+            print(f&quot;🎉 Ура! Выдали посылку клиенту. Стоимость: {found_parcel.cost} руб.&quot;)
+            print(f&quot;📋 История посылки:&quot;)
+            for entry in found_parcel.history:
+                print(f&quot;   {entry}&quot;)
+        else:
+            print(f&quot;🤷‍♂️ Не нашли {parcel_track}. Приходите завтра.&quot;)
+            self.manager.speak(&quot;Вас много, а я одна!&quot;)
+
+    def show_status(self):
+        &quot;&quot;&quot;Показать состояние ПВЗ.&quot;&quot;&quot;
+        print(f&quot;\n📊 === СТАТУС ПВЗ ({self.address}) ===&quot;)
+        print(f&quot;👨‍💼 Менеджер: {self.manager.name} (стресс: {self.manager.stress_level}/100)&quot;)
+        print(f&quot;📦 Хранилищ: {len(self.shelves)}&quot;)
+
+        total_items = 0
+        for i, shelf in enumerate(self.shelves):
+            if isinstance(shelf, Fridge):
+                print(f&quot;   ❄️ Холодильник #{i+1}: {len(shelf.get_items())} посылок, {shelf.get_current_load():.1f}/{shelf.get_capacity()} кг&quot;)
+            else:
+                print(f&quot;   📦 Полка #{i+1}: {len(shelf.get_items())} посылок, {shelf.get_current_load():.1f}/{shelf.get_capacity()} кг&quot;)
+            total_items += len(shelf.get_items())
+
+        print(f&quot;📊 Всего посылок на хранении: {total_items}&quot;)
+
+
+# MAIN: Запуск симуляции
+
+def main():
+    print(&quot;=&quot; * 70)
+    print(&quot;🚀 ЗАПУСК СИМУЛЯТОРА ПВЗ 3000&quot;)
+    print(&quot;=&quot; * 70)
+
+    # 1. Создаём персонал (Bottom-Up: создаём детали)
+    galya = Employee(&quot;Галина Ивановна&quot;, &quot;PASS-999&quot;, stress_level=50)
+
+    # 2. Создаём ПВЗ (Top-Down: собираем структуру)
+    pvz_moscow = PickupPoint(&quot;ул. Ленина, д. 1, Москва&quot;, galya)
+
+    # 3. Завозим оборудование
+    shelf_heavy = Shelf(capacity_kg=100.0)  # Для тяжёлого
+    shelf_light = Shelf(capacity_kg=20.0)   # Для мелочи
+    fridge = Fridge(capacity_kg=50.0)       # Для пельменей
+
+    pvz_moscow.add_shelf(shelf_heavy)
+    pvz_moscow.add_shelf(shelf_light)
+    pvz_moscow.add_shelf(fridge)
+    pvz_moscow.add_fitting_room()
+
+    # 4. Приезжает машина с товаром
+    print(&quot;\n&quot; + &quot;=&quot; * 70)
+    print(&quot;📦 ПОСТУПЛЕНИЕ ТОВАРА&quot;)
+    print(&quot;=&quot; * 70)
+
+    items_to_receive = [
+        Parcel(&quot;TRACK-001&quot;, 5.0, Dimensions(10, 10, 10), 500.00),
+        Parcel(&quot;TRACK-002&quot;, 25.0, Dimensions(50, 50, 50), 2000.00),
+        FrozenParcel(&quot;TRACK-FROZEN-01&quot;, 3.0, Dimensions(20, 20, 15), 350.00),
+        FrozenParcel(&quot;TRACK-FROZEN-02&quot;, 2.0, Dimensions(15, 15, 10), 280.00),
+        Parcel(&quot;TRACK-BIGBOY&quot;, 150.0, Dimensions(100, 100, 100), 10000.00),  # Слишком тяжёлая!
+    ]
+
+    for item in items_to_receive:
+        pvz_moscow.receive_parcel(item)
+
+    # Показываем статус после приёмки
+    pvz_moscow.show_status()
+
+    # 5. Начало рабочего дня
+    print(&quot;\n&quot; + &quot;=&quot; * 70)
+    print(&quot;🕐 НАЧАЛО РАБОЧЕГО ДНЯ — ОБСЛУЖИВАНИЕ КЛИЕНТОВ&quot;)
+    print(&quot;=&quot; * 70)
+
+    # Клиент 1: забирает обычную посылку
+    client1 = Human(&quot;Алёша&quot;, &quot;PASS-123&quot;)
+    pvz_moscow.serve_client(client1.id, &quot;TRACK-001&quot;)
+
+    # Клиент 2: забирает заморозку
+    client2 = Human(&quot;Марина&quot;, &quot;PASS-456&quot;)
+    pvz_moscow.serve_client(client2.id, &quot;TRACK-FROZEN-01&quot;)
+
+    # Клиент 3: пытается забрать несуществующую посылку
+    client3 = Human(&quot;Игорь&quot;, &quot;PASS-789&quot;)
+    pvz_moscow.serve_client(client3.id, &quot;TRACK-666&quot;)
+
+    # Клиент 4: пытается забрать потерянную тяжёлую посылку
+    client4 = Human(&quot;Ольга&quot;, &quot;PASS-101&quot;)
+    pvz_moscow.serve_client(client4.id, &quot;TRACK-BIGBOY&quot;)
+
+    # 6. Клиент идёт в примерочную
+    print(&quot;\n&quot; + &quot;=&quot; * 70)
+    print(&quot;👔 ИСПОЛЬЗОВАНИЕ ПРИМЕРОЧНОЙ&quot;)
+    print(&quot;=&quot; * 70)
+
+    fitting_room = pvz_moscow.fitting_rooms[0]
+    fitting_room.enter(client2)
+    fitting_room.enter(client3)  # Попытка войти, пока занято
+    fitting_room.leave()
+    fitting_room.enter(client3)  # Теперь войдёт
+    fitting_room.leave()
+
+    # Финальный статус
+    pvz_moscow.show_status()
+
+    print(&quot;\n&quot; + &quot;=&quot; * 70)
+    print(&quot;🏁 СИМУЛЯЦИЯ ЗАВЕРШЕНА&quot;)
+    print(&quot;=&quot; * 70)
+    print(f&quot;Менеджер {galya.name} завершает смену со стрессом {galya.stress_level}/100&quot;)
+
+    if galya.stress_level &gt; 100:
+        print(&quot;💀 Менеджер уволился. ПВЗ закрывается.&quot;)
+    else:
+        print(&quot;✅ ПВЗ работает в штатном режиме. До завтра!&quot;)
+
+main()</code></pre>
+      </figure>
+      <p>Вот что будет:</p>
+      <p>Галина создастся со стрессом 50.</p>
+      <p>TRACK-001 ляжет на первую полку.</p>
+      <p>TRACK-002 (25кг) ляжет на первую полку (там запас 100 кг).</p>
+      <p>FrozenParcel — тут интересно. Обычная Shelf примет его? Если мы не добавили проверку в Shelf, то да, и пельмени растают. В хорошем дизайне Shelf должен отказывать FrozenParcel. Но наш Fridge точно примет.</p>
+      <p>TRACK-BIGBOY (150 кг) не влезет никуда. Упадёт в статус LOST.</p>
+      <p>Алёша получит свою посылку TRACK-001.</p>
+      <p>Менеджер устанет (стресс +20). И так далее.</p>
+      <h2 id="part-837">🌟 Итог: Инь и Ян</h2>
+      <p>Итак, что мы узнали, смешивая бетон абстракций с кирпичами реализации?</p>
+      <p>Top-Down даёт нам Видение. Этот подход заставляет задавать правильные вопросы: «А что вообще умеет делать Склад?». Он создаёт общие «разъёмы» (интерфейсы), благодаря которым мы можем менять холодильник на сейф, не ломая код выдачи.</p>
+      <p>Bottom-Up даёт нам Кирпичики. Он фокусируется на данных и внутренней логике конкретного объекта. Он гарантирует, что Parcel знает свой объем, а Employee умеет психовать.</p>
+      <p>Как проектировать правильно? Используйте «Метод Сэндвича» (или встречное проектирование).</p>
+      <p>Набросайте интерфейсы верхнего уровня (Top-Down), чтобы понять, какие классы нужны.</p>
+      <p>Реализуйте базовые, независимые классы (Bottom-Up), чтобы было с чем работать.</p>
+      <p>Соедините их в «Контроллерах» (в нашем случае PickupPoint).</p>
+      <p>Повторяйте до приемлемого результата.</p>
+      <p>И главное правило: не усложняйте. Если ваш ПВЗ состоит только из выдачи писем, вам не нужен абстрактный класс InterdimensionalStorage.</p>
+      <p>Разумеется, код выше — учебный. В реальности никогда не храните деньги во float (используйте Decimal), не делайте print() внутри классов логики (используйте logging) и не позволяйте Галине Ивановне увольняться посреди выполнения метода — это вызовет утечку памяти и социальную напряженность.</p>
+      <p>P. S. Проектирование — увлекательный процесс, но не забывайте делать перерывы и перекусы (тоже своего рода «Метод Сэндвича»).</p>
+      </article>
+      <nav class="lesson-pagination" aria-label="Переключение уроков">
+        <a class="chapter-next" href="dataclasses.html">Назад · ООП 5. Dataclasses</a>
+        <a class="chapter-next" href="../oop.html">К списку уроков · ООП</a>
+      </nav>
+    </main>
+  </div>
+</body>
+</html>

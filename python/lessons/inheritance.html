@@ -1,0 +1,615 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#090909">
+  <title>ООП 4. Наследование — pupsiks</title>
+  <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../docs.css">
+  <script src="../docs.js" defer></script>
+</head>
+<body>
+  <header class="masthead">
+    <a class="brand" href="../../index.html"><img src="../../favicon.svg" alt="" width="38" height="38">pupsiks</a>
+    <a class="label" href="../index.html">Справочник Python</a>
+    <a class="home-link" href="../../index.html">На главную</a>
+  </header>
+  <div class="docs module">
+    <aside class="sidebar">
+      <nav aria-label="Разделы справочника" class="chapters">
+        <p class="label">Темы</p>
+        <ol>
+          <li><a href="../algorithms.html">Линейные алгоритмы и циклы</a></li>
+          <li><a href="../collections.html">Коллекции</a></li>
+          <li><a href="../files.html">Файлы и библиотеки</a></li>
+          <li><a href="../functions.html">Функции</a></li>
+          <li><a href="../oop.html" aria-current="page">ООП</a></li>
+        </ol>
+      </nav>
+    </aside>
+    <aside class="contents module-contents">
+      <nav aria-label="На этой странице">
+        <p class="label">На этой странице</p>
+        <a href="#topic-1">Концепция наследования</a>
+        <a href="#topic-2">Полиморфизм наследования</a>
+        <a href="#topic-3">Расширение методов</a>
+        <a href="#topic-4">Множественное наследование</a>
+        <a href="#topic-5">Дополнение встроенных классов</a>
+        <a href="#topic-6">Ещё про super</a>
+        <a href="#topic-7">Ошибки</a>
+      </nav>
+    </aside>
+    <main>
+      <header class="overview" id="overview">
+        <a class="lesson-back label" href="../oop.html#inheritance">ООП</a>
+        <h1>ООП 4. Наследование</h1>
+        <p>Код, я — твой отец</p>
+      </header>
+
+      <article class="lesson-body">
+      <p>Давайте представим ситуацию: вы работаете в компании, которая делает приложение для навигации. Вам нужно описать разные типы транспорта — автомобили, велосипеды, самокаты. У каждого есть скорость, расход топлива/батареи, метод «начать_движение()». И вот вы пишете третий класс, и вдруг понимаете — я СНОВА пишу один и тот же код!</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>class Car:
+    def __init__(self, speed, fuel_consumption):
+        self.speed = speed
+        self.fuel_consumption = fuel_consumption
+
+    def start_movement(self):
+        print(f&quot;Автомобиль начинает движение со скоростью {self.speed} км/ч&quot;)
+
+class Bicycle:
+    def __init__(self, speed, fuel_consumption):  # ОЙ, ОПЯТЬ!
+        self.speed = speed
+        self.fuel_consumption = fuel_consumption # Можем себе позволить
+
+    def start_movement(self):  # И ЭТО ТОЖЕ!
+        print(f&quot;Велосипед начинает движение со скоростью {self.speed} км/ч&quot;)</code></pre>
+      </figure>
+      <p>При этом совсем всё объединить и сделать какой-то один класс Vehicle тоже нельзя, потому что часть логики для разных типов транспорта всё же различна.</p>
+      <p>Вот именно для этого придумали наследование — механизм, позволяющий переиспользовать код между классами без дублирования.</p>
+      <p>Думайте об этом так: если у вас в семье все члены семьи имеют общие гены (методы и атрибуты), зачем описывать их для каждого человека отдельно? Опишите их один раз в базовом классе, а потом все остальные классы просто будут наследовать эти свойства и добавлять свои уникальные.</p>
+      <p>Наследование связано с двумя важными концепциями, которые вы уже знаете:</p>
+      <p>Инкапсуляция — скрытие деталей реализации.</p>
+      <p>Полиморфизм — способность работать с разными классами одинаково.</p>
+      <p>Сейчас мы объединим всё это вместе и создадим по-настоящему элегантный код.</p>
+      <p>Идея наследования росла из ранних ООП-языков вроде Simula (1960-е), а в массовое сознание влетела через Smalltalk, а потом уже через C++/Java. Python, как всегда, взял концепцию и сделал попроще.</p>
+      <h2 id="topic-1">🍼 А вот и наши наследнички</h2>
+      <p>Наследование — это механизм, позволяющий запрограммировать отношение вида «класс B является частным случаем класса A». В этом случае:</p>
+      <p>Класс A называется базовым классом (или родительским, или суперклассом).</p>
+      <p>Класс B называется производным классом (или наследником, или подклассом).</p>
+      <p>Примеры из реальной жизни:</p>
+      <p>Квадрат — это частный случай прямоугольника.</p>
+      <p>Млекопитающее — это частный случай животного.</p>
+      <p>Электромобиль — это частный случай автомобиля.</p>
+      <p>Мои кошки — это частный случай... впрочем, не будем об этом.</p>
+      <p>Главное преимущество наследования — переиспользование кода. Когда производный класс наследует от базового, он получает доступ ко всем атрибутам и методам базового класса без необходимости их переписывать.</p>
+      <p>Вот как это выглядит в коде:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code># Базовый класс (родитель)
+class Animal:
+    def __init__(self, name):
+        self.name = name
+
+    def make_sound(self):
+        print(f&quot;{self.name} издаёт звук&quot;)
+
+# Производный класс (наследник) — просто добавляем имя класса в скобки!
+class Dog(Animal):
+    pass  # Пока что ничего не добавляем, просто наследуем
+
+# Использование
+dog = Dog(&quot;Цербер&quot;)
+dog.make_sound()  # Работает! Даже несмотря на то, что мы не писали этот метод в Dog
+print(dog.name)   # Тоже работает!</code></pre>
+      </figure>
+      <p>Видите? Мы создали класс Dog, в который ни разу не писали метод .__init__() или .make_sound(), а они уже работают! Это потому, что Python сначала ищет методы в самом классе Dog, а потом — в его родителе Animal.</p>
+      <p>Зачем это нужно, кроме очевидного уменьшения количества кода:</p>
+      <p>Согласованность поведения: исправил баг в родителе — дети автоматически стали умнее (в жизни так, к сожалению, не работает).</p>
+      <p>Ясная модель предметной области: круг — фигура, квадрат — прямоугольник и т. д.</p>
+      <p>Тут важно не запутаться. Наследование — про отношение «является частным случаем», а не «имеет». «Машина имеет двигатель» — это не наследование, это композиция.</p>
+      <h2 id="part-65">🌳 Генеалогическое древо</h2>
+      <p>Используя наследование, можно строить целые иерархии. Например, для геометрических фигур:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>                Shape (абстрактная фигура)
+                   |
+         __________|__________
+         |          |        |
+      Circle    Rectangle  Triangle
+                    |
+                  Square</code></pre>
+      </figure>
+      <p>Квадрат — это частный случай прямоугольника, а прямоугольник — это частный случай фигуры.</p>
+      <p>Тут важно понять, как Python ищет методы в классе:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>class Shape:
+    def describe(self):
+        return &quot;Я — фигура&quot;
+
+class Circle(Shape):
+    def area(self):
+        return &quot;площадь круга&quot;
+
+circle = Circle()
+print(circle.describe())  # Какой метод вызовется?</code></pre>
+      </figure>
+      <p>Тут Python сначала посмотрит, есть ли метод describe в классе Circle, а затем, к своей радости, обнаружит его в базовом классе Shape.</p>
+      <p>В общем случае Python делает примерно так:</p>
+      <p>ищет .some_method() в классе объекта;</p>
+      <p>если не находит — идёт к родителю;</p>
+      <p>потом к родителю родителя;</p>
+      <p>и так до object, от которого унаследованы абсолютно все объекты в Python даже, если вы явно этого не указали;</p>
+      <p>если нигде нет — привет, AttributeError.</p>
+      <h2 id="topic-2">💭 Сделаю всё по-своему</h2>
+      <p>Иногда производному классу нужно сделать что-то по-другому. Например:</p>
+      <p>Животное издаёт звук, но кошка издаёт звук не так, как собака.</p>
+      <p>Фигура может считать площадь, но круг считает её не так, как квадрат.</p>
+      <p>Машина едет, но электромобиль едет молча, пока грузовик гремит.</p>
+      <p>Для этого мы переопределяем метод в производном классе:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from math import pi
+
+class Shape:
+    def area(self):
+        return &quot;Площадь не определена&quot;
+
+class Circle(Shape):
+    def __init__(self, radius):
+        self.radius = radius
+
+    def area(self):  # ПЕРЕОПРЕДЕЛЯЕМ метод из Shape!
+        return pi * self.radius ** 2
+
+class Rectangle(Shape):
+    def __init__(self, a, b):
+        self.a = a
+        self.b = b
+
+    def area(self):  # ПЕРЕОПРЕДЕЛЯЕМ метод из Shape!
+        return self.a * self.b
+
+
+# Тестируем
+shape = Shape()
+circle = Circle(5)
+rectangle = Rectangle(3, 4)
+
+print(f&quot;Shape.area(): {shape.area()}&quot;)
+print(f&quot;Circle.area(): {circle.area()}&quot;)
+print(f&quot;Rectangle.area(): {rectangle.area()}&quot;)</code></pre>
+      </figure>
+      <p>Важность переопределения в том, что нам НЕ НУЖНО писать одну и ту же сложную логику несколько раз. Каждый класс знает, как считать СВОЮ площадь.</p>
+      <p>А теперь волшебство полиморфизма: функция, которая не знает, какой именно класс ей передадут:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>def print_area(shape: Shape):
+    &quot;&quot;&quot;Функция работает со всеми фигурами, которые наследуются от Shape&quot;&quot;&quot;
+    if isinstance(shape, Shape):  # Работает и для классов-наследников
+        print(f&quot;Площадь: {shape.area()}&quot;)
+
+# Одна и та же функция — разные результаты!
+print_area(circle)      # Вызовет Circle.area()
+print_area(rectangle)   # Вызовет Rectangle.area()
+print_area(shape)       # Вызовет Shape.area()</code></pre>
+      </figure>
+      <p>В реальном коде в Python в этом месте часто может даже не быть проверки isinstance(), а просто вызов shape.area(). Главное, чтобы объект умел этот метод. Утиная типизация рулит.</p>
+      <h2 id="topic-3">🗣 Последую твоему совету, но и от себя добавлю</h2>
+      <p>Помимо полного переопределения, есть ещё и такое понятие, как расширение.</p>
+      <p>Расширение — делаем то, что делал родитель, но до этого и/или после добавляем своё поведение. Для того чтобы вызвать родительский метод, используем super():</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>class Square(Rectangle):
+    def __init__(self, size):
+        print(&quot;Сделали свой инициализатор, чтобы уменьшить количество параметров&quot;)
+        super().__init__(size, size)</code></pre>
+      </figure>
+      <p>Совместим переопределение и расширение в одном примере:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>class Animal:
+    def __init__(self, name, age):
+        self.name = name
+        self.age = age
+
+    def describe(self):
+        return f&quot;{self.name} — животное возрастом {self.age} лет&quot;
+
+    def make_sound(self):
+        return &quot;Какой-то звук&quot;
+
+class Dog(Animal):
+    def make_sound(self):  # Переопределяем
+        return &quot;Гав! Гав!&quot;
+
+    def fetch_ball(self):  # Добавляем новый метод
+        return f&quot;{self.name} носит мяч&quot;
+
+class Cat(Animal):
+    def make_sound(self):  # Переопределяем
+        return &quot;Мяу-мяу&quot;
+
+    def scratch_furniture(self):  # Добавляем новый метод
+        return f&quot;{self.name} дерёт диван (снова!)&quot;
+
+class Parrot(Animal):
+    def __init__(self, name, age, vocabulary):
+        super().__init__(name, age)  # Расширяем конструктор!
+        self.vocabulary = vocabulary
+
+    def make_sound(self):  # Переопределяем
+        return f&quot;ПОВТОР: {self.vocabulary}&quot;
+
+
+# Тестируем!
+dog = Dog(&quot;Доге&quot;, 3)
+cat = Cat(&quot;Чмоня&quot;, 5)
+parrot = Parrot(&quot;Гуми&quot;, 10, &quot;wuewuewuewuewue!&quot;)
+
+print(dog.describe())           # От Animal
+print(dog.make_sound())         # Переопределено в Dog
+print(dog.fetch_ball())         # Только в Dog
+
+print(cat.describe())           # От Animal
+print(cat.make_sound())         # Переопределено в Cat
+print(cat.scratch_furniture())  # Только в Cat
+
+print(parrot.describe())        # От Animal
+print(parrot.make_sound())      # Переопределено в Parrot</code></pre>
+      </figure>
+      <h2 id="topic-4">👨‍👩‍👧 Родитель номер два</h2>
+      <p>Python позволяет классу наследоваться сразу от нескольких родителей. Это называется множественное наследование. Представьте:</p>
+      <p>Утконос — это И млекопитающее, И откладывающее яйца существо.</p>
+      <p>Электромобиль — это И автомобиль, И источник чистой энергии.</p>
+      <p>Любой из нас — это И программист, И любитель кофе, И мечтатель.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>class Programmer:
+    def write_code(self):
+        return &quot;Пишу код&quot;
+
+class CoffeeAddict:
+    def drink_coffee(self):
+        return &quot;Пью кофе&quot;
+
+class Dreamer:
+    def dream(self):
+        return &quot;Мечтаю о недельном проекте, выполненном за день&quot;
+
+# Мы?
+class IdealPerson(Programmer, CoffeeAddict, Dreamer):
+    def __init__(self):
+        self.stress_level = 100
+
+    def work(self):
+        print(self.write_code())
+        print(self.drink_coffee())
+        print(self.dream())
+
+
+boss = IdealPerson()
+boss.work()</code></pre>
+      </figure>
+      <p>Возникает резонный вопрос: что, если несколько родителей имеют одинаковые методы? Python решает эту проблему по правилу MRO (Method Resolution Order) — порядку разрешения методов. В простейшем случае — слева направо (но вообще там под капотом алгоритм, который называется «C3-линеаризация»):</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>class A:
+    def greet(self):
+        return &quot;Привет от A&quot;
+
+class B:
+    def greet(self):
+        return &quot;Привет от B&quot;
+
+class C(A, B):
+    pass
+
+
+c = C()
+print(c.greet())  # Вызовется привет от А</code></pre>
+      </figure>
+      <p>Потому что A стоит первым в списке class C(A, B). Если бы было class C(B, A), результат был бы другим.</p>
+      <p>Можно даже посмотреть полный порядок поиска методов:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>print(C.__mro__)
+# (&lt;class &#x27;C&#x27;&gt;, &lt;class &#x27;A&#x27;&gt;, &lt;class &#x27;B&#x27;&gt;, &lt;class &#x27;object&#x27;&gt;)</code></pre>
+      </figure>
+      <p>С множественным наследованием надо аккуратнее, потому что классы-родители где-то в иерархии могут иметь одинакового предка и в этом случае порядок вызовов может быть не всегда очевиден на первый взгляд, что может привести к неожиданному поведению кода. Самый частый адекватный сценарий множественного наследования — миксины mixins, классы-примеси или классы-приправы): маленькие классы, которые добавляют одну способность. Чаще всего это логирование, проверка авторизации или что-то в этом духе.</p>
+      <p>Например, сделаем «умение логировать»:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>class LogMixin:
+    def log(self, message):
+        print(f&quot;[{self.__class__.__name__}]: {message}&quot;)
+
+
+class Circle(Shape, LogMixin):
+    def __init__(self, r):
+        self.r = r
+
+    def area(self):
+        return 3.14159 * self.r ** 2
+
+
+c = Circle(3)
+c.log(&quot;Я посчитал площадь и не развалился.&quot;)</code></pre>
+      </figure>
+      <p>Если классы-приправы сфокусированы только на добавлении одного конкретного поведения, это практически гарантирует, что множественное наследование нигде неожиданно не взорвётся.</p>
+      <h2 id="topic-5">🪐 На встроенных классах в космос</h2>
+      <p>В Python есть встроенные классы — список, словарь, строка и др. Иногда хочется «улучшить» их, добавив свою функциональность. Это очень практично. Вот пример:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code># Стандартный список
+my_list = [1, 2, 3, 4, 5]
+print(my_list[0])  # Можем получать элементы по индексу
+
+# Но что, если мы хотим, чтобы список считал сумму элементов или выводил себя красиво?
+# Наследуемся от list!</code></pre>
+      </figure>
+      <p>А теперь сделаем список с дополнительными суперспособностями:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>class SmartList(list):
+    &quot;&quot;&quot;Список с дополнительными суперспособностями&quot;&quot;&quot;
+
+    def sum(self):
+        &quot;&quot;&quot;Считает сумму элементов&quot;&quot;&quot;
+        return sum(self)
+
+    def average(self):
+        &quot;&quot;&quot;Считает среднее значение&quot;&quot;&quot;
+        return self.sum() / len(self) if len(self) &gt; 0 else 0
+
+    def print_fancy(self):
+        &quot;&quot;&quot;Выводит список красиво&quot;&quot;&quot;
+        for i, item in enumerate(self, 1):
+            print(f&quot;  {i}. {item}&quot;)
+
+# Используем!
+numbers = SmartList([10, 20, 30, 40, 50])
+
+print(f&quot;Список: {numbers}&quot;)
+print(f&quot;Сумма: {numbers.sum()}&quot;)
+print(f&quot;Среднее: {numbers.average()}&quot;)
+print(&quot;Красиво:&quot;)
+numbers.print_fancy()
+
+# Но это же всё ещё список
+numbers.append(60)
+print(f&quot;После добавления 60: {numbers}&quot;)
+numbers.sort(reverse=True)
+print(f&quot;Отсортировано по убыванию: {numbers}&quot;)</code></pre>
+      </figure>
+      <p>Разумеется, можно наследоваться не только от коллекций, но и от любых других классов. Улучшаем int:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>class SmartInt(int):
+    &quot;&quot;&quot;Целое число с дополнительными методами&quot;&quot;&quot;
+
+    def is_even(self):
+        &quot;&quot;&quot;Проверяет, чётное ли число&quot;&quot;&quot;
+        return self % 2 == 0
+
+    def is_odd(self):
+        &quot;&quot;&quot;Проверяет, нечётное ли число&quot;&quot;&quot;
+        return self % 2 != 0
+
+    def is_prime(self):
+        &quot;&quot;&quot;Проверяет, простое ли число (очень базовая проверка)&quot;&quot;&quot;
+        if self &lt; 2:
+            return False
+        for i in range(2, int(self ** 0.5) + 1):
+            if self % i == 0:
+                return False
+        return True
+
+    def factorial(self):
+        &quot;&quot;&quot;Считает факториал&quot;&quot;&quot;
+        if self &lt; 0:
+            raise ValueError(&quot;Факториал отрицательного числа не определён&quot;)
+        if self == 0 or self == 1:
+            return 1
+        result = 1
+        for i in range(2, self + 1):
+            result *= i
+        return result
+
+    def binary(self):
+        &quot;&quot;&quot;Представляет число в двоичной системе&quot;&quot;&quot;
+        return bin(self)[2:]  # [2:] убирает &#x27;0b&#x27;
+
+# Используем!
+num = SmartInt(7)
+print(f&quot;Число: {num}&quot;)
+print(f&quot;Чётное? {num.is_even()}&quot;)
+print(f&quot;Нечётное? {num.is_odd()}&quot;)
+print(f&quot;Простое? {num.is_prime()}&quot;)
+print(f&quot;В двоичной системе: {num.binary()}&quot;)
+
+num2 = SmartInt(5)
+print(f&quot;\nФакториал {num2}: {num2.factorial()}&quot;)
+
+# Проверяем простые числа от 1 до 20
+print(&quot;\nПростые числа до 20:&quot;)
+for i in range(1, 21):
+    smart_i = SmartInt(i)
+    if smart_i.is_prime():
+        print(smart_i, end=&#x27; &#x27;)
+print()
+
+# И всё ещё это число!
+print(f&quot;7 + 3 = {SmartInt(7) + 3}&quot;)
+print(f&quot;10 * 2 = {SmartInt(10) * 2}&quot;)</code></pre>
+      </figure>
+      <p>Когда вы наследуетесь от встроенных классов, нужно помнить несколько вещей:</p>
+      <p>Некоторые встроенные классы — неизменяемые. Не добавляйте новое поведение в инициализатор для неизменяемых классов, это может привести к неожиданным результатам.</p>
+      <p>Некоторые методы встроенных типов реализованы на C и могут работать «напрямую», обходя твои переопределения в неожиданных местах.</p>
+      <p>Поэтому, если, например, нужна полностью контролируемая коллекция, часто используют обёртки из collections: collections.UserList, collections.UserDict, collections.UserString. Они написаны на Python и предсказуемо зовут методы.</p>
+      <h2 id="topic-6">😎 Ты просто супер!</h2>
+      <p>Давайте немного назад и подробнее рассмотрим super().</p>
+      <p>super() — это функция, которая позволяет вам вызывать методы базового класса из производного класса. Это очень важная функция для расширения методов:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>class Parent:
+    def greet(self):
+        return &quot;Привет от родителя&quot;
+
+
+class Child(Parent):
+    def greet(self):
+        parent_greeting = super().greet()  # Вызываем метод родителя
+        return f&quot;{parent_greeting}, и привет от наследника!&quot;
+
+
+child = Child()
+print(child.greet())</code></pre>
+      </figure>
+      <p>Это особенно полезно в конструкторе, когда нужно инициализировать данные родителя:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>class Vehicle:
+    def __init__(self, brand, model):
+        self.brand = brand
+        self.model = model
+
+    def describe(self):
+        return f&quot;{self.brand} {self.model}&quot;
+
+
+class Car(Vehicle):
+    def __init__(self, brand, model, doors):
+        super().__init__(brand, model)  # Инициализируем родителя
+        self.doors = doors  # Добавляем свои данные
+
+    def describe(self):
+        parent_desc = super().describe()  # Используем описание родителя
+        return f&quot;{parent_desc} с {self.doors} дверями&quot;
+
+
+car = Car(&quot;DeLorean&quot;, &quot;DMC-12&quot;, 2)
+print(car.describe())
+print(f&quot;Марка: {car.brand}&quot;)
+print(f&quot;Модель: {car.model}&quot;)
+print(f&quot;Двери: {car.doors}&quot;)</code></pre>
+      </figure>
+      <p>При множественном наследовании super() помогает навигировать по MRO (порядку разрешения методов), то есть по сути дает не конкретного родителя, а ближайшего в порядке разрешения методов. Но можно вызвать и явно:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>class Swimmer:
+    def move(self):
+        print(&quot;Плыву...&quot;)
+
+class Flyer:
+    def move(self):
+        print(&quot;Летаю...&quot;)
+
+class Duck(Swimmer, Flyer):
+    def move(self):
+        print(&quot;Утка начинает двигаться:&quot;)
+        super().move()  # Вызовет Swimmer.move() (первый в списке)
+
+class Platypus(Swimmer, Flyer):
+    def move(self):
+        print(&quot;Утконос начинает двигаться:&quot;)
+        # Вызываем явно что хотим
+        Swimmer.move(self)
+        Flyer.move(self)  # Ну допустим
+        print(&quot;Утконос потряс хвостом и спрятался&quot;)
+
+
+duck = Duck()
+duck.move()
+
+print()
+platypus = Platypus()
+platypus.move()</code></pre>
+      </figure>
+      <h2 id="topic-7">🗺️ Карта граблей</h2>
+      <p>Сам механизм наследования довольно простой, но в нём тем не менее есть несколько моментов, которые могут привести к ошибкам.</p>
+      <p>Не забывайте вызвать конструктор родителя, где это необходимо.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code># ❌
+class Parent:
+    def __init__(self, name):
+        self.name = name
+
+
+class Child(Parent):
+    def __init__(self, name, age):
+        self.age = age  # Забыли инициализировать name!
+
+
+child = Child(&quot;Маша&quot;, 10)
+print(child.name)  # AttributeError!
+
+# ✅
+class Child(Parent):
+    def __init__(self, name, age):
+        super().__init__(name)  # Вызвали родителя
+        self.age = age
+
+
+child = Child(&quot;Маша&quot;, 10)
+print(f&quot;{child.name} — {child.age} лет&quot;)  # Маша — 10 лет</code></pre>
+      </figure>
+      <p>Не пытайтесь делать циклическое наследование.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code># ❌
+class A(B):
+    pass
+
+
+class B(A):  # ОШИБКА: B не может наследоваться от A, если A наследуется от B!
+    pass
+
+# Python выдаст ошибку при попытке создать такой класс</code></pre>
+      </figure>
+      <p>Не увлекайтесь со слишком глубокой иерархией.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code># ❌
+class A(object): pass
+class B(A): pass
+class C(B): pass
+class D(C): pass
+class E(D): pass
+class F(E): pass  # Это запутанно и сложно отследить!
+# Хватает 2-3 уровней в большинстве случаев</code></pre>
+      </figure>
+      <p>Будьте аккуратнее с одноимёнными методами родителей при множественном наследовании:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code># ❌
+class A:
+    def do_work(self):
+        return &quot;Способ А&quot;
+
+
+class B:
+    def do_work(self):
+        return &quot;Способ Б&quot;
+
+
+class C(A, B):
+    pass
+
+
+c = C()
+print(c.do_work())  # Вызовет A.do_work(), B.do_work() будет проигнорирован!
+
+# ✅ Явно разрешить конфликт
+class C(A, B):
+    def do_work(self):
+        a_way = A.do_work(self)
+        b_way = B.do_work(self)
+        return f&quot;Комбинирую: {a_way} + {b_way}&quot;
+
+
+c = C()
+print(c.do_work())  # Комбинирую: Способ А + Способ Б </code></pre>
+      </figure>
+      <h2 id="part-512">🌟 Итог: отличная наследственность</h2>
+      <p>Фух, мы сегодня поговорили о том, как классы могут наследоваться от других классов и переиспользовать их код, а ещё разобрались, как:</p>
+      <p>Производный класс может переопределить поведение базового класса для своих нужд.</p>
+      <p>Класс может наследоваться от нескольких родителей (с осторожностью!).</p>
+      <p>Расширять возможности list, dict, str, int и других встроенных типов.</p>
+      <p>Вежливо позвать методы родительского класса.</p>
+      <p>Наследование — это один из трёх столпов ООП (наряду с инкапсуляцией и полиморфизмом). Когда вы научитесь его хорошо использовать, ваш код станет:</p>
+      <p>более читаемым — иерархия классов отражает реальную структуру предметной области;</p>
+      <p>более переиспользуемым — общая логика живёт в одном месте;</p>
+      <p>более поддерживаемым — изменения в базовом классе автоматически применяются ко всем наследникам.</p>
+      <p>P. S. Помните: в Python нет таких классов, которые не наследуются ни от кого. Все они — огромная семья.</p>
+      </article>
+      <nav class="lesson-pagination" aria-label="Переключение уроков">
+        <a class="chapter-next" href="special-methods.html">Назад · ООП 3. Переопределение операторов</a>
+        <a class="chapter-next" href="dataclasses.html">Далее · ООП 5. Dataclasses</a>
+      </nav>
+    </main>
+  </div>
+</body>
+</html>

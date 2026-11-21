@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#090909">
+  <title>Библиотеки для работы с документами — pupsiks</title>
+  <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../docs.css">
+  <script src="../docs.js" defer></script>
+</head>
+<body>
+  <header class="masthead">
+    <a class="brand" href="../../index.html"><img src="../../favicon.svg" alt="" width="38" height="38">pupsiks</a>
+    <a class="label" href="../index.html">Справочник Python</a>
+    <a class="home-link" href="../../index.html">На главную</a>
+  </header>
+  <div class="docs module">
+    <aside class="sidebar">
+      <nav aria-label="Разделы справочника" class="chapters">
+        <p class="label">Темы</p>
+        <ol>
+          <li><a href="../algorithms.html">Линейные алгоритмы и циклы</a></li>
+          <li><a href="../collections.html">Коллекции</a></li>
+          <li><a href="../files.html" aria-current="page">Файлы и библиотеки</a></li>
+          <li><a href="../functions.html">Функции</a></li>
+          <li><a href="../oop.html">ООП</a></li>
+        </ol>
+      </nav>
+    </aside>
+    <aside class="contents module-contents">
+      <nav aria-label="На этой странице">
+        <p class="label">На этой странице</p>
+        <a href="#topic-1">Работа с документами</a>
+        <a href="#topic-2">Модуль python-docx</a>
+        <a href="#topic-3">Шаблон документа</a>
+        <a href="#topic-4">Работа с электронными таблицами</a>
+        <a href="#topic-5">Офисные будни</a>
+      </nav>
+    </aside>
+    <main>
+      <header class="overview" id="overview">
+        <a class="lesson-back label" href="../files.html#office-documents">Файлы и библиотеки</a>
+        <h1>Библиотеки для работы с документами</h1>
+        <p>Офисные будни</p>
+      </header>
+
+      <article class="lesson-body">
+      <h2 id="topic-1">С картинками немного разобрались, теперь давайте проведём экспресс-курс по автоматизации рутинных офисных задач с помощью Python.</h2>
+      <p>Зачем вообще генерировать документы программно? Тут тема более очевидная, чем с программной генерацией изображений: очень часто приходится работать с документами, которые имеют одинаковую структуру, но различаются данными. Например, договоры, счета, акты выполненных работ, накладные и т. д. Если таких документов немного, то можно обойтись ручным заполнением. Но если их сотни или тысячи, то тут уже без автоматизации не обойтись.</p>
+      <p>Кроме того, практически всегда документы хранятся не в простом текстовом формате, а в каком-нибудь более мудрёном: с поддержкой форматирования, таблиц, графиков и т. д.</p>
+      <p>Разумеется, для работы с популярными офисными форматами в Python есть классные библиотеки.</p>
+      <p>Стоит отметить, что форматы .docx, .xlsx и .pptx открытые, что позволяет разработчикам довольно просто писать библиотеки для работы с ними. Для каждого офисного формата есть несколько библиотек с разным функционалом, и мы рассмотрим лишь некоторые из них.</p>
+      <p>А если чуть углубиться в то, что собой представляют файлы популярных офисных форматов, можно выяснить, что .docx, .xlsx и .pptx — это по сути zip-архивы с кучей xml-файлов внутри (это такая разметка, отдалённо похожая на html-странички). Так что если понадобится делать что-то очень специфичное, чего нет в библиотеках, то можно попробовать править эти xml-файлы напрямую (но мы этого, конечно, делать не будем).</p>
+      <p>Кроме того, благодаря открытости форматов, помимо офисного пакета от Microsoft, с такими документами практически идеально работают и другие, в том числе бесплатные (OpenOffice, LibreOffice), и даже облачные (Яндекс Документы).</p>
+      <h2 id="topic-2">🧩 Собираем документы по кусочкам</h2>
+      <p>Будем с вами честны: программное создание документов — не самая частая задача, да и не самая простая, поэтому мы не будем углубляться в дебри и просить от вас генерации сложных документов с отступами до пикселей и прочими изысками. Просто обзорно посмотрим, что вообще можно делать.</p>
+      <p>Наша основная задача — показать, что бывает, а не помучить.</p>
+      <p>Давайте воспользуемся модулем python-docx для создания docx-документа. Он, как и остальные приведённые в данном уроке библиотеки, не входит в состав стандартной библиотеки и требует отдельной установки через pip.</p>
+      <figure class="example"><figcaption class="label">Терминал</figcaption>
+        <pre tabindex="0"><code>pip install python-docx</code></pre>
+      </figure>
+      <p>Библиотека позволяет создавать документы и работать с уже существующими.</p>
+      <p>Вот документация, если захочется погрузиться глубже.</p>
+      <p>Начнём с создания. Вообще, ключевой элемент этой библиотеки — объект Document. Для создания нового документа формата .docx надо записать результат вызова Document в переменную.</p>
+      <p>Этого достаточно для создания абсолютно пустого документа в памяти. Чтобы наполнить его содержимым, необходимо вызывать у получившегося объекта различные методы, например:</p>
+      <p>.add_heading() — для создания заголовков разного уровня. При этом уровень 0 — заголовок документа.</p>
+      <p>.add_paragraph() — для создания абзацев. С помощью параметра style можно управлять стилем абзаца и превращать его в элемент маркированного или нумерованного списка.</p>
+      <p>Метод .add_paragraph() объекта-документа возвращает новый абзац, у которого есть свои методы вроде .add_run(), который дописывает текст с форматированием или без него в конец абзаца.</p>
+      <p>С помощью метода .add_table() можно создать в документе таблицу размером col столбцов и row строк. Если мы присвоим результат вызова этой функции переменной, сможем заполнить такую таблицу данными.</p>
+      <p>Метод .save() сохраняет документ под заданным именем.</p>
+      <p>А вот и пример кода, который создаёт документ с заголовком, абзацами, списками и таблицей:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from docx import Document
+from docx.shared import Inches
+
+document = Document()  # Создаём пустой документ
+
+document.add_heading(&#x27;Заголовок документа&#x27;, 0)  # Заголовок документа
+
+document.add_paragraph(&#x27;Абзац без форматирования&#x27;)  # Простой абзац
+
+# Тут у нас будет абзац посложнее
+p = document.add_paragraph(&#x27;Часть абзаца обычным текстом, &#x27;)  # Создаём абзац, в который будем дописывать форматированный текст
+p.add_run(&#x27;часть жирным шрифтом, &#x27;).bold = True
+p.add_run(&#x27; а часть &#x27;)
+p.add_run(&#x27;курсивом.&#x27;).italic = True
+
+document.add_heading(&#x27;Заголовок первого уровня&#x27;, level=1)  # Заголовок первого уровня
+document.add_paragraph(&#x27;Некоторая цитата&#x27;, style=&#x27;Intense Quote&#x27;)  # Абзац в стиле цитаты
+
+document.add_paragraph(&#x27;Элемент ненумерованного списка&#x27;, 
+                       style=&#x27;List Bullet&#x27;)
+document.add_paragraph(&#x27;Элемент нумерованного списка&#x27;, 
+                       style=&#x27;List Number&#x27;)
+
+table = document.add_table(rows=1, cols=3)  # Создаём таблицу 3 на 1
+hdr_cells = table.rows[0].cells
+hdr_cells[0].text = &#x27;Номер&#x27;
+hdr_cells[1].text = &#x27;Название&#x27;
+hdr_cells[2].text = &#x27;Количество&#x27;
+
+document.save(&#x27;test.docx&#x27;)  # Финальный аккорд — сохраняем документ</code></pre>
+      </figure>
+      <p>В результате получится файл test.docx, который можно открыть в Word или любом другом редакторе, поддерживающем этот формат.</p>
+      <p>Кажется, что больший интерес представляет обратный процесс: когда у нас есть готовый документ, и мы хотим достать из него весь или какую-то часть текста. В этом случае мы можем открыть существующий документ, передав его имя в конструктор Document. После этого можно работать с его содержимым:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from docx import Document
+
+document = Document(&#x27;test.docx&#x27;)
+for par in document.paragraphs:
+    print(par.text)
+
+for table in document.tables:
+    print(table.rows[0].cells[0].text)</code></pre>
+      </figure>
+      <p>Заголовок документа</p>
+      <p>Абзац без форматирования</p>
+      <p>Часть абзаца обычным текстом, часть жирным шрифтом, а часть курсивом</p>
+      <p>Заголовок первого уровня</p>
+      <p>Некоторая цитата</p>
+      <p>Элемент ненумерованного списка</p>
+      <p>Элемент нумерованного списка</p>
+      <p>Номер</p>
+      <p>Для работы с презентациями есть похожая библиотека python-pptx. Но так как программно создавать презентации ещё более болезненно и ещё менее востребовано, то мы не будем на ней останавливаться. А если вам когда-нибудь понадобится вытащить весь текст из pptx-файла, то вы уже знаете, что делать.</p>
+      <h2 id="topic-3">🚰 Заполняем пропуски</h2>
+      <p>Самый распространённый сценарий работы с документами в формате .docx — это заполнение шаблона документа данными. Например, есть красивый Word-шаблон (логотип, рамки, стили), а вы хотите из таблицы people.csv cгенерировать 20 000 именных сертификатов.</p>
+      <p>Если чуть упростить, то примерно так проходит и процесс подготовки ваших сертификатов об окончании этого курса :)</p>
+      <p>Для работы с документом как шаблоном мы будем использовать библиотеку docxtpl. Она позволяет работать с файлами со специальными плейсхолдерами (заполнителями), которые потом можно заменить на нужные данные.</p>
+      <p>Установим библиотеку:</p>
+      <figure class="example"><figcaption class="label">Терминал</figcaption>
+        <pre tabindex="0"><code>pip install docxtpl</code></pre>
+      </figure>
+      <p>Создадим шаблон документа в Word, в котором будут плейсхолдеры для замены. C помощью двойных фигурных скобок выделим места в документе, куда мы можем подставить свои данные по имени. Например:</p>
+      <p>СЕРТИФИКАТ</p>
+      <p>Настоящим подтверждается, что {{ name }}</p>
+      <p>успешно прошёл курс «Автоматизация генерации сертификатов на Python», сделав себе этот сертификат.</p>
+      <p>{{ date | date(&quot;d.MM.yyyy&quot;) }}.</p>
+      <p>Итоговый балл: {{ score }}.</p>
+      <p>Кроме того, шаблоны поддерживают специальный синтаксис для циклов, условий и других конструкций.</p>
+      <p>Циклы:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>{% for row in rows %}</code></pre>
+      </figure>
+      <p>- {{ row.item }} — {{ row.qty }} шт.</p>
+      <p>{% endfor %}</p>
+      <p>Условия:</p>
+      <p>{% if score &gt;= 90 %}</p>
+      <p>Отлично!</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>{% else %}</code></pre>
+      </figure>
+      <p>Рекомендуется повторить урок про печеньки.</p>
+      <p>{% endif %}</p>
+      <p>Внутри docxtpl лежит мощный и простой в использовании движок шаблонов jinja2. Запомните это название — вы с ним ещё встретитесь на втором году обучения, когда мы будем говорить о веб-программировании.</p>
+      <p>А теперь представим, что мы хотим позвать гостей на какое-то мероприятие и для этого нужно разослать им приглашения. У нас есть шаблон приглашения invite_template.docx с плейсхолдерами для нужной информации:</p>
+      <p>Использование библиотеки очень простое. Мы создаём объект шаблона, передавая в него имя файла с шаблоном. Потом создаём словарь с данными, которые хотим подставить. И вызываем метод .render(), передавая туда наш словарь. Всё, что останется сделать после этого, — сохранить получившийся документ в новый файл.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from docxtpl import DocxTemplate
+import datetime as dt
+
+doc = DocxTemplate(&quot;invite_template.docx&quot;)  # Загрузка шаблона
+context = {
+    &#x27;name&#x27;: &#x27;Иван Иванович&#x27;,
+    &#x27;event_name&#x27;: &quot;танцевально-увеселительное мероприятие по случаю 45-летия независимости Кабо-Верде&quot;,
+    &#x27;place&#x27;: &quot;любой точке Кабо-Верде&quot;,
+    &#x27;date&#x27;: dt.datetime.now().strftime(&quot;%d.%m.%Y&quot;),
+    &#x27;time&#x27;: dt.datetime.now().strftime(&quot;%H:%M&quot;),
+    &#x27;items&#x27;: [&quot;картину&quot;,
+              &#x27;корзину&#x27;,
+              &quot;картонку&quot;,
+              &quot;маленькую собачонку&quot;]</code></pre>
+      </figure>
+      <p>}  # Данные для подстановки</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>doc.render(context)  # Подстановка данных в шаблон
+doc.save(&quot;res.docx&quot;)  # Profit!</code></pre>
+      </figure>
+      <p>В шаблон можно вставлять не только текст, но и изображения. Для этого необходимо воспользоваться InlineImage:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from docxtpl import InlineImage
+from docx.shared import Mm
+
+context[&#x27;photo&#x27;] = InlineImage(tpl, &#x27;passport_photo.png&#x27;, width=Mm(35))</code></pre>
+      </figure>
+      <p>В шаблоне вставляем {{ photo }}. Готово.</p>
+      <p>А если нужно вставить сложно отформатированный текст, то можно воспользоваться RichText.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from docxtpl import RichText
+
+rt = RichText()
+rt.add(&#x27;Сертификат выдан &#x27;, italic=True)
+rt.add(&#x27;лично&#x27;, bold=True)
+rt.add(&#x27; котику.&#x27;)
+context[&#x27;note&#x27;] = rt</code></pre>
+      </figure>
+      <p>В шаблоне — просто {{ note }}.</p>
+      <h2 id="topic-4">🦠 Данные в клетку</h2>
+      <p>В начале этого пункта попросим прощения у специалистов по анализу данных за следующий совет (потому что для них он прозвучит как инструкция по поездке в магазин у дома на реактивном самолёте). Самые частые задачи, с которыми вы будете сталкиваться при работе с табличными данными, — это чтение обычной Excel-таблицы без всяких изысков и запись в точно такую же таблицу. Самый простой и короткий путь сделать это — использовать библиотеку pandas, которая умеет читать и писать Excel-файлы из коробки.</p>
+      <p>Вообще, pandas — это очень мощный и удобный инструмент для анализа данных с широчайшей функциональностью. Если начать говорить про неё, то понадобится расширить наш курс ещё на семестр. Но мы (пока) будем использовать эту библиотеку как открывашку/закрывашку для Excel-файлов.</p>
+      <p>Установка:</p>
+      <figure class="example"><figcaption class="label">Терминал</figcaption>
+        <pre tabindex="0"><code>pip install pandas openpyxl</code></pre>
+      </figure>
+      <p>Запись списка словарей в Excel-файл:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>import pandas as pd
+data = [
+    {&#x27;Номер&#x27;: 1, &#x27;Название&#x27;: &#x27;Карандаш&#x27;, &#x27;Количество&#x27;: 5},
+    {&#x27;Номер&#x27;: 2, &#x27;Название&#x27;: &#x27;Ручка&#x27;, &#x27;Количество&#x27;: 10},
+    {&#x27;Номер&#x27;: 3, &#x27;Название&#x27;: &#x27;Ластик&#x27;, &#x27;Количество&#x27;: 3},
+]
+df = pd.DataFrame(data)  # Создаём DataFrame из списка словарей — внутренний формат pandas
+df.to_excel(&#x27;output.xlsx&#x27;, index=False)  # Сохраняем DataFrame в файл</code></pre>
+      </figure>
+      <p>Чтение таблицы из файла в список словарей:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>import pandas as pd
+df = pd.read_excel(&#x27;data.xlsx&#x27;)  # Читаем таблицу из файла в DataFrame
+# Преобразуем данные в список словарей
+data = df.to_dict(orient=&#x27;records&#x27;)
+print(data)</code></pre>
+      </figure>
+      <p>Сам pandas при сохранении в Excel-файл использует библиотеку openpyxl, которая позволяет работать с такими файлами напрямую. Если вам нужно что-то более сложное, чем просто прочитать или записать таблицу, то можно использовать её.</p>
+      <p>openpyxl — очень мощная библиотека, которая позволяет делать практически всё, что можно делать в Excel. Если вам нужно что-то специфическое, то лучше сразу смотреть в документацию.</p>
+      <p>Но несколько базовых вещей мы всё же рассмотрим. Начнём с создания книги и листа в ней:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from openpyxl import Workbook, load_workbook
+
+wb = Workbook()
+ws = wb.active
+ws.title = &quot;Печеньки&quot;
+
+# Новый лист
+ws2 = wb.create_sheet(&quot;Кофе&quot;)
+
+# Загрузить существующую книгу:
+# wb = load_workbook(&#x27;data/report.xlsx&#x27;)
+# ws = wb[&#x27;Лист1&#x27;]
+
+wb.save(&#x27;out/snack.xlsx&#x27;)</code></pre>
+      </figure>
+      <p>Пишем и читаем значения:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>ws[&#x27;A1&#x27;] = &#x27;Отдел&#x27;
+ws[&#x27;B1&#x27;] = &#x27;Печеньки&#x27;
+rows = [
+    (&#x27;Разработка&#x27;, 120),
+    (&#x27;Аналитика&#x27;,  70),
+    (&#x27;Дизайн&#x27;,    110),
+]
+for r in rows:
+    ws.append(r)
+
+print(ws[&#x27;B2&#x27;].value)      # 120
+ws[&#x27;B5&#x27;] = &#x27;=SUM(B2:B4)&#x27;</code></pre>
+      </figure>
+      <p>И немного диаграмм:</p>
+      <p>Столбчатая (BarChart).</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from openpyxl.chart import BarChart, Reference
+
+chart = BarChart()
+chart.title = &quot;Печеньки по отделам&quot;
+chart.y_axis.title = &quot;шт&quot;
+chart.x_axis.title = &quot;Отдел&quot;
+
+data = Reference(ws, min_col=2, min_row=1, max_row=4)   # B1:B4 (включая заголовок)
+cats = Reference(ws, min_col=1, min_row=2, max_row=4)   # A2:A4
+chart.add_data(data, titles_from_data=True)
+chart.set_categories(cats)
+
+ws.add_chart(chart, &quot;D5&quot;)</code></pre>
+      </figure>
+      <p>Линейная (LineChart) — динамика по дням.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from openpyxl.chart import LineChart, Reference
+
+ws2 = wb.create_sheet(&#x27;Динамика&#x27;)
+ws2.append([&#x27;День&#x27;, &#x27;Разработка&#x27;, &#x27;Аналитика&#x27;, &#x27;Дизайн&#x27;])
+for i in range(1, 8):
+    ws2.append([i, 50+i*3, 40+i*2, 45+i*4])
+
+
+chart2 = LineChart()
+chart2.title = &#x27;Динамика печенек за неделю&#x27;
+values = Reference(ws2, min_col=2, min_row=1, max_col=4, max_row=8)
+cats = Reference(ws2, min_col=1, min_row=2, max_row=8)
+chart2.add_data(values, titles_from_data=True)
+chart2.set_categories(cats)
+chart2.y_axis.title = &#x27;шт&#x27;
+chart2.x_axis.title = &#x27;день&#x27;
+
+ws2.add_chart(chart2, &#x27;F2&#x27;)</code></pre>
+      </figure>
+      <p>Круговая (PieChart) — доли.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from openpyxl.chart import PieChart
+pc = PieChart()
+pc.title = &quot;Доли отделов&quot;
+data = Reference(ws, min_col=2, min_row=1, max_row=4)
+labels = Reference(ws, min_col=1, min_row=2, max_row=4)
+pc.add_data(data, titles_from_data=True)
+pc.set_categories(labels)
+ws.add_chart(pc, &quot;D20&quot;)</code></pre>
+      </figure>
+      <p>Разных типов диаграмм много: AreaChart, ScatterChart, BarChart (stacked), BubbleChart. Принцип одинаковый: собрали Reference, добавили в chart, разместили на листе.</p>
+      <p>А ещё можно задавать числовые форматы, стили ячеек, объединять ячейки, фильтры и сортировки, добавлять условное форматирование и многое-многое другое, но тут только приоткроешь ящик Пандоры — уже не остановишься.</p>
+      <h2 id="topic-5">🌟 Итог: изобразительное программирование</h2>
+      <p>Сегодня мы прошли огромный путь от простого создания документов до относительно сложных автоматизаций:</p>
+      <p>освоили python-docx — создание и форматирование документов;</p>
+      <p>познакомились с docxtpl — шаблонизация для массового создания документов;</p>
+      <p>изучили openpyxl — работа с Excel (включая диаграммы).</p>
+      <p>А ещё посмотрели на шорткат pandas для простых операций с таблицами — классный, правда? (Только всё же не говорите аналитикам данных, что мы ТАК используем их любимую библиотеку.)</p>
+      <p>P. S. Помните: каждый автоматизированный документ — это минус одна рутинная задача и плюс одна возможность для творчества. Как говорил Билл Гейтс: «Я выбираю ленивого человека для сложной работы, потому что он найдёт лёгкий способ сделать её». Будьте такими «ленивыми»!</p>
+      </article>
+      <nav class="lesson-pagination" aria-label="Переключение уроков">
+        <a class="chapter-next" href="pillow-transforms.html">Назад · Библиотека PIL. Трансформация</a>
+        <a class="chapter-next" href="../functions.html">Следующий раздел · Функции</a>
+      </nav>
+    </main>
+  </div>
+</body>
+</html>

@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#090909">
+  <title>Сложные коллекции и генераторы — pupsiks</title>
+  <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../docs.css">
+  <script src="../docs.js" defer></script>
+</head>
+<body>
+  <header class="masthead">
+    <a class="brand" href="../../index.html"><img src="../../favicon.svg" alt="" width="38" height="38">pupsiks</a>
+    <a class="label" href="../index.html">Справочник Python</a>
+    <a class="home-link" href="../../index.html">На главную</a>
+  </header>
+  <div class="docs module">
+    <aside class="sidebar">
+      <nav aria-label="Разделы справочника" class="chapters">
+        <p class="label">Темы</p>
+        <ol>
+          <li><a href="../algorithms.html">Линейные алгоритмы и циклы</a></li>
+          <li><a href="../collections.html" aria-current="page">Коллекции</a></li>
+          <li><a href="../files.html">Файлы и библиотеки</a></li>
+          <li><a href="../functions.html">Функции</a></li>
+          <li><a href="../oop.html">ООП</a></li>
+        </ol>
+      </nav>
+    </aside>
+    <aside class="contents module-contents">
+      <nav aria-label="На этой странице">
+        <p class="label">На этой странице</p>
+        <a href="#topic-1">Генераторные выражения</a>
+        <a href="#topic-2">Создание генераторов</a>
+        <a href="#topic-3">Снова о словарях</a>
+        <a href="#topic-4">Модуль itertools</a>
+        <a href="#topic-5">Модуль collections</a>
+      </nav>
+    </aside>
+    <main>
+      <header class="overview" id="overview">
+        <a class="lesson-back label" href="../collections.html#generators">Коллекции</a>
+        <h1>Сложные коллекции и генераторы</h1>
+        <p>Следующий уровень коллекционирования</p>
+      </header>
+
+      <article class="lesson-body">
+      <p>Мы освоили списки, множества щёлкаем как семечки, познакомились со словарями. Но вот пришёл тот день, когда мы смотрим на свой код и думаем: «Хочется сделать ещё лучше».</p>
+      <p>И на сегодняшнем уроке мы познакомимся со штуками, которые, может, и используются чуть реже, чем то, что мы уже рассмотрели, но определённо делают жизнь посвящённых лучше и приятнее.</p>
+      <h2 id="topic-1">📢 Выражаемся снова</h2>
+      <p>Для разгона вспомним списочные выражения. Вот как они базово выглядят:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>nums = [x * 2 for x in range(5)]  # [0, 2, 4, 6, 8]</code></pre>
+      </figure>
+      <p>И некоторые из вас, наверное, задумались о том, что подобный синтаксис было бы классно использовать для множеств и словарей. К счастью, авторы языка задумались об этом ещё раньше, поэтому встречайте! Выражения для множеств и словарей (set comprehensions и dict comprehensions)!</p>
+      <p>Это тот случай, когда все адаптации термина на русский язык выглядят чужеродно и корявенько, но, с вашего позволения, мы будем использовать именно вариант «выражения для...».</p>
+      <p>Синтаксис получения множества одной строкой абсолютно такой же, как и у списков, надо лишь заменить квадратные скобки на фигурные. Вот так можно получить все уникальные слова в нижнем регистре:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>monday_plans = [
+    &quot;кофе&quot;,
+    &quot;не паниковать&quot;,
+    &quot;Кофе&quot;,
+    &quot;сделать вид, что всё под контролем&quot;,
+    &quot;КОФЕ&quot;
+]
+unique_words = {w.lower() for w in monday_plans}</code></pre>
+      </figure>
+      <p>Также можно добавить условия по вкусу. Например, хотим получить уникальные элементы в верхнем регистре без лишних пробелов, если длина исходной строки чётная:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>brain_mode = [
+    &quot;ошибка&quot;,
+    &quot;   ошибка&quot;,
+    &quot; эйфория  &quot;,
+    &quot;ошибка   &quot;,
+    &quot;перезагрузка   &quot;
+]
+cleaned = {el.strip().upper() for el in brain_mode if len(el) % 2 == 0}</code></pre>
+      </figure>
+      <p>Со словарями чуть сложнее, но прямо самую капельку. Помимо ключа, надо откуда-то получить ещё значение для этого ключа. Синтаксис выглядит так (условия тоже можно):</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>{ключ: значение for ... in ...}</code></pre>
+      </figure>
+      <p>Например, мы можем захотеть из списка слов получить словарь, где каждому слову соответствует его длина:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>words = [&#x27;кот&#x27;, &#x27;слон&#x27;, &#x27;носорог&#x27;]
+lengths = {word: len(word) for word in words}
+# {&#x27;кот&#x27;: 3, &#x27;слон&#x27;: 4, &#x27;носорог&#x27;: 7}</code></pre>
+      </figure>
+      <p>Или хотим оставить в словаре с фильмами и рейтингами только те, оценка которых нас устраивает:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>stephen_king_movies = {
+    &#x27;Побег из Шоушенка&#x27;: 9.1, 
+    &#x27;Зелёная миля&#x27;: 9.1, 
+    &#x27;Оно&#x27;: 7.0, 
+    &#x27;Мизери&#x27;: 7.5
+}
+top = {title: rate for title, rate in stephen_king_movies.items() if rate &gt;= 7.5}</code></pre>
+      </figure>
+      <p>Или мы захотели инвертировать словарь — поменять местами ключи и значения. Осторожно: значения исходного словаря должны быть уникальными (иначе часть данных потеряется) и неизменяемыми (иначе получим ошибку)!</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>names = {&#x27;Вася&#x27;: &#x27;admin&#x27;, &#x27;Петя&#x27;: &#x27;user&#x27;}
+inverted = {v: k for k, v in names.items()}
+# {&#x27;admin&#x27;: &#x27;Вася&#x27;, &#x27;user&#x27;: &#x27;Петя&#x27;}</code></pre>
+      </figure>
+      <h2 id="part-50">🦥 Ленивый не значит бесполезный</h2>
+      <p>Так, если квадратные скобки в списочном выражении заменить на фигурные, то получим множества. Значит ли это, что, поменяв скобки на круглые, получим кортеж? Нет, не так. Кортежи — неизменяемые коллекции, поэтому добавлением элементов их создать не получится. Но, написав выражение в круглых скобках, мы тоже получим что-то полезное — генераторное выражение и, соответственно, генератор на выходе.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>gen = (x * 2 for x in range(1000000))
+print(gen)  # &lt;generator object ...&gt;</code></pre>
+      </figure>
+      <p>Допустим, нам нужно перебрать миллион чисел. Хранить их в списке — можно, но ест память. А если мы просто хотим пройтись по ним — зачем хранить?</p>
+      <p>Генератор не выполняется весь сразу и отдаёт следующее значение только в том случае, если его попросят. За это вычисление в генераторе называют ленивыми.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code># Список (жадный).
+numbers_list = [x ** 2 for x in range(1000000)]  # Занимает 100 МБ памяти.
+
+# Генератор (ленивый).
+numbers_gen = (x ** 2 for x in range(1000000))  # Занимает 200 байт.
+for n in numbers_gen:
+    if n &gt; 100:
+        break
+    print(n)</code></pre>
+      </figure>
+      <p>Для получения следующего значения из генератора можно пользоваться не только циклом for, но и функцией next(), которая возвращает одно следующее значение из генератора (или, если говорить правильнее и более общо, из итератора).</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>numbers_gen = (x ** 2 for x in range(1, 10000))
+while a := next(numbers_gen,  None):  # None вернётся, когда все элементы в генераторе закончатся.
+    print(a)
+    if a &gt; 1000:
+        break</code></pre>
+      </figure>
+      <p>Генератор — это конвейер. Он не выдаёт сразу все детали (в отличие от списка), он делает их по одной — по мере надобности.</p>
+      <p>При этом, если попробовать второй раз пройтись по генератору, то будет пусто. Генератор один раз отдал — и всё. Но никто не запретит нам сделать ещё один генератор, который будет перебирать те же данные ещё раз.</p>
+      <p>Генераторы необходимы, когда:</p>
+      <p>нужно перебрать данные, а не хранить;</p>
+      <p>работаешь с огромными файлами или потоками данных;</p>
+      <p>хочется сделать цепочку ленивых преобразований — результат одного генератора можно передать в другой и т. д., при этом значения будут проходить все преобразования по одному.</p>
+      <h2 id="topic-3">🥇 Все как один</h2>
+      <p>Когда мы на прошлом уроке говорили про способы создания словаря, мы сознательно не упомянули ещё один — использование dict.fromkeys().</p>
+      <p>Вы можете сказать: «Воу-воу, полегче, это что за синтаксис такой?» И будете правы, потому что с таким мы до этого не встречались. И вообще, до этого мы чуть привирали, говоря, что set(), int(), list() и т. д. — функции. Что это такое на самом деле, вы узнаете несколько позже, а пока продолжим называть функциями для консистентности.</p>
+      <p>Так вот, dict.fromkeys() — это метод словарей, только не привычный нам, который применяется к объекту, а статический — применяется к типу. И про это мы тоже поговорим позднее.</p>
+      <p>Этот метод создаёт словарь из списка ключей, каждому из ключей присваивая одно и то же заданное значение:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>defaults = dict.fromkeys([&#x27;пицца&#x27;, &#x27;суши&#x27;, &#x27;бургер&#x27;], 0)
+print(defaults)
+# {&#x27;пицца&#x27;: 0, &#x27;суши&#x27;: 0, &#x27;бургер&#x27;: 0}</code></pre>
+      </figure>
+      <p>⚠️ Важно! Если значение — изменяемый объект (например, список), то будет одна и та же ссылка:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>menu = dict.fromkeys([&#x27;Петя&#x27;, &#x27;Аня&#x27;], [])</code></pre>
+      </figure>
+      <p>menu[&#x27;Петя&#x27;].append(&#x27;бургер&#x27;)</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>print(menu)
+# {&#x27;Петя&#x27;: [&#x27;бургер&#x27;], &#x27;Аня&#x27;: [&#x27;бургер&#x27;]} ← ой</code></pre>
+      </figure>
+      <p>Решение:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>menu = {name: [] for name in [&#x27;Петя&#x27;, &#x27;Аня&#x27;]}</code></pre>
+      </figure>
+      <h2 id="topic-2">🛍️ Пакет с пакетами</h2>
+      <p>Вспомните, мы уже говорили о том, что никаких ограничений на значения словаря не накладывается. А это значит, что значением словаря может быть и любая коллекция (в том числе в словарь можно зачем-то положить и сам этот словарь, но мы так делать не будем).</p>
+      <p>Давайте рассмотрим несколько примеров, как работать со словарём, в котором есть какая-то другая коллекция.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>cat_inventory = {
+    &quot;любимые_вещи&quot;: [&quot;коробка&quot;, &quot;пакет&quot;, &quot;мишень на шторах&quot;],
+    &quot;смертельные враги&quot;: [&quot;пылесос&quot;],
+    &quot;места_для_сидения&quot;: [&quot;ноутбук&quot;, &quot;клавиатура&quot;, &quot;документы&quot;]
+}</code></pre>
+      </figure>
+      <p>cat_inventory[&#x27;смертельные враги&#x27;].append(&#x27;обивка дивана&#x27;)</p>
+      <p>По ключу получаем элемент, который является списком, и работаем с ним как со списком — добавляем новый элемент в конец с помощью метода .append():</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>cat_database = {
+    &quot;Барсик&quot;: {&quot;вес&quot;: 4.5, &quot;цвет&quot;: &quot;рыжий&quot;, &quot;любимая_еда&quot;: [&quot;тунец&quot;, &quot;курица&quot;]},
+    &quot;Мурзик&quot;: {&quot;вес&quot;: 5.2, &quot;цвет&quot;: &quot;серый&quot;, &quot;любимая_еда&quot;: [&quot;лосось&quot;, &quot;творог&quot;]}
+}
+
+# Добавление нового измерения.
+cat_database[&quot;Барсик&quot;][&quot;игрушки&quot;] = [&quot;мяч&quot;, &quot;мышка&quot;]</code></pre>
+      </figure>
+      <p>По ключу получаем элемент, который является словарём, и работаем с ним как со словарём — ну вы поняли идею, да?</p>
+      <p>Никто, конечно, не запретит нам сохранить вложенную коллекцию в отдельную переменную и работать с ней таким образом. Из-за того что списки, словари и множества — изменяемые, мы будем работать не с копией, а просто дадим вложенной коллекции более короткое имя. При работе со словарями большой вложенности это отличный способ сэкономить время на печатание полного пути.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>weekly_shows = {
+    &quot;понедельник&quot;: [&quot;Как выжить на созвоне&quot;],
+    &quot;вторник&quot;: [&quot;Поиск багов — 2: Возвращение&quot;],
+    &quot;среда&quot;: [&quot;Невыносимая лёгкость документации&quot;],
+    &quot;четверг&quot;: [&quot;Срочно и важно&quot;],
+    &quot;пятница&quot;: [&quot;Ctrl+S и побежал&quot;],
+    &quot;суббота&quot;: &quot;выходной&quot;,
+    &quot;воскресенье&quot;: &quot;выходной с ноткой тревоги за завтра&quot;
+}
+for day in weekly_shows:
+    shows = weekly_shows[day]
+    if isinstance(shows, list):
+        shows.append(&quot;Теория Большого Кофе&quot;)</code></pre>
+      </figure>
+      <p>Не стесняйтесь комбинировать используемые коллекции для того, чтобы воспользоваться их преимуществами. Например, если мы хотим обойти ключи словаря в алфавитном порядке, то прекрасная идея — получить отсортированный список ключей и пройтись по нему.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>cat_schedule = {
+    &quot;3. ночь&quot;: [&quot;гонял невидимое&quot;, &quot;орал в потолок&quot;, &quot;разбил вазу&quot;, &quot;сожрал цветок&quot;],
+    &quot;1. утро&quot;: [&quot;орал под дверью&quot;, &quot;сожрал завтрак человека&quot;],
+    &quot;2. день&quot;: [&quot;спал&quot;, &quot;спал&quot;, &quot;ел&quot;, &quot;спал&quot;]
+}
+for key in sorted(cat_schedule.keys()):
+    print(key, cat_schedule[key])</code></pre>
+      </figure>
+      <h2 id="topic-4">🚜 Комбайн для комбинаций</h2>
+      <p>Когда начинает казаться, что уже ничего больше придумать нельзя, на арену выходят встроенные библиотеки Python.</p>
+      <p>Модуль itertools содержит много всяких классных функций для работы с итераторами и итерируемыми объектами: списками, строками, генераторами.</p>
+      <p>Надо оговориться, что библиотека очень мощная и мы только обзорно пробежимся по самым интересным функциям. И даже у рассмотренных функций могут быть дополнительные параметры, про которые мы умолчим. Чтобы познать всю глубину, добро пожаловать в документацию.</p>
+      <p>Декартово произведение</p>
+      <p>Функция product — декартово произведение. То есть комбинация всего со всем.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from itertools import product
+
+colors = [&#x27;красный&#x27;, &#x27;синий&#x27;]
+sizes = [&#x27;S&#x27;, &#x27;M&#x27;, &#x27;L&#x27;]
+
+for combo in product(colors, sizes):
+    print(combo)
+# (&#x27;красный&#x27;, &#x27;S&#x27;), (&#x27;красный&#x27;, &#x27;M&#x27;), ...</code></pre>
+      </figure>
+      <p>Функция может принимать и больше двух параметров:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from itertools import product
+
+for combo in product(range(24), range(60), range(60)):
+    print(&#x27;:&#x27;.join(str(x) for x in combo))</code></pre>
+      </figure>
+      <p>Есть необязательный параметр repeat, который позволяет дублировать переданные итерируемые объекты несколько раз. Работает как с одним, так и с несколькими итераторами.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from itertools import product
+
+bits = [&#x27;0&#x27;, &#x27;1&#x27;]
+for combo in product(bits, repeat=8):  # (8 бит == 1 байт)
+    print(combo)
+
+start_phrase = [&quot;рады видеть вас&quot;, &quot;расскажите о себе&quot;, &quot;нам всё понравилось&quot;]
+end_phrase = [&quot;но у нас уже есть кандидат&quot;, &quot;мы вам перезвоним&quot;, &quot;удачи&quot;]
+
+for phrase in product(start_phrase, end_phrase, repeat=2):
+    print(&quot;HR говорит:&quot;, &#x27;, &#x27;.join(phrase))</code></pre>
+      </figure>
+      <p>Все возможные подмножества</p>
+      <p>Функция combinations возвращает все возможные подмножества элементов заданной длины без повторений, combinations_with_replacement — с повторениями.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from itertools import combinations_with_replacement, combinations
+
+binge_watch_kit = [
+    &quot;чипсы&quot;,
+    &quot;пицца&quot;,
+    &quot;газировка&quot;,
+    &quot;плед&quot;,
+    &quot;зарядка на 3 метра&quot;,
+    &quot;моральная поддержка кота&quot;
+]
+
+for binge in combinations_with_replacement(binge_watch_kit, 2):
+    print(binge)
+
+for binge in combinations(binge_watch_kit, 3):
+    print(binge)</code></pre>
+      </figure>
+      <p>Перестановки</p>
+      <p>Все возможные перестановки элементов коллекции можно получить с помощью функции permutation(). Можно указать количество элементов в перестановке; если ничего не указывать, то будут перестановки, равные длине коллекции.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from itertools import permutations
+
+for perm in permutations(&quot;перестановка&quot;, 3):
+    print(perm)</code></pre>
+      </figure>
+      <p>Цепочка итераторов</p>
+      <p>С помощью функции chain() можно получить царь-итератор из коллекции итераторов поменьше.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from itertools import chain
+
+a = [1, 2]
+b = [3, 4]
+c = [5, 6]
+
+for x in chain(a, b, c, range(7, 11), &quot;hello&quot;):
+    print(x)</code></pre>
+      </figure>
+      <p>Бесконечный цикл</p>
+      <p>Функция cycle() позволяет создать бесконечный цикл из любого итерируемого объекта. Как только перебираемые элементы заканчиваются, мы пойдём с начала.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from itertools import cycle
+
+tasks_workflow = [
+    &quot;планирование&quot;,
+    &quot;разработка&quot;,
+    &quot;тестирование&quot;,
+    &quot;внедрение&quot;,
+    &quot;ретроспектива&quot;,
+    &quot;кофе&quot;
+]
+
+lifecycle = cycle(tasks_workflow)
+action_points = 100
+while action_points:
+    action = next(lifecycle)
+    if action == &quot;кофе&quot;:
+        print(&quot;Время для кофе!&quot;)
+    else:
+        print(f&quot;Выполняем задачу: {action}&quot;)
+    action_points -= 1</code></pre>
+      </figure>
+      <p>Срез для бесконечных итераторов</p>
+      <p>Иногда нужно получить какие-то определённые элементы итерируемого объекта. Не всегда это можно сделать с помощью привычного нам среза, так как иногда это может быть результат функции chain() или вообще бесконечный итератор — результат функции cycle(). В этом случае на помощь придёт islice().</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from itertools import islice, cycle
+
+for task in islice(cycle([&#x27;поесть&#x27;, &#x27;поспать&#x27;, &#x27;подрать диван&#x27;]), 10, 15):  # Что там у котика в списке дел на пунктах 10—14?
+    print(task)</code></pre>
+      </figure>
+      <p>Почему все эти штуки важны?</p>
+      <p>Без itertools можно жить, но зачем? Вот плюсы этого модуля:</p>
+      <p>все функции ленивые, то есть они оптимальны по памяти;</p>
+      <p>пишутся в одну строку;</p>
+      <p>можно комбинировать между собой;</p>
+      <p>решают задачи, которые на других языках приходится писать вручную (и грустить).</p>
+      <h2 id="topic-5">💎 Особо ценная коллекция</h2>
+      <p>Ещё один встроенный модуль, по которому мы обзорно пробежимся, — collections. Название намекает, что в нём собраны коллекции, которые решили не добавлять в стандартное пространство имён, а для использования их нужно импортировать.</p>
+      <p>То, что эти коллекции отселили, не значит, что они какие-то ущербные. Просто они призваны решать чуть более конкретные задачи.</p>
+      <p>Как и в случае с itertools, для collections также верна оговорка, что мы тут только с обзором, а за полной картиной надо в документацию.</p>
+      <p>Счётчик</p>
+      <p>Помните, словари часто используются для подсчёта уникальных элементов в какой-нибудь другой коллекции. Но для этого есть и более подходящий инструмент — Counter.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from collections import Counter
+
+orders = [&#x27;пицца&#x27;, &#x27;бургер&#x27;, &#x27;пицца&#x27;, &#x27;суши&#x27;, &#x27;пицца&#x27;, &#x27;бургер&#x27;]
+counter = Counter(orders)
+print(counter)
+# Counter({&#x27;пицца&#x27;: 3, &#x27;бургер&#x27;: 2, &#x27;суши&#x27;: 1})</code></pre>
+      </figure>
+      <p>То есть Counter решает вполне конкретную задачу, которую можно решить и словарём, просто надо будет написать ещё немного кода. Из классного: есть метод .most_common(n), который возвращает n самых часто встречающихся элементов.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from collections import Counter
+
+cat_votes = [&quot;Барсик&quot;, &quot;Мурзик&quot;, &quot;Барсик&quot;, &quot;Васька&quot;, &quot;Барсик&quot;]
+results = Counter(cat_votes)
+print(results.most_common(1))  # [(&#x27;Барсик&#x27;, 3)]</code></pre>
+      </figure>
+      <p>Словарь со значением по умолчанию</p>
+      <p>Без использования defaultdict и применения обычных словарей нам довольно часто придётся писать отдельную логику для проверки наличия ключа и добавления начального значения. Вот способ этого избежать:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from collections import defaultdict
+
+orders = defaultdict(list)  # Для всех новых ключей значение — новый пустой список.</code></pre>
+      </figure>
+      <p>orders[&#x27;Маша&#x27;].append(&#x27;бургер&#x27;)</p>
+      <p>orders[&#x27;Маша&#x27;].append(&#x27;чай&#x27;)</p>
+      <p>orders[&#x27;Игорь&#x27;].append(&#x27;суши&#x27;)</p>
+      <p>Двунаправленная очередь</p>
+      <p>Списки всем хороши, но для них довольно долго работает операция вставки в начало .insert(0, n). Ряд алгоритмов требуют такой операции на постоянной основе, и тут плащ супергероя надевает deque.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from collections import deque
+
+queue = deque()
+queue.append(&#x27;суп&#x27;)      # В конец.
+queue.append(&#x27;макароны с пюрешкой&#x27;)
+queue.appendleft(&#x27;салат&#x27;)  # В начало.
+print(queue)  # deque([&#x27;салат&#x27;, &#x27;суп&#x27;, &#x27;макароны с пюрешкой&#x27;])
+
+queue.pop()       # Макароны с пюрешкой съели.
+queue.popleft()   # А теперь салат.</code></pre>
+      </figure>
+      <p>Объект можно использовать для создания очереди, где часть участников должны быть обслужены с приоритетом.</p>
+      <p>Кортеж с именами</p>
+      <p>Использовать индексы в кортеже при описании сложных объектов удобно только до той поры, пока количество элементов можно пересчитать на пальцах одной руки, потом человеческая память — всё.</p>
+      <p>Чтобы не мучить себя запоминанием, что под каким индексом лежит, можно использовать именованные кортежи.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from collections import namedtuple
+
+Point = namedtuple(&#x27;Point&#x27;, [&#x27;x&#x27;, &#x27;y&#x27;])  # Сначала имя, потом псевдонимы для индексов.
+p = Point(3, 4)
+print(p.x, p.y)  # 3 4 — уже не квадратные скобки, а обращение через точку.</code></pre>
+      </figure>
+      <p>Именованные кортежи по-прежнему неизменяемы и пригодны для хранения во множествах и в качестве ключей словаря.</p>
+      <p>Фактически именованные кортежи не решают никакой дополнительной задачи, кроме облегчения написания и поддержки кода. Но и это уже немало.</p>
+      <h2 id="part-283">🌟 Итог: разложили всё по полочкам, переставили и скомбинировали</h2>
+      <p>Сложные коллекции — это как кулинарные инструменты шефа. Когда вы знаете их все, вы перестаёте готовить макароны и начинаете создавать гастрономические шедевры почти из тех же ингредиентов.</p>
+      <p>Краткое резюме:</p>
+      <p>выражения для множеств и словарей также круты, как и списочные выражения (но только для множеств и словарей);</p>
+      <p>генераторы помогут в обработке данных размером с галактику (или поисковых запросов про видео с котиками за один день) благодаря своей лени;</p>
+      <p>словари можно делать сразу со значениями по умолчанию для всех ключей, и они прекрасно комбинируются с другими коллекциями;</p>
+      <p>модуль itertools позволит эффективно решить в одну строку множество задач из комбинаторики (и просто классный);</p>
+      <p>collections — хранилище коллекций на особый случай (как бабушкин хрусталь, только используется гораздо чаще).</p>
+      <p>Выдыхайте, мы справились с коллекциями и теперь отправляемся в следующий тематический блок!</p>
+      <p>P. S. Лучший способ справиться с огромным списком проблем — не держать их все в памяти и переживать, а решать по одной.</p>
+      </article>
+      <nav class="lesson-pagination" aria-label="Переключение уроков">
+        <a class="chapter-next" href="dictionaries.html">Назад · Словари</a>
+        <a class="chapter-next" href="../files.html">Следующий раздел · Файлы и библиотеки</a>
+      </nav>
+    </main>
+  </div>
+</body>
+</html>

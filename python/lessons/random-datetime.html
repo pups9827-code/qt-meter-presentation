@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#090909">
+  <title>Библиотеки random, datetime — pupsiks</title>
+  <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../docs.css">
+  <script src="../docs.js" defer></script>
+</head>
+<body>
+  <header class="masthead">
+    <a class="brand" href="../../index.html"><img src="../../favicon.svg" alt="" width="38" height="38">pupsiks</a>
+    <a class="label" href="../index.html">Справочник Python</a>
+    <a class="home-link" href="../../index.html">На главную</a>
+  </header>
+  <div class="docs module">
+    <aside class="sidebar">
+      <nav aria-label="Разделы справочника" class="chapters">
+        <p class="label">Темы</p>
+        <ol>
+          <li><a href="../algorithms.html">Линейные алгоритмы и циклы</a></li>
+          <li><a href="../collections.html">Коллекции</a></li>
+          <li><a href="../files.html" aria-current="page">Файлы и библиотеки</a></li>
+          <li><a href="../functions.html">Функции</a></li>
+          <li><a href="../oop.html">ООП</a></li>
+        </ol>
+      </nav>
+    </aside>
+    <aside class="contents module-contents">
+      <nav aria-label="На этой странице">
+        <p class="label">На этой странице</p>
+        <a href="#topic-1">Модуль random</a>
+        <a href="#topic-2">Модуль datetime</a>
+      </nav>
+    </aside>
+    <main>
+      <header class="overview" id="overview">
+        <a class="lesson-back label" href="../files.html#random-datetime">Файлы и библиотеки</a>
+        <h1>Библиотеки random, datetime</h1>
+        <p>В ближайшее время, при удобном случае</p>
+      </header>
+
+      <article class="lesson-body">
+      <p>Пятница. Вечер. Проект почти готов. Осталось всего ничего — выбрать победителя среди 10 000 пользователей, сгенерировать для него уникальный код доступа и отправить сообщение, что приз можно забрать до понедельника 23:59.</p>
+      <p>И ты такой: «А-А-А!»</p>
+      <p>Тут на помощь приходят две незаменимых библиотеки:</p>
+      <p>random — позволяет взять неопределённость под контроль;</p>
+      <p>datetime — даёт власть над временем.</p>
+      <h2 id="topic-1">🔮 Случайности не случайны</h2>
+      <p>Сразу откроем карты: компьютеры не умеют «настоящую» случайность — они используют алгоритмы, которые старательно её имитируют.</p>
+      <p>Представьте, что вам нужен настоящий сюрприз. Вы открываете конфету, а там... каждый раз ровно половинка ириски. Даже если упаковка другая. Даже если вы повернулись три раза и шепнули «рандом».</p>
+      <p>БАМ! Та же ириска.</p>
+      <p>Добро пожаловать в мир псевдослучайности.</p>
+      <p>Псевдослучайные числа — это робот, который пытается импровизировать. Он выходит на сцену и говорит: «Дайте мне начальное значение — и я буду делать вид, что не знаю, что скажу дальше». Но если дать ему то же начальное значение (в программировании это называется seed) — он скажет то же самое, слово в слово. Натуральная случайность — это типа «выпустите голубя, посмотрите, где он сядет, и получите число». Или шум космического излучения. Или броски кубика до изнеможения.</p>
+      <p>Но компьютеры — ребята предсказуемые. У них внутри — только 1 и 0, никаких голубей.</p>
+      <p>А можно ли получить настоящую случайность? Да. Но придётся использовать:</p>
+      <p>шум радиоактивного распада,</p>
+      <p>атмосферный шум,</p>
+      <p>интернет-сервисы вроде random.org, которые читают шум планеты.</p>
+      <p>Встроенная библиотека random как раз и предоставляет нам функции для работы с разными псевдослучайными величинами. Давайте посмотрим какие:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>random.seed(a) — можно зафиксировать случайность с помощью какого-нибудь целого числа, чтобы воспроизводить одну и ту же последовательность, например при тестировании. Не используйте seed() в продакшене, иначе ваша «случайность» станет предсказуемой, как сюжет второсортного сериала!
+random.random() — случайное вещественное число от нуля до одного (не включительно).
+import random
+
+# Фиксируем «случайность» для воспроизводимости.
+random.seed(42)
+
+print(random.random()) 
+# Всегда 0.6394267984578837 при seed(42).
+random.randint(a, b) — возвращает целое число от a до b включительно.
+import random
+
+x = random.randint(1, 6)
+print(x)
+# 3 (или 5, или 1 — зависит от ф̶а̶з̶ ̶Л̶у̶н̶ы̶  псевдослучайности).</code></pre>
+      </figure>
+      <p>b включается. То есть randint(1, 6) может вернуть 1, 6 и всё между ними. В отличие от range(), где верхняя граница не включена.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>random.uniform(a, b) — возвращает вещественное число между a и b, включая оба конца.
+random.uniform(0, 1)
+# 0.283723198... (что-то между 0 и 1 включительно).
+random.choice(seq) — возвращает один случайный элемент из переданной коллекции/последовательности.
+pets = [&#x27;кот&#x27;, &#x27;пёс&#x27;, &#x27;ёжик&#x27;]
+print(random.choice(pets))  # Ну, допустим, &#x27;ёжик&#x27;.</code></pre>
+      </figure>
+      <p>Если последовательность пустая — будет IndexError. Потому что даже хаосу нужно хоть что-то, из чего выбирать.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>random.choices(seq, k=...) — выбирает k элементов с повторами. В коллекции должен быть хотя бы один элемент.
+lotto = [1, 2, 3, 4, 5]
+print(random.choices(lotto, k=3))
+# При определённом везении может быть [2, 2, 2].
+random.sample(seq, k=...) — выбирает k элементов без повторений. Но если k &gt; len(seq), будет ValueError.
+solutions = [
+    &quot;Esc&quot;, 
+    &quot;Ctrl+Z&quot;, 
+    &quot;F5&quot;, 
+    &quot;Backspace&quot;, 
+    &quot;Alt+Tab&quot;
+]
+print(random.sample(solutions, k=2))
+# Что-то из этого поможет.</code></pre>
+      </figure>
+      <p>Функции choice(), choices() и sample() работают не со всеми коллекциями, а только с последовательностями (если упростить, то с теми типами, для которых можно получить элемент по целочисленному индексу). То есть с множествами фокус не прокатит. В общем случае ошибка будет и со словарём, но попробуйте придумать случай, когда всё пройдёт гладко (в реальной жизни на такой случай полагаться не стоит).</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>random.shuffle(list) — перемешивает элементы списка на месте. Меняет сам список и ничего не возвращает (возвращает None).
+support_replies = [
+    &quot;у нас всё работает&quot;,
+    &quot;попробуйте перезагрузить&quot;,
+    &quot;а вы пробовали выключить и включить?&quot;,
+    &quot;сейчас перенаправим ваш звонок на специалиста&quot;,
+    &quot;ваш звонок очень важен для нас&quot;, 
+    &quot;пока послушайте целиком композицию Джема Файнера — «Longplayer»&quot;
+]
+random.shuffle(support_replies)
+print(support_replies)</code></pre>
+      </figure>
+      <p>И в конце традиционная ссылка на документацию.</p>
+      <h2 id="topic-2">⏳ Машина времени</h2>
+      <p>Если random в Python — это такой весёлый балагур, кидающий кости, то datetime — это бухгалтер с секундомером, календарём и блокнотом, в котором записано, сколько осталось до ближайшего дедлайна.</p>
+      <p>Модуль datetime умеет:</p>
+      <p>представлять дату (date);</p>
+      <p>представлять время (time);</p>
+      <p>объединять их (datetime);</p>
+      <p>вычислять разницу (timedelta);</p>
+      <p>и даже доставать дату из строк (если можно понять, в каком она формате).</p>
+      <p>Дата, просто дата</p>
+      <p>datetime.date — тип для хранения даты.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>import datetime as dt  # Лень писать целиком.
+
+today = dt.date.today()
+# Получим текущую дату по мнению операционной системы.
+
+good_old_day = dt.date(2007, 7, 1)  # Вернули 2007-й.
+print(today, good_old_day)</code></pre>
+      </figure>
+      <p>Можно доставать отдельные части даты с помощью .year, .month, .day — для вытаскивания чисел.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>print(today.year, today.month, today.day)</code></pre>
+      </figure>
+      <p>Обратите внимание, что тут не надо круглых скобок. Потому что это не методы, а атрибуты (такие переменные внутри другой переменной).</p>
+      <p>Но методы для получения какой-то части даты у date тоже есть, например для получения дня недели .weekday() (нумерация с 0) или .isoweekday() (нумерация с единицы).</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>import datetime as dt
+
+print(dt.date.today().weekday())</code></pre>
+      </figure>
+      <p>С секундомером</p>
+      <p>datetime.time — часы, минуты, секунды, микросекунды. Есть атрибуты для получения отдельных частей времени.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>import datetime as dt
+
+t = dt.time(14, 30, 25)
+# Можно ещё передать микросекунды.
+
+print(t.hour, t.minute, t.second, t.microsecond)</code></pre>
+      </figure>
+      <p>Всё и сразу</p>
+      <p>datetime.datetime — дата и время в одном флаконе. Есть все атрибуты, которые есть в дате и времени. А еще метод .now() для получения текущих даты и времени. Год, месяц и день при создании надо указывать обязательно, а вот неуказанные части времени проставятся нулями.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>import datetime as dt
+
+now = dt.datetime.now()
+print(now) 
+
+date = dt.datetime(month=10, day=31, year=2000)
+print(date) 
+
+date = dt.datetime(2023, 1, 1, 12)
+print(date)</code></pre>
+      </figure>
+      <p>Можно доставать дату или время целиком:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>import datetime as dt
+
+print(dt.datetime.now().time())  # Тип time.
+print(dt.datetime.now().date())  # Тип date.</code></pre>
+      </figure>
+      <p>Разница во времени</p>
+      <p>datetime.timedelta — временной диапазон. Позволяет прибавлять или вычитать время. Можно задать как:</p>
+      <p>days;</p>
+      <p>seconds;</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>minutes (как seconds=60*минут);
+weeks (пусть это и странно).
+import datetime as dt
+
+delta = dt.timedelta(days=5, hours=3)
+now = dt.datetime.now()
+future = now + delta
+past = now - delta
+print(future)
+print(past)</code></pre>
+      </figure>
+      <p>Месяцы и годы задавать нельзя по очевидной причине: внутри любое из значений приводится к числу микросекунд, а для месяца и года эта величина не может быть определена (разное количество дней).</p>
+      <p>Кроме того, значение типа datetime.timedelta получается, если посчитать разность между двумя датами (в отличие от даты и времени интервал может принимать и отрицательные значения):</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>deadline = dt.datetime(2026, 1, 10, 23, 59)
+remaining = deadline - dt.datetime.now()
+print(remaining)</code></pre>
+      </figure>
+      <p>Если всё хорошо — увидите что-то вроде: 30 days, 8:12:45. Если нет — отрицательное значение (и на фоне может даже зазвучать тревожная музыка).</p>
+      <p>У datetime.timedelta есть атрибуты для получения дней, секунд и микросекунд:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>import datetime as dt
+
+# За сколько-то дней до третьего тысячелетия.
+new_millennium = dt.date(3000, 1, 1)
+days_left = (new_millennium - dt.date.today()).days
+print(days_left)</code></pre>
+      </figure>
+      <p>Физика временных парадоксов</p>
+      <p>Мы про это уже упомянули чуть выше, но давайте ещё раз обстоятельно. Для интервалов, дат, времени и типа datetime поддерживаются математические и логические операции. Мы можем сложить два интервала времени, вычесть один из другого, увеличить интервал в n раз, уменьшить интервал в n раз, а с помощью деления узнать, сколько раз один интервал помещается в другой.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>import datetime as dt
+
+# Поддерживаются математические и логические операции
+# для интервалов времени.
+delta_time1 = dt.timedelta(days=4, hours=4)
+delta_time2 = dt.timedelta(days=1, hours=1)
+print(delta_time1 - delta_time2)
+print(delta_time1 + delta_time2)
+print(delta_time1 * 10)
+print(delta_time1 / 10)
+print(delta_time1 / delta_time2)</code></pre>
+      </figure>
+      <p>3 days, 3:00:00</p>
+      <p>5 days, 5:00:00</p>
+      <p>41 days, 16:00:00</p>
+      <p>10:00:00</p>
+      <p>4.0</p>
+      <p>Можно прибавлять к датам временной интервал или удалять интервал для получения новой даты, которая раньше/позже на этот интервал.</p>
+      <p>При вычитании одной даты из другой мы получим интервал времени между датами. С помощью логических функций мы можем узнать, какая дата позже (т. е. больше) или раньше (т. е. меньше).</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>import datetime as dt
+
+# Поддерживаются математические и логические операции для дат.
+date1 = dt.date(2022, 2, 19)
+date2 = dt.date(2020, 10, 7)
+delta_time1 = dt.timedelta(days=4, hours=4)
+print(date1 + delta_time1)
+print(date1 - delta_time1)
+print(date1 - date2)
+print(date2 &gt; date1)</code></pre>
+      </figure>
+      <p>2022-02-23</p>
+      <p>2022-02-15</p>
+      <p>500 days, 0:00:00</p>
+      <p>False</p>
+      <p>Более живой пример (если ещё не истек срок годности):</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>import datetime as dt
+
+production_date = dt.date(2025, 10, 1)
+expire_days = dt.timedelta(days=30)
+expire_date = production_date + expire_days
+
+if dt.date.today() &gt; expire_date:
+    print(&quot;Этому молоку пора в музей!&quot;)</code></pre>
+      </figure>
+      <p>Аналогичные действия работают и для datetime.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>import datetime as dt
+
+# Поддерживаются математические и логические операции для типа datetime.
+datetime1 = dt.datetime(2022, 12, 15, 13, 25, 9)
+datetime2 = dt.datetime(2020, 12, 15, 13, 25, 9)
+delta_time1 = dt.timedelta(days=4, hours=4)
+print(datetime1 + delta_time1)
+print(datetime1 - delta_time1)
+print(datetime1 - datetime2)
+print(datetime2 &lt; datetime1)</code></pre>
+      </figure>
+      <p>2022-12-19 17:25:09</p>
+      <p>2022-12-11 09:25:09</p>
+      <p>730 days, 0:00:00</p>
+      <p>True</p>
+      <p>Трудности перевода</p>
+      <p>Часто возникает необходимость перевести значение datetime в строку в определённом формате или, наоборот, из строки какого-то понятного вида получить значение datetime. Да, в первом случае можно на-if-ать, во втором — вооружиться срезами и сплитами. Но есть способ получше:</p>
+      <p>Даты → Строки — метод .strftime():</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>import datetime as dt
+
+now = dt.datetime.now()
+print(now.strftime(&quot;%d.%m.%Y&quot;))  
+# Что-то вроде &quot;15.12.2025&quot;.
+
+print(now.strftime(&quot;%A, %d %B&quot;)) 
+# Есть шанс, что &quot;Monday, 15 December&quot;.</code></pre>
+      </figure>
+      <p>Строки → Даты — метод .strptime():</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>import datetime as dt
+
+date_str = &quot;2025-12-31 23:59&quot;
+new_year = dt.datetime.strptime(date_str, &quot;%Y-%m-%d %H:%M&quot;)</code></pre>
+      </figure>
+      <p>Оба метода принимают форматированную строку для формирования строки из даты или наоборот. Ключи запоминать не обязательно (потому что всегда можно посмотреть в документации ), но вот основные из них на всякий случай:</p>
+      <p>Команда	Значение	Пример</p>
+      <p>%a	Аббревиатура дня недели	Sun, Mon, ..., Sat (en_US);So, Mo, ..., Sa (de_DE)</p>
+      <p>%A	Полное название дня недели	Sunday, Monday, ..., Saturday (en_US);Sonntag, Montag, ..., Samstag (de_DE)</p>
+      <p>%w	День недели как десятичное число, где 0 — воскресенье, а 6 — суббота	0, 1, ..., 6</p>
+      <p>%d	День месяца в формате из двух цифр	01, 02, ..., 31</p>
+      <p>%b	Аббревиатура месяца	Jan, Feb, ..., Dec (en_US);Jan, Feb, ..., Dez (de_DE)</p>
+      <p>%B	Полное название месяца	January, February, ..., December (en_US);Januar, Februar, ..., Dezember (de_DE)</p>
+      <p>%m	Номер месяца в формате из двух цифр	01, 02, ..., 12</p>
+      <p>%y	Последние 2 цифры года (год без века)	00, 01, ..., 99</p>
+      <p>%Y	Год полностью	0001, 0002, ..., 2013, 2014, ..., 9998, 9999</p>
+      <p>%H	Час в 24-часовом формате из двух цифр	00, 01, ..., 23</p>
+      <p>%I	Час в 12-часовом формате из двух цифр	01, 02, ..., 12</p>
+      <p>%p	AM или PM	AM, PM (en_US);am, pm (de_DE)</p>
+      <p>%M	Минута в формате из двух цифр	00, 01, ..., 59</p>
+      <p>%S	Секунда в формате их двух цифр	00, 01, ..., 59</p>
+      <p>%f	Микросекунды в формате из 6 цифр	000000, 000001, ..., 999999</p>
+      <p>%j	День в году в формате из 3 цифр	001, 002, ..., 366</p>
+      <p>%U	Неделя в году	00, 01, ..., 53</p>
+      <p>%c	Принятое согласно локальным настройкам представление даты и времени	Tue Aug 16 21:30:00 1988 (en_US);Di 16 Aug 21:30:00 1988 (de_DE)</p>
+      <p>%x	Принятое согласно локальным настройкам представление даты	08/16/88 (None);08/16/1988 (en_US);16.08.1988 (de_DE)</p>
+      <p>%X	Принятое согласно локальным настройкам представление времени	21:30:00 (en_US);21:30:00 (de_DE)</p>
+      <p>%%	Знак &#x27;%&#x27;	%</p>
+      <h2 id="part-249">🌟 Итог: управляем временем и хаосом</h2>
+      <p>Мы теперь абсолютно уверены, что:</p>
+      <p>библиотека random добавляет элемент неожиданности (но контролируемо!) и позволяет получать почти случайные числа или элементы коллекций;</p>
+      <p>библиотека datetime — ваш пропуск в управляемое временное пространство.</p>
+      <p>P. S. Никогда не откладывай на dt.date.today() + dt.timedelta(days=1) то, что можно сделать dt.date.today()</p>
+      </article>
+      <nav class="lesson-pagination" aria-label="Переключение уроков">
+        <a class="chapter-next" href="csv-json.html">Назад · Файлы csv и json</a>
+        <a class="chapter-next" href="filesystem.html">Далее · Обход файловой системы</a>
+      </nav>
+    </main>
+  </div>
+</body>
+</html>

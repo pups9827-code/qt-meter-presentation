@@ -1,0 +1,465 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#090909">
+  <title>Списки — pupsiks</title>
+  <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../docs.css">
+  <script src="../docs.js" defer></script>
+</head>
+<body>
+  <header class="masthead">
+    <a class="brand" href="../../index.html"><img src="../../favicon.svg" alt="" width="38" height="38">pupsiks</a>
+    <a class="label" href="../index.html">Справочник Python</a>
+    <a class="home-link" href="../../index.html">На главную</a>
+  </header>
+  <div class="docs module">
+    <aside class="sidebar">
+      <nav aria-label="Разделы справочника" class="chapters">
+        <p class="label">Темы</p>
+        <ol>
+          <li><a href="../algorithms.html">Линейные алгоритмы и циклы</a></li>
+          <li><a href="../collections.html" aria-current="page">Коллекции</a></li>
+          <li><a href="../files.html">Файлы и библиотеки</a></li>
+          <li><a href="../functions.html">Функции</a></li>
+          <li><a href="../oop.html">ООП</a></li>
+        </ol>
+      </nav>
+    </aside>
+    <aside class="contents module-contents">
+      <nav aria-label="На этой странице">
+        <p class="label">На этой странице</p>
+        <a href="#topic-1">Список как коллекция</a>
+        <a href="#topic-2">Методы списков</a>
+        <a href="#topic-3">Список как изменяемый тип данных</a>
+        <a href="#topic-4">Сортировка списков</a>
+        <a href="#topic-5">Запаковка и распаковка</a>
+      </nav>
+    </aside>
+    <main>
+      <header class="overview" id="overview">
+        <a class="lesson-back label" href="../collections.html#lists">Коллекции</a>
+        <h1>Списки</h1>
+        <p>Безразмерные карманы</p>
+      </header>
+
+      <article class="lesson-body">
+      <p>Представьте: вы — искатель приключений. Вам нужно собраться в дорогу, вы надеваете свою любимую жилетку с миллионом карманов, в которые складываете: карту, компас, банан, световой мем, альбом формата А3 с фотографиями своего питомца.</p>
+      <p>Чисто технически для решения этой задачи подойдёт уже знакомый нам кортеж, но во время сборов постоянно что-то забываешь или передумываешь брать, поэтому чрезвычайно важно, чтобы было удобно вносить изменения в перечень собранных предметов.</p>
+      <p>В Python аналог такой мультикарманной жилетки — это список (list). Он может хранить что угодно в любом порядке, и вы всегда можете выкинуть банан (или добавить новый). Списки — это ваша суперсила для работы с данными.</p>
+      <p>Список — это упорядоченная изменяемая коллекция. «Изменяемая» означает, что вы можете перекрасить волосы, сменить имя и даже улететь на Марс, не создавая новый список. Всё легально. А «упорядоченная» — что у каждого элемента, положенного в список, есть индекс (тут всё работает ровно так, как у строк и кортежей).</p>
+      <h2 id="topic-1">📝 Список способов создать список</h2>
+      <p>Списки в Python можно создать несколькими способами:</p>
+      <p>Непосредственно из кода. Списки застолбили за собой квадратные скобки, поэтому можно беззастенчиво перечислять в таких скобках через запятую элементы и получить список.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>fruits = [&#x27;яблоко&#x27;, &#x27;банан&#x27;, &#x27;вишня&#x27;, &#x27;шоколад (вдруг стресс)&#x27;]  # Список покупок.
+random_things = [1, False, (55, 44), &#x27;Котик&#x27;, 12.5, [1, 2, 3]]  # В списке можно хранить всё что угодно, в том числе и другие списки.
+empty = []  # Пустой список.</code></pre>
+      </figure>
+      <p>Путём преобразования из других коллекций с помощью функции list().</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>chars = list(&#x27;hello&#x27;)  # [&#x27;h&#x27;, &#x27;e&#x27;, &#x27;l&#x27;, &#x27;l&#x27;, &#x27;o&#x27;]
+numbers = list(range(5))  # [0, 1, 2, 3, 4]
+baggage = list((&#x27;Картина&#x27;, &#x27;Корзина&#x27;, &#x27;Картонка&#x27;, &#x27;Маленькая собачонка&#x27;))  
+# Те же элементы, что и в кортеже, но уже в изменяемом списке.</code></pre>
+      </figure>
+      <p>Если мы попробуем получить список из целого числа или ещё из какого-нибудь типа, который не является коллекцией (если быть до конца честными, то правильно говорить: из любого неитерируемого объекта), то мы получим ошибку. Не надо так.</p>
+      <h2 id="part-24">🧹 Поддерживаем порядок</h2>
+      <p>К счастью для нас, работа со списком как с упорядоченной коллекцией абсолютно идентична тому, как мы уже обращались чуть ранее со строками и их индексами.</p>
+      <p>Бегло поговорим о том, о чём мы уже знаем, но применительно к спискам.</p>
+      <p>Каждый элемент списка имеет индекс (как номер в очереди за новым iPhone). Чтобы обратиться к элементу по индексу, нужно написать его (индекс) в квадратных скобках. Нумерация идёт с нуля, поддерживаются отрицательные индексы.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>animals = [&quot;ёж&quot;, &quot;кит&quot;, &quot;слон&quot;, &quot;питон&quot;]
+print(animals[0])  # ёж (первый элемент).
+print(animals[-1])  # питон (последний элемент).</code></pre>
+      </figure>
+      <p>Срезы также прекрасно себя чувствуют и применительно к спискам. Синтаксис идентичен.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>nums = [0, 1, 2, 3, 4, 5]
+print(nums[1:4])  # [1, 2, 3]
+print(nums[::2])  # [0, 2, 4] от начала до конца с шагом 2.
+print(nums[::-1])  # [5, 4, 3, 2, 1, 0] — элементы в обратном порядке.
+print(nums[:])  # Все элементы списка.</code></pre>
+      </figure>
+      <p>nums[:] создаёт копию списка, что очень пригодится нам совсем скоро.</p>
+      <p>Списки можно дублировать с помощью умножения на число, а также складывать друг с другом с помощью операции сложения — конкатенации.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>my_list = [1, 2, 3]
+my_list2 = [3, 4, 5]
+print(my_list * 3)
+print(my_list + my_list2)</code></pre>
+      </figure>
+      <p>Конечно, поддерживаются операции проверки вхождения с помощью оператора in и получения длины с помощью функции len().</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>animals = [&quot;ёж&quot;, &quot;кит&quot;, &quot;слон&quot;]
+print(len(animals))  # 3
+print(&#x27;верблюд&#x27; in animals)  # False</code></pre>
+      </figure>
+      <p>А ещё делят с кортежами и строками следующие методы:</p>
+      <p>.index(el) — индекс первого вхождения элемента в список.</p>
+      <p>.count(el) — сколько раз элемент входит в список.</p>
+      <p>Такая унификация позволяет нам самым наглым образом переиспользовать примеры из прошлого урока, меняя круглые скобки на квадратные:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>pizza_list = [&quot;пепперони&quot;, &quot;пепперони&quot;, &quot;барбекю&quot;, &quot;4 сыра&quot;, &quot;пепперони&quot;]
+print(pizza_list.count(&quot;пепперони&quot;))  # 3 (количество &quot;пепперони&quot;)
+print(pizza_list.index(&quot;4 сыра&quot;))  # 3 (индекс &quot;4 сыра&quot;)</code></pre>
+      </figure>
+      <p>В списке, как и в кортеже, можно найти максимальный (max()) или минимальный (min()) элемент, но все элементы должны быть сравнимы между собой. Впрочем, про все ограничения вы уже знаете.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>print(max([10, 30, 20.5]))  # -&gt; 30
+print(min([&quot;python&quot;, &quot;java&quot;, &quot;c++&quot;]))  # -&gt; с++ — раньше других по алфавиту.
+print(max([10, 20, &quot;python&quot;]))  # -&gt; ValueError — нельзя сравнить число со строкой. </code></pre>
+      </figure>
+      <p>Также можно посчитать сумму элементов списка (если все они — числа):</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>print(sum([10, 30, 20.5]))  # -&gt; 60.5</code></pre>
+      </figure>
+      <p>Всё то, что мы говорили про обход упорядоченных коллекций с помощью цикла for, без каких-либо оговорок справедливо и для списков, можно проходить (итерироваться):</p>
+      <p>по элементам:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>todo_monday = [
+    &quot;Проснуться (по возможности)&quot;,
+    &quot;Притвориться человеком&quot;,
+    &quot;Заварить кофе&quot;,
+    &quot;Заварить второй кофе&quot;,
+    &quot;Понять, зачем тебе куда-то идти&quot;
+]
+for el in todo_monday:
+    print(el)</code></pre>
+      </figure>
+      <p>по индексам:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>cat_shopping_list = [
+    &quot;Лососевый паштет с сардинами в соусе из обид&quot;,
+    &quot;Новый диван для царапанья&quot;,
+    &quot;Хрустики, которые ты любишь, но хозяин — нет&quot;,
+    &quot;3 пачки презрения к людям&quot;,
+    &quot;Один (1) взгляд, полный превосходства&quot;
+]
+for i in range(len(cat_shopping_list)):
+    print(i, cat_shopping_list[i])</code></pre>
+      </figure>
+      <p>по индексам и элементам с помощью enumerate():</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>capybara_powers = [
+    &quot;Терпеть всех&quot;,
+    &quot;Быть Zen 24/7&quot;,
+    &quot;Игнорировать шум и горящий офис&quot;,
+    &quot;Уметь выглядеть мудрым просто молча&quot;
+]
+for idx, el in enumerate(capybara_powers):
+    print(idx, el)</code></pre>
+      </figure>
+      <h2 id="topic-2">➕ Нужна добавка</h2>
+      <p>Но хватит об общем. Давайте поговорим о том, чем списки отличаются от кортежей. И главное — это изменяемость.</p>
+      <p>Вообще, чуть ли не чаще всего при решении задач нам придётся сначала создавать пустой список, а потом в цикле (или ещё как-нибудь) заполнять его значениями.</p>
+      <p>Для дописывания элемента в конец списка используется метод .append(element).</p>
+      <p>Так как списки изменяемые, то у них есть методы, которые изменяют сам список и ничего не возвращают (правильнее говорить: возвращают ничего — но об этом чуть позднее).</p>
+      <p>Давайте рассмотрим пример, который поможет нам сохранить в списке расписание уроков развлечений на день:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>print(&#x27;Введите количество развлечений сегодня&#x27;)
+n = int(input())
+entertainments = []
+for i in range(n):
+    print(f&#x27;Введите развлечение {i + 1}&#x27;)
+    entertainments.append(input())  # Нет присваивания, потому что изменяется сам список.
+print(entertainments)</code></pre>
+      </figure>
+      <p>Если нам хочется добавить в конец не один элемент, а целую коллекцию элементов, то можно воспользоваться методом .extend(elements) (это та же конкатенация — сложение исходного списка с другим).</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>letters = [&#x27;a&#x27;, &#x27;b&#x27;, &#x27;c&#x27;]
+additional_letters = [&#x27;e&#x27;, &#x27;f&#x27;, &#x27;g&#x27;]
+letters.extend(additional_letters)  # Тут тоже изменяется сам список.</code></pre>
+      </figure>
+      <p>С помощью метода .insert(position, element) можно вставить элемент не в конец, а на нужную позицию, при чём, если эта позиция не последняя, все остальные элементы с большим индексом подвинутся вправо:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>secret_animals = [&quot;Усатый булочкин&quot;, &quot;Пельмехозавр&quot;, &quot;Фыркающий кубышкогрыз&quot;]
+# Тут тоже не нужно присваивание.
+secret_animals.insert(1, &quot;Тюлибара&quot;)  # [&#x27;Усатый булочкин&#x27;, &#x27;Тюлибара&#x27;, &#x27;Пельмехозавр&#x27;, &#x27;Фыркающий кубышкогрыз&#x27;]</code></pre>
+      </figure>
+      <p>Отрицательные индексы тоже поддерживаются.</p>
+      <p>Если указать слишком большой положительный индекc вставки (индекс, которого не существовало до этого в списке), то элемент добавится в конец, как при использовании метода .append(element), а если слишком большой (по модулю) отрицательный индекс, то элемент станет нулевым.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>secret_animals.insert(1_000, &quot;Лосехвост&quot;)  # Добавит в конец, если в списке меньше 1001 элемента.
+secret_animals.insert(-9_999, &quot;Жирафант&quot;)  # Добавит в начало, если в списке меньше 10_000 элементов.</code></pre>
+      </figure>
+      <h2 id="part-117">📈 Перемены к лучшему</h2>
+      <p>Вставка нового элемента — не единственная возможность нашего влияния на содержимое списка. Никто не запретит нам перезаписать уже существующий элемент по индексу:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>shopping = [&quot;молоко&quot;, &quot;хлеб&quot;, &quot;яйца&quot;]
+shopping[1] = &quot;батон&quot;  # Теперь список: [&quot;молоко&quot;, &quot;батон&quot;, &quot;яйца&quot;]</code></pre>
+      </figure>
+      <p>Не пытайтесь повторить это с неизменяемыми коллекциями — получите ошибку!</p>
+      <p>Более того, срезы можно использовать и для присваивания новых элементов. Тут главное, чтобы количество элементов, которые попадают в срез, было равно количеству новых значений.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>months = [&#x27;январь&#x27;, &#x27;февраль&#x27;, &#x27;март&#x27;, &#x27;апрель&#x27;, &#x27;май&#x27;, &#x27;июнь&#x27;, &#x27;июль&#x27;,
+          &#x27;август&#x27;, &#x27;сентябрь&#x27;, &#x27;октябрь&#x27;, &#x27;ноябрь&#x27;, &#x27;декабрь&#x27;]
+months[5:8] = [&#x27;June&#x27;, &#x27;July&#x27;, &#x27;August&#x27;]
+print(months)</code></pre>
+      </figure>
+      <h2 id="part-127">✅ Это вычёркиваем</h2>
+      <p>Удалять элементы тоже можно, да ещё и несколькими способами. Можно удалить:</p>
+      <p>Элемент по индексу с помощью ключевого слова del. Работает даже со срезами.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>days_of_week = [&quot;Понедельник&quot;, &quot;Вторник&quot;, &quot;Среда&quot;, &quot;Четверг&quot;, &quot;Пятница&quot;, &quot;Суббота&quot;, &quot;Воскресенье&quot;]</code></pre>
+      </figure>
+      <p>del days_of_week[0]  # Прощай, понедельник.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>print(days_of_week)</code></pre>
+      </figure>
+      <p>del days_of_week[:4]  # Впрочем, давайте оставим только выходные.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>print(days_of_week)</code></pre>
+      </figure>
+      <p>Элемент по индексу, но перед удалением нужно записать удаляемый элемент в переменную. Для этого используется метод .pop(idx), который изменяет сам список. Если не указать индекс удаляемого элемента, удалится последний.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>beginner_mistakes = [
+    &quot;Назвал переменную &#x27;list&#x27;&quot;,
+    &quot;Пробелы и табы — вместе, как в салате&quot;,
+    &quot;if x = 5:&quot;,
+    &quot;Цикл в цикле в цикле, где сам запутался&quot;,
+    &quot;Ожидание, что индексация с 1&quot;
+]
+el = beginner_mistakes.pop(0)  # Эту ошибку мы точно не совершим.
+print(el)
+# Избавляемся от всех ошибок (с конца):
+while beginner_mistakes:
+    print(&quot;Ошибка, которую я никогда больше не повторю&quot;)
+    print(beginner_mistakes.pop())</code></pre>
+      </figure>
+      <p>Элемент по значению с помощью метода .remove(el), который меняет сам список. Удаляется только первое вхождение, а если ничего не найдено, то будет ошибка (поэтому нелишне перед удалением проверить наличие такого значения в списке с помощью in).</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>random_numbers = [3, 1, 4, 1, 5, 9, 2]
+if 1 in random_numbers:
+    random_numbers.remove(1)
+print(random_numbers)</code></pre>
+      </figure>
+      <p>Все элементы в списке с помощью метода .clear().</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>todo_list = [
+    &quot;Протереть пыль (особенно с пыльных отмазок)&quot;,
+    &quot;Помыть посуду... или купить одноразовую — как пойдёт&quot;,
+    &quot;Покормить кота в четвёртый раз&quot;,
+    &quot;Выбросить мусор (и не завести с ним эмоциональную связь)&quot;,
+]
+todo_list.clear()  # Ой, всё!
+print(len(todo_list))</code></pre>
+      </figure>
+      <h2 id="topic-3">🔧 Ремонт или переезд</h2>
+      <p>Представьте, что у вас есть два близнеца — list1 и list2. Они выглядят одинаково (имеют одинаковые элементы), но это два разных человека. Оператор is проверяет, не один ли это человек в разных костюмах? А == просто спрашивает: «Вы похожи?»</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>list1 = [1, 2, 3]
+list2 = [1, 2, 3]  # Близнец list1.
+list3 = list1      # list1 надел тёмные очки.
+
+print(list1 == list2)  # True — &quot;Вы похожи!&quot;
+print(list1 is list2)   # False — &quot;Но вы не один человек!&quot;
+print(list1 is list3)   # True — &quot;Это же вы в другом платье!&quot;</code></pre>
+      </figure>
+      <p>is проверяет идентичность объектов в памяти (тот же адрес). == проверяет равенство значений (одинаковые ли элементы).</p>
+      <p>Если вы ещё не забыли прошлый урок, то там мы говорили, что нет никакой разницы для строк и кортежей при использовании полной и сокращённой записи арифметических операций. Списки же изменяемые, поэтому для них это не так.</p>
+      <p>Оператор + создаёт новый список, как будто вы купили новую квартиру и переехали. Старая квартира остаётся нетронутой, а соседи (другие переменные) всё ещё видят её старой версией.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>a = [1, 2]
+b = a  # b — ваш сосед со старым адресом.
+a = a + [3, 4]  # Переезжаем в новостройку.
+
+print(a)  # [1, 2, 3, 4] (новая квартира).
+print(b)  # [1, 2] 😎 Сосед остался в старой.</code></pre>
+      </figure>
+      <p>+ безопасен, когда нужно сохранить исходный список. Но за это приходится платить: создание нового списка требует памяти и времени (если список огромный).</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>Когда вы делаете a += [элементы], вы не переезжаете, а расширяете текущую квартиру. Подрядчик (Python) пристраивает новую комнату к вашей старой квартире.</code></pre>
+      </figure>
+      <p>Все, кто знал ваш адрес (ссылки на список), увидят изменения — ведь это та же квартира, но с пристройкой.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>a = [1, 2]
+b = a  # b — сосед, у которого есть ваш адрес.
+a += [3, 4]  # Делаем ремонт: добавляем комнаты.
+
+print(a)  # [1, 2, 3, 4]
+print(b)  # [1, 2, 3, 4] 😱 Сосед тоже видит ремонт!</code></pre>
+      </figure>
+      <p>+= (или .extend()) меняет исходный список и работает молниеносно, потому что не создаёт новый объект.</p>
+      <p>Если мы хотим получить копию списка (чтобы изменения в одной переменной не влияли на изменения в другой), можно поступить одним из трёх способов:</p>
+      <p>Сделать полный срез исходного списка.</p>
+      <p>Воспользоваться методом .copy().</p>
+      <p>Явным образом сделать новый список c использованием функции list().</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>original = [&#x27;el1&#x27;, &#x27;el2&#x27;, &#x27;el3&#x27;]
+clone0 = original[:]
+clone1 = original.copy()
+clone2 = list(original)
+
+print(original == clone0, original is clone0)  # True False
+print(original == clone1, original is clone1)  # True False
+print(original == clone2, original is clone2)  # True False
+
+original.append(&#x27;el4&#x27;)
+
+print(original)  # [&#x27;el1&#x27;, &#x27;el2&#x27;, &#x27;el3&#x27;, &#x27;el4&#x27;]
+print(clone0)  # [&#x27;el1&#x27;, &#x27;el2&#x27;, &#x27;el3&#x27;]
+print(clone1)  # [&#x27;el1&#x27;, &#x27;el2&#x27;, &#x27;el3&#x27;]
+print(clone2)  # [&#x27;el1&#x27;, &#x27;el2&#x27;, &#x27;el3&#x27;]</code></pre>
+      </figure>
+      <p>Пользоваться можно любым методом из трёх на ваш вкус — внутри они устроены практически одинаково.</p>
+      <p>К сожалению, такое сработает только для верхнего уровня. Если в списке есть другие списки (другие изменяемые объекты), то скопируются только ссылки на них, а не сами объекты:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>original = [1, 2, 3, [4, 5, 6]]
+bad_clone = original[:]
+print(original == bad_clone, original is bad_clone)  # Пока всё хорошо.
+bad_clone.append(7)
+print(original, bad_clone)  # Всё ещё хорошо.
+# [1, 2, 3, [4, 5, 6]] [1, 2, 3, [4, 5, 6], 7]</code></pre>
+      </figure>
+      <p>original[-1].append(7)  # В последний элемент, который является списком, добавляем новый элемент.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>print(original, bad_clone)  # А-a-a-a-a!
+# [1, 2, 3, [4, 5, 6, 7]] [1, 2, 3, [4, 5, 6, 7], 7]</code></pre>
+      </figure>
+      <p>Чтобы получить точно полную копию исходного списка, что бы в нём ни лежало, необходимо воспользоваться функцией deepcopy() из модуля copy:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>import copy
+
+original = [1, 2, 3, [4, 5, 6]]
+full_clone = copy.deepcopy(original)  # Вот теперь всё хорошо.</code></pre>
+      </figure>
+      <h2 id="topic-4">📶 Сортировочная база</h2>
+      <p>В Python есть невероятно гибкие настройки того, как мы можем поменять порядок элементов в списке (очень подробно мы про это поговорим на уроках про функции), а сейчас рассмотрим, как можно решить значительную часть задач, используя базовые возможности.</p>
+      <p>Начнём с сортировки. Если все элементы списка сравнимы между собой, то с помощью метода .sort() можно отсортировать список по возрастанию:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>li_nums = [1, 2, 3]
+li_str = [&#x27;каждый&#x27;, &#x27;охотник&#x27;, &#x27;желает&#x27;, &#x27;знать&#x27;, &#x27;где&#x27;, &#x27;сидит&#x27;, &#x27;фазан&#x27;]
+li_tuple = [(3, &quot;Барсик&quot;), (2, &quot;Булочка&quot;), (1, &quot;Бусинка&quot;)]
+li_nums.sort()
+li_str.sort()
+li_tuple.sort()
+print(li_nums)
+print(li_str)
+print(li_tuple)
+Если мы хотим отсортировать списки по убыванию, то при вызове метода надо указать ключ reverse=True:
+li_nums = [1, 2, 3]
+li_str = [&#x27;каждый&#x27;, &#x27;охотник&#x27;, &#x27;желает&#x27;, &#x27;знать&#x27;, &#x27;где&#x27;, &#x27;сидит&#x27;, &#x27;фазан&#x27;]
+li_tuple = [(3, &quot;Барсик&quot;), (2, &quot;Булочка&quot;), (1, &quot;Бусинка&quot;)]
+li_nums.sort(reverse=True)
+li_str.sort(reverse=True)
+li_tuple.sort(reverse=True)
+print(li_nums)
+print(li_str)
+print(li_tuple)</code></pre>
+      </figure>
+      <p>В случае когда нам хочется создать новый отсортированный список, но никак не трогать порядок элементов в исходном, можно воспользоваться функцией sorted():</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>li_nums = [1, 2, 3]
+li_str = [&#x27;каждый&#x27;, &#x27;охотник&#x27;, &#x27;желает&#x27;, &#x27;знать&#x27;, &#x27;где&#x27;, &#x27;сидит&#x27;, &#x27;фазан&#x27;]
+
+sorted_nums = sorted(li_nums)
+sorted_str = sorted(li_str, reverse=True)</code></pre>
+      </figure>
+      <p>Кроме того, мы с помощью метода .reverse() можем поменять порядок элементов в списке на обратный без сортировки. Есть и брат-функция reversed(), которая создаёт новый список с элементами исходного в обратном порядке.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>li_nums = [1, 2, 3]
+li_str = [&#x27;каждый&#x27;, &#x27;охотник&#x27;, &#x27;желает&#x27;, &#x27;знать&#x27;, &#x27;где&#x27;, &#x27;сидит&#x27;, &#x27;фазан&#x27;]
+
+li_nums.reverse()
+reversed_str = reversed(li_str)  # Делает ровно то же, что и li_str[::-1]
+print(li_nums)
+print(li_str)
+print(reversed_str)</code></pre>
+      </figure>
+      <p>В случае с .reverse() и reversed() элементы списка могут быть несравниваемыми между собой, потому что мы просто меняем порядок на обратный.</p>
+      <p>Но давайте ещё немного про сортировку.</p>
+      <p>Вообще алгоритмов сортировки довольно много и они сильно друг от друга отличаются.</p>
+      <p>Есть абсолютно безумные (и бесполезные) варианты вроде bogosort — мы случайно переставляем элементы массива и проверяем, не отсортировался ли он. Разумеется, его можно рассматривать только в образовательных целях, потому что массив из 20 элементов на процессоре, который может выполнять 9 миллиардов операций в секунду, будет сортироваться в среднем 160 лет.</p>
+      <p>Существуют и куда более эффективные варианты — быстрая сортировка, сортировка слиянием, Timsort (используется в методах .sort() и функции sorted()).</p>
+      <p>Хочется выделить ещё один алгоритм, он далеко не самый эффективный, но зато очень простой и наглядный. Встречайте — сортировка пузырьком.</p>
+      <p>Представьте, что вы — пингвин, который пытается разложить рыбу по размеру. Вы берёте две рыбки, сравниваете их, и, если левая больше правой, меняете их местами. Повторяете, пока вся куча не будет отсортирована. Это и есть пузырьковая сортировка! Название появилось потому, что большие элементы «всплывают» в конец списка, как пузырьки в воде.</p>
+      <p>Ещё раз:</p>
+      <p>Проходим по списку, сравнивая соседние элементы.</p>
+      <p>Если элемент слева больше правого — меняем их местами.</p>
+      <p>Повторяем, пока весь список не будет отсортирован.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>fish_sizes = [5, 3, 8, 1, 2]
+n = len(fish_sizes)
+for i in range(n):
+    # Пингвин делает один проход, толкая большие элементы вправо.
+    for j in range(0, n - i - 1): 
+        # Тут нет необходимости идти до конца, потому что на n-итерации внешнего цикла
+        # у нас гарантировано в конце n упорядоченных элементов.
+        if fish_sizes[j] &gt; fish_sizes[j + 1]:
+            # Меняем рыбки местами (пингвин доволен).
+            fish_sizes[j], fish_sizes[j + 1] = fish_sizes[j + 1], fish_sizes[j]
+print(fish_sizes)</code></pre>
+      </figure>
+      <h2 id="part-287">🪆 Коллекция матрёшек или матрёшка коллекций</h2>
+      <p>Подробнее мы про это поговорим чуть позже, но в список можно положить всё что угодно без каких-либо ограничений. Это позволяет создавать списки других коллекций, например кортежей, и пользоваться методами списков для сортировки этих коллекций или нахождения максимума/минимума.</p>
+      <p>Рассмотрим список кортежей, каждый из которых описывает доклад и представляет набор из трёх значений:</p>
+      <p>количество мемов в презентации,</p>
+      <p>длительность выступления,</p>
+      <p>оценку аудитории.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>presentation_stats = [
+    (0, 15.0, &quot;заснули на третьем слайде&quot;),
+    (3, 10.0, &quot;смеялись, но ничего не поняли&quot;),
+    (7, 7.5, &quot;было весело, а что за тема была?&quot;),
+    (7, 5.0, &quot;гениально и бессмысленно&quot;),
+    (2, 12.5, &quot;вроде по теме, вроде нет&quot;)
+]
+print(max(presentation_stats))  # Больше всего мемов с наибольшей длиной доклада.</code></pre>
+      </figure>
+      <p>Понятно, что пока это не очень полезно, потому что наверняка нам бы хотелось получить результат сортировки по более сложному критерию, но скоро мы и это сможем.</p>
+      <h2 id="topic-5">🎁 Запаковал и не забыл</h2>
+      <p>Магия множественного присваивания нам уже знакома, но пора развеять налёт волшебства и поговорить о том, как это работает на самом деле.</p>
+      <p>Правило простое: если справа от знака присваивания стоит больше одного значения, они запаковываются в кортеж. Если слева от знака присваивания стоит больше одного значения, то Python попытается распаковать значение по этим переменным.</p>
+      <p>Начнём с простого:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>a, b = 10, 20
+c, d = [30, 60]
+letter1, letter2 = &#x27;АБ&#x27;</code></pre>
+      </figure>
+      <p>Важно, чтобы количество элементов в коллекции, которую мы пытаемся распаковать, совпадало с количеством переменных слева. Но что делать, если мы не знаем, сколько значений нам надо распаковать?</p>
+      <p>На помощь снова придёт звёздочка *. Слева от знака присваивания мы можем сделать одну переменную, в которую сложим списком всё, что не поместилось в другие.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>nums = [1, 2, 3, 4, 5]</code></pre>
+      </figure>
+      <p>one, two, *other = nums</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>print(one, two, *other)  # 1 2 3 4 5</code></pre>
+      </figure>
+      <p>*other, four, five = nums</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>print(other, four, five)  # [1, 2, 3] 4 5</code></pre>
+      </figure>
+      <p>one, *other, five = nums</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>print(one, other, five)  # 1 [2, 3, 4] 5</code></pre>
+      </figure>
+      <p>При этом всё будет хорошо работать, даже если не останется ни одного значения для переменной со звёздочкой, там просто будет пустой список.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>nums = [1, 2]</code></pre>
+      </figure>
+      <p>first, *other, last = nums</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>print(first, *other, last)  # 1 2</code></pre>
+      </figure>
+      <h2 id="part-324">🌟 Итог: что-то меняется, как мода</h2>
+      <p>Мы познакомились с одной из самых универсальных коллекций. Списки — это круто:</p>
+      <p>простые и мощные,</p>
+      <p>изменяемые,</p>
+      <p>поддерживают все базовые операции,</p>
+      <p>можно вложить хоть холодильник в стиральную машину (если хочется),</p>
+      <p>отлично сочетаются с for и распаковкой,</p>
+      <p>можно сортировать!</p>
+      <p>Списки — это ваш швейцарский нож в Python.</p>
+      <p>P. S. Пока вы живёте вместе с родителями, список продуктов в вашем холодильнике совпадает со списком продуктов в холодильнике родителей, поэтому съесть все пирожные самому — не очень хорошая идея.</p>
+      </article>
+      <nav class="lesson-pagination" aria-label="Переключение уроков">
+        <a class="chapter-next" href="strings-tuples.html">Назад · Строки и кортежи</a>
+        <a class="chapter-next" href="sets.html">Далее · Множества</a>
+      </nav>
+    </main>
+  </div>
+</body>
+</html>

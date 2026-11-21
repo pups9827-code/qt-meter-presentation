@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#090909">
+  <title>Обход файловой системы — pupsiks</title>
+  <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../docs.css">
+  <script src="../docs.js" defer></script>
+</head>
+<body>
+  <header class="masthead">
+    <a class="brand" href="../../index.html"><img src="../../favicon.svg" alt="" width="38" height="38">pupsiks</a>
+    <a class="label" href="../index.html">Справочник Python</a>
+    <a class="home-link" href="../../index.html">На главную</a>
+  </header>
+  <div class="docs module">
+    <aside class="sidebar">
+      <nav aria-label="Разделы справочника" class="chapters">
+        <p class="label">Темы</p>
+        <ol>
+          <li><a href="../algorithms.html">Линейные алгоритмы и циклы</a></li>
+          <li><a href="../collections.html">Коллекции</a></li>
+          <li><a href="../files.html" aria-current="page">Файлы и библиотеки</a></li>
+          <li><a href="../functions.html">Функции</a></li>
+          <li><a href="../oop.html">ООП</a></li>
+        </ol>
+      </nav>
+    </aside>
+    <aside class="contents module-contents">
+      <nav aria-label="На этой странице">
+        <p class="label">На этой странице</p>
+        <a href="#topic-1">В текущей папке</a>
+        <a href="#topic-2">Всё о файле и папке</a>
+        <a href="#topic-3">Операции с файлами и папками</a>
+        <a href="#topic-4">Рекурсивный обход</a>
+        <a href="#topic-5">Статистика</a>
+      </nav>
+    </aside>
+    <main>
+      <header class="overview" id="overview">
+        <a class="lesson-back label" href="../files.html#filesystem">Файлы и библиотеки</a>
+        <h1>Обход файловой системы</h1>
+        <p>Древесный альпинизм</p>
+      </header>
+
+      <article class="lesson-body">
+      <p>Надеемся, что все уже поставили новогоднюю ёлку/пальму/праздничное ничего (в полном соответствии с семейными традициями). А значит, пришло время поговорить про деревья файловой системы и про отдельные файлы.</p>
+      <p>Работать с файлами вы уже умеете, но до этого урока мы почти всегда говорили: «Давайте представим, что файл лежит в одной папке с нашей программой». А что, если не лежит?</p>
+      <p>Все мы люди. И все мы однажды создавали папку Новая папка (14), а потом искали в ней проект, скан паспорта и фотку любимого хомяка одновременно.</p>
+      <p>Файловая система — это не просто место хранения. Это джунгли. И если мы хотим уверенно ориентироваться в этом цифровом лесу, нам нужен мачете, а лучше два. В Python — это модули os и shutil. (Ничего общего с юмором в названии модуля нет, только сокращение от shell utilites. Мы тут не шутки шутить собрались, знаете ли.)</p>
+      <p>Модуль os — это наш Python-доступ к операционной системе. С его помощью можно:</p>
+      <p>узнать, какие файлы лежат в папке;</p>
+      <p>посмотреть, сколько весит файл и когда он в последний раз подавал признаки жизни;</p>
+      <p>создать новую директорию;</p>
+      <p>удалить старую (особенно если она называется backup-final-final2);</p>
+      <p>(одно из самых приятных) пройтись по всем папкам и подпапкам, как в фильме «Гарри Поттер и Потерянная PDFка».</p>
+      <p>Модуль shutil даёт продвинутые возможности по удалению, копированию и перемещению файлов/папок.</p>
+      <h2 id="topic-1">🚩 Где мы? Узнаем без компаса и карты</h2>
+      <p>Начнём с малого. Нужно узнать, в какой директории лежит наша программа, — os.getcwd().</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>import os
+
+current_dir = os.getcwd()  # Current Working Directory.
+print(f&quot;Вы в {current_dir}&quot;)</code></pre>
+      </figure>
+      <p>Что ещё лежит рядом — os.listdir().</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>import os
+
+files_and_folders = os.listdir()
+print(&quot;Рядом с вами:&quot;)
+for item in files_and_folders:
+    print(f&quot;- {item}&quot;)</code></pre>
+      </figure>
+      <p>Если нужно получить список файлов и папок в конкретном каталоге, то можно передать путь как параметр функции os.listdir():</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>import os
+
+print(os.listdir(&quot;/home/my/secret_files/all_task_solutions&quot;))
+# Если путь не существует, будет ошибка FileNotFoundError.</code></pre>
+      </figure>
+      <p>А теперь важный момент: listdir() не говорит, что именно лежит внутри. Только имена. На выходе будет и &#x27;котик.jpg&#x27;, и &#x27;важное_срочно&#x27;, но непонятно, что из них файл, а что папка.</p>
+      <h2 id="topic-2">🔬 Под микроскопом</h2>
+      <p>Чтобы по пути к файлу (или папке) понять, что же скрывается за именем, нужно написать что-то такое:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>import os
+
+path1 = &quot;удалить после прочтения.txt&quot;
+path2 = &quot;Новая папка (15)&quot;
+path3 = &quot;проект_1_1_final_правки_точнофинал_2.docx&quot;
+path4 = &quot;C:\\Users\\internet_cat\\Downloads\\python.exe&quot;
+
+if os.path.exists(path1):
+    print(&quot;Хоть что-то такое есть...&quot;)
+
+if os.path.isdir(path2):
+    print(&quot;Это папка!&quot;)
+
+if os.path.isfile(path3):
+    print(&quot;Это файл!&quot;)
+
+# Размер файла в байтах (для папки — 0).
+print(os.path.getsize(path3))  
+
+print(os.path.basename(path4), os.path.dirname(path4))</code></pre>
+      </figure>
+      <p>Да, os.path — это модуль внутри os, чтобы мы могли использовать модуль, пока используем модуль (такое случается довольно часто). Он умеет:</p>
+      <p>проверять наличие пути (exists());</p>
+      <p>отличать папку от файла (isdir(), isfile());</p>
+      <p>получать размер файла в байтах (getsize());</p>
+      <p>вытаскивать имя файла (basename()) и путь (dirname()).</p>
+      <p>Например, оставить только имена файлов в текущей директории можно вот так:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>files_only = [f for f in os.listdir() if os.path.isfile(f)]</code></pre>
+      </figure>
+      <p>Не стоит соединять пути руками.</p>
+      <p>Вот так — не очень:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>path = &quot;/home/p4python&quot; + &quot;/&quot; + &quot;projects&quot;</code></pre>
+      </figure>
+      <p>Вот так — очень даже:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>path = os.path.join(&quot;/home/p4python&quot;, &quot;projects&quot;)</code></pre>
+      </figure>
+      <p>Почему? Это поможет избежать ошибок экранирования спецсимволов, а также подстроит путь под правила той операционной системы, на которой запущена программа.</p>
+      <h2 id="topic-3">🏗️ Строительные работы</h2>
+      <p>Создавать файлы вы уже умеете, давайте теперь разберёмся с папками. Допустим, мы хотим создать путь /etc/why_is_this_here/just_in_case/magic_config.yaml. Можно последовательно создавать каталоги с помощью функции os.mkdir():</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>import os
+
+os.mkdir(&quot;etc&quot;)  # Не умеет создавать вложенные каталоги.
+os.mkdir(&quot;etc/why_is_this_here&quot;)
+os.mkdir(&quot;etc/why_is_this_here/just_in_case/&quot;)</code></pre>
+      </figure>
+      <p>А можно создать сразу весь путь функцией os.makedirs():</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>import os
+
+os.makedirs(&quot;etc/why_is_this_here/just_in_case/&quot;)
+makedirs() создаёт все нужные промежуточные папки. А если они уже есть — можно не паниковать, просто:
+os.makedirs(&quot;etc/why_is_this_here/just_in_case/&quot;, exist_ok=True)</code></pre>
+      </figure>
+      <h2 id="part-86">🫣 Я что-то нажал, и оно исчезло</h2>
+      <p>Вопреки фразе «ломать не строить», программно удалять файлы и каталоги не легче, чем их создавать. Надо помнить аж три функции:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>os.remove() для удаления файла:
+# Нам только попробовать.
+os.remove(&quot;do_NOT_delete.txt&quot;)
+os.rmdir() для удаления пустой папки:
+# Нет выходных — нет фотографий.
+os.rmdir(&quot;my_holliday_photo&quot;)</code></pre>
+      </figure>
+      <p>Удаляем дерево каталогов? Тогда нужна функция уже из другого модуля shutil.rmtree():</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>import shutil
+
+# Только потом не плачьте.
+shutil.rmtree(&quot;backups&quot;)</code></pre>
+      </figure>
+      <h2 id="part-100">👀 Только что было вот тут</h2>
+      <p>Для переименовывания файлов используется функция os.rename(old_name, new_name), которая внезапно работает и как перемещение:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>os.rename(&quot;старая_версия.txt&quot;, &quot;финальная_версия_на_этот_раз.txt&quot;)
+# Переименовали.
+
+os.rename(&quot;кот.txt&quot;, &quot;архив/кот.txt&quot;)
+# Переместили (если папки нет, будет ошибка).</code></pre>
+      </figure>
+      <p>Для перемещения лучше использовать функцию shutil.move(), она работает чуть умнее, чем os.rename(): если перемещаете файл на другой диск, он сам сделает копирование + удаление.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>import shutil
+
+shutil.move(&quot;файл.txt&quot;, &quot;архив/файл.txt&quot;)</code></pre>
+      </figure>
+      <p>При копировании файлов и папок модуль os уже не поможет, только shutil:</p>
+      <p>Для копирования файлов можно использовать shutil.copy() или shutil.copy2(). Разница в том, что copy2() дополнительно копирует не только содержимое, но и метаинформацию: дату создания и изменения, права на файл.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>import shutil
+
+shutil.copy(&quot;important.txt&quot;, &quot;backup.txt&quot;)
+# Резервные копии — это хорошо.</code></pre>
+      </figure>
+      <p>Для копирования каталога с вложенными файлами и папками нужно воспользоваться shutil.copytree().</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>import shutil
+
+shutil.copytree(&quot;неповторимый_оригинал&quot;, &quot;жалкая_копия&quot;)</code></pre>
+      </figure>
+      <h2 id="topic-4">🗿 Заглянуть под каждый камень</h2>
+      <p>Теперь мощнейшее: как пройтись по всем папкам и подпапкам, как поисковик Яндекса, но только на локальном компьютере? os.walk() спасёт ваше время и нервы при необходимости совершить какие-либо действия над всеми файлами, попадающими под определённые условия.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code># Цикл аж по трём переменным.
+for root, dirs, files in os.walk(&quot;рабочее&quot;):  
+    print(&quot;Текущая папка:&quot;, root)
+    print(&quot;Папки:&quot;, dirs)
+    print(&quot;Файлы:&quot;, files)
+    print()</code></pre>
+      </figure>
+      <p>Как работает: идёт в папку, возвращает тройку: root — путь к текущей папке, dirs — список папок в ней, files — список файлов. Если dirs не пустой, то на следующей итерации мы заглянем в первую папку оттуда и так далее. Таким образом, мы гарантированно обойдём все вложенные папки за время работы цикла.</p>
+      <p>Такой обход называется рекурсивным. Про рекурсии мы с вами ещё поговорим и свои поделаем.</p>
+      <p>Например, давайте найдём все файлы, в имени которых есть упоминание котиков:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>cat_files = []
+for root, _, files in os.walk(&quot;фото&quot;):
+    for file in files:
+        if &quot;кот&quot; in file.lower() or &quot;кошка&quot; in file.lower():
+            cat_files.append(os.path.join(root, file))</code></pre>
+      </figure>
+      <h2 id="topic-5">🎁 Статистический бонус</h2>
+      <p>Узнать размеры в байтах можно не только с помощью os.path.getsize(). В os есть функция stat().</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>file_info = os.stat(&quot;фото_на_кошачий_паспорт.jpg&quot;)
+
+print(f&quot;Размер: {file_info.st_size} байт&quot;)  # Вес котика в байтах.
+print(f&quot;Создан: {file_info.st_ctime}&quot;)      # Timestamp создания.
+print(f&quot;Изменён: {file_info.st_mtime}&quot;)     # Timestamp изменения.</code></pre>
+      </figure>
+      <p>Итак, вы получили в timestamp какое-то число вроде 1717840320 и думаете: «Спасибо, конечно, а что с этим делать? Это что, чей-то номер банковской карты?». Нет. Это timestamp — магическое число, которое означает «секунды с начала времён» (ну ладно, с 1 января 1970 года, 00:00:00 UTC).</p>
+      <p>Почему 1970? Когда UNIX появился, «Битлз» ещё не распались, а человечество (в лице инженеров-создателей UNIX) решило, что считать время с 1970-го звучит как хорошая идея. С тех пор всё, что произошло, — это просто плюсик к этой дате.</p>
+      <p>По крайней мере, числа удобно хранить и сравнивать между собой.</p>
+      <p>Чтобы преобразовать timestamp во что-то человекочитаемое, необходимо воспользоваться модулем datetime (не зря же его проходили).</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>import datetime as dt
+
+mtime = file_info.st_mtime
+print(f&quot;Последнее изменение: {dt.datetime.fromtimestamp(mtime)}&quot;)
+# Вывод: &quot;Последнее изменение: 2025-10-01 14:30:25&quot;.</code></pre>
+      </figure>
+      <p>А с помощью shutil.disk_usage() можно посмотреть размер целого раздела на диске:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>import shutil
+
+total, used, free = shutil.disk_usage(&quot;C://&quot;)
+print(&quot;Всего:&quot;, total // (1024 ** 3), &quot;ГБ&quot;)
+print(&quot;Свободно:&quot;, free // (1024 ** 3), &quot;ГБ&quot;)</code></pre>
+      </figure>
+      <h2 id="part-160">🌟 Итог: как коалы на файловом дереве</h2>
+      <p>Модуль os содержит базовые инструменты для работы с файлами и каталогами, которые тем не менее помогут вам решить 90% задач. Для оставшихся 10% — shutil.</p>
+      <p>Комбинация этих библиотек позволит вам не просто выжить при работе с файлами и каталогами, вы будете процветать!</p>
+      <p>Несколько золотых правил при работе с файлами:</p>
+      <p>Всегда проверяйте пути перед действиями.</p>
+      <p>Делайте резервные копии перед массовыми операциями!</p>
+      <p>Традиционно напоминаем, что на каждый из модулей есть прекрасная документация: для os и для shutil. Все функции библиотек рассмотреть в рамках урока трудно, да и не всегда целесообразно, потому что часть функций имеет довольно узкое применение. Но если проявите любопытство, то узнаете, например, как с помощью функций shutil.make_archive() и shutil.unpack_archive() создавать и распаковывать некоторые форматы архивов.</p>
+      <p>P. S. Если вы случайно удалили системную папку — не паникуйте! Возможно, это шанс начать жизнь с чистого листа.</p>
+      </article>
+      <nav class="lesson-pagination" aria-label="Переключение уроков">
+        <a class="chapter-next" href="random-datetime.html">Назад · Библиотеки random, datetime</a>
+        <a class="chapter-next" href="pillow-drawing.html">Далее · Библиотека PIL. Рисование</a>
+      </nav>
+    </main>
+  </div>
+</body>
+</html>

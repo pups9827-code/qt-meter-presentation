@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#090909">
+  <title>ООП 3. Переопределение операторов — pupsiks</title>
+  <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../docs.css">
+  <script src="../docs.js" defer></script>
+</head>
+<body>
+  <header class="masthead">
+    <a class="brand" href="../../index.html"><img src="../../favicon.svg" alt="" width="38" height="38">pupsiks</a>
+    <a class="label" href="../index.html">Справочник Python</a>
+    <a class="home-link" href="../../index.html">На главную</a>
+  </header>
+  <div class="docs module">
+    <aside class="sidebar">
+      <nav aria-label="Разделы справочника" class="chapters">
+        <p class="label">Темы</p>
+        <ol>
+          <li><a href="../algorithms.html">Линейные алгоритмы и циклы</a></li>
+          <li><a href="../collections.html">Коллекции</a></li>
+          <li><a href="../files.html">Файлы и библиотеки</a></li>
+          <li><a href="../functions.html">Функции</a></li>
+          <li><a href="../oop.html" aria-current="page">ООП</a></li>
+        </ol>
+      </nav>
+    </aside>
+    <aside class="contents module-contents">
+      <nav aria-label="На этой странице">
+        <p class="label">На этой странице</p>
+        <a href="#topic-1">Сложение экземпляров класса</a>
+        <a href="#topic-2">Сравнение экземпляров класса</a>
+        <a href="#topic-3">Упрощение кода с total_ordering</a>
+        <a href="#topic-4">Методы коллекций</a>
+      </nav>
+    </aside>
+    <main>
+      <header class="overview" id="overview">
+        <a class="lesson-back label" href="../oop.html#special-methods">ООП</a>
+        <h1>ООП 3. Переопределение операторов</h1>
+        <p>Прости, я специально</p>
+      </header>
+
+      <article class="lesson-body">
+      <p>Допустим, мы сделали свой класс SmartPhone и где-то в коде решили сложить два объекта этого класса. Очевидно, что в этом случае не произойдёт совершенно ничего полезного — вы просто получите ошибку. А вот если попробовать сложить два числа, списка, строки или экземпляра datetime.timedelta — получится что-то осмысленное.</p>
+      <p>Это работает, потому что создатели Python внедрили магический механизм переопределения операторов — систему, которая позволяет любому объекту понять, что означает быть сложенным, вычтенным, умноженным или даже сравненным с другим объектом. И эта система работает благодаря специальным методам — те самые загадочные функции с двойными подчёркиваниями по краям.</p>
+      <p>Как вы уже знаете, специальные методы (их также называют «магическими методами» или «dunder methods» — от double underscore) — это методы, имена которых начинаются и заканчиваются двумя подчёркиваниями. Это не просто стилистический выбор: интерпретатор Python обязательно ищет эти методы и вызывает их в определённых ситуациях.</p>
+      <p>Например, когда вы пишете x + y, Python не просто складывает два объекта. Нет! Он делает что-то вроде этого:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code># Эти две строки делают ОДНО И ТО ЖЕ:
+z = x + y
+z = x.__add__(y)  # Python переводит + в вызов .__add__()</code></pre>
+      </figure>
+      <p>Это означает, что, если вы определите метод .__add__() в своём классе, оператор + начнет работать с вашими объектами!</p>
+      <p>Если вы просто добавите подчёркивания к названию обычного метода, это не сделает его специальным. Метод .__my_awesome_method__() не будет вызываться автоматически в какой-либо ситуации — Python не знает, что с ним делать.</p>
+      <p>Специальные методы всегда выглядят так: .__имя_метода__(). Два подчёркивания в начале, два в конце. Это не просто причуда авторов языка, а сознательное решение, потому что это:</p>
+      <p>защита от коллизий имён — вряд ли вы назовёте свой метод .__add__() случайно;</p>
+      <p>явное указание — сразу видно, что это что-то особенное;</p>
+      <p>просто КРА-СИ-ВО.</p>
+      <p>В старых версиях Python (2.x) были и «магические» методы с одним подчёркиванием с каждой стороны, но потом решили стандартизировать.</p>
+      <h2 id="topic-1">💥 Революция в математике</h2>
+      <p>Разберём, как это работает, на примере сложения. Для остальных математических операций всё будет работать аналогично.</p>
+      <p>Представьте, что в нашей программе есть класс Cat. Конечно, что должно происходить при сложении двух экземпляров такого класса — философский вопрос, но в нашей программе в результате мы получаем... ещё больше котов!</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>import random
+
+class Cat:
+    def __init__(self, name: str, age: int, gender: int = 1):
+        self.name = name
+        self.age = age
+        self.gender = gender
+        self.parents = None
+        self.kittens = []  # Список котят
+
+    def __add__(self, other):
+        &quot;&quot;&quot;Сложение котов = рождение котёнка!&quot;&quot;&quot;
+        # Проверяем, что other тоже кот
+        if not isinstance(other, Cat):
+            return NotImplemented  # Волшебная константа — говорим Python&#x27;у: «Я не умею это делать, попробуй поискать у другого объекта»
+
+        if self.gender == other.gender:
+            return NotImplemented
+
+        # Придумываем имя для котёнка
+        kitten_name = f&quot;{self.name[:len(self.name)//2]}{other.name[len(other.name)//2:]}&quot;.capitalize()
+
+        # Создаём нового кота — котёнка
+        kitten = Cat(kitten_name, age=0, gender=random.randint(0, 1))
+
+        # Запоминаем, кто родители
+        kitten.parents = (self, other)
+
+        # Добавляем котёнка каждому из родителей
+        self.kittens.append(kitten)
+        other.kittens.append(kitten)
+
+        return kitten
+
+    def __str__(self):
+        return f&quot;{&#x27;Кот&#x27; if self.gender else &#x27;Кошка&#x27;} {self.name}, возраст {self.age}, котят: {len(self.kittens)}&quot;
+
+
+barsik = Cat(&quot;Барсик&quot;, 3, 1)
+murka = Cat(&quot;Мурка&quot;, 2, 0)
+
+print(barsik)  # Кот Барсик, возраст 3, котят: 0
+print(murka)   # Кошка Мурка, возраст 2, котят: 0
+
+# Волшебство!
+kitten = barsik + murka
+print(kitten)  # Например — Кошка Баррка, возраст 0, котят: 0
+print(barsik)  # Кот Барсик, возраст 3, котят: 1
+print(murka)   # Кошка Мурка, возраст 2, котят: 1
+
+# А можно и так!
+another_kitten = murka + barsik
+print(another_kitten)  # Например — Кот Мусик, возраст 0, котят: 0</code></pre>
+      </figure>
+      <p>Если мы хотим складывать что-то + наш_объект, а не только наш_объект + что-то, то для этого есть метод .__radd__() (right add).</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>class WeirdNumber:
+   def __init__(self, value):
+       self.value = value
+
+   def __add__(self, other):
+       print(f&quot;Вызван .__add__ с {other}&quot;)
+       return WeirdNumber(self.value + other)
+
+   def __radd__(self, other):
+       print(f&quot;Вызван .__radd__ с {other}&quot;)
+       return WeirdNumber(self.value + other)
+
+   def __str__(self):
+       return f&quot;WeirdNumber({self.value})&quot;
+
+wn = WeirdNumber(10)
+
+# Обычный случай
+result1 = wn + 5  # Вызван .__add__ с 5
+print(result1)    # WeirdNumber(15)
+
+# А теперь наоборот!
+result2 = 5 + wn  # Вызван .__radd__ с 5
+print(result2)    # WeirdNumber(15)</code></pre>
+      </figure>
+      <p>Как это работает:</p>
+      <p>Python видит 5 + wn.</p>
+      <p>Сначала пытается вызвать 5.__add__(wn), но у int нет метода для сложения с WeirdNumber.</p>
+      <p>Получает NotImplemented.</p>
+      <p>Тогда Python пробует wn.__radd__(5) — и находит его!</p>
+      <p>Ура, сложение работает!</p>
+      <p>А иначе мы бы получили ошибку TypeError: unsupported operand type(s) ...</p>
+      <p>Это всё справедливо для:</p>
+      <p>.__add__(self, other) — cложения (x + y).</p>
+      <p>.__sub__(self, other) — вычитания (x — y).</p>
+      <p>.__mul__(self, other) — умножения (x * y).</p>
+      <p>.__truediv__(self, other) — деления (x / y).</p>
+      <p>.__floordiv__(self, other) — целочисленного деления (x // y).</p>
+      <p>.__mod__(self, other) — получения остатка от деления (x % y).</p>
+      <p>.__divmod__(self, other) — получения частного и остатка (divmod(x, y)).</p>
+      <p>.__pow__(self, other) — возведения в степень (x ** y).</p>
+      <p>И, конечно, для всех них есть «правые» братья-близнецы.</p>
+      <p>Золотое правило для арифметических операторов: когда вы переопределяете .__add__(), .__sub__() и другие, возвращайте в результате новый объект. Исходные объекты тоже не стоит менять, кроме тех случаев, когда это адекватно логике происходящего, как, например, мы добавляем котёнка каждому из родителей в логике сложения объектов Cat.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>Для сокращённой записи вроде x += y существуют отдельные методы: .__iadd__(), .__isub__() и другие. Почему? Потому что для них верна другая логика: там, где это возможно, не создаётся новый объект, а меняется исходный. Дополним наш пример для WierdNumber:
+class WeirdNumber:
+
+    ...
+
+    def __iadd__(self, other):
+        print(f&quot;Вызван __iadd__ с {other}&quot;)
+        self.value += other
+        return self
+
+wn = WeirdNumber(10)
+
+# Сокращённая запись
+wn += 5  # Вызван .__iadd__ с 5
+print(wn)      # WeirdNumber(15)
+
+# Фоллбэк сначала на .__add__ у int, а потом на .__radd__ у WeirdNumber
+a = 10
+a += wn  # Вызван .__iadd__ с 10
+print(a)    # WeirdNumber(25)</code></pre>
+      </figure>
+      <h2 id="topic-2">🏋️‍♀️ А мой папа сильнее твоего</h2>
+      <p>Может быть, вам нужно узнать, какой из двух объектов больше? Здесь на помощь приходят операторы сравнения, их всего 6. И для каждого есть свой собственный дандер-метод:</p>
+      <p>== (равно) — .__eq__(self, other).</p>
+      <p>!= (не равно) — .__ne__(self, other).</p>
+      <p>&lt; (меньше) — .__lt__(self, other).</p>
+      <p>&lt;= (меньше или равно) — .__le__(self, other).</p>
+      <p>&gt; (больше) — .__gt__(self, other).</p>
+      <p>&gt;= (больше или равно) — .__ge__(self, other).</p>
+      <p>Давайте создадим класс для студентов и научим их сравниваться, например, по оценке:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>class Student:
+    def __init__(self, name, grades):
+        self.name = name
+        self.grades = grades  # Список оценок
+
+    def average_grade(self):
+        if not self.grades:
+            return 0
+        return sum(self.grades) / len(self.grades)
+
+    # Сравниваем по средней оценке
+    def __eq__(self, other):
+        &quot;&quot;&quot;Равны ли студенты?&quot;&quot;&quot;
+        if not isinstance(other, Student):
+            return NotImplemented
+        return self.average_grade() == other.average_grade()
+
+    def __lt__(self, other):
+        &quot;&quot;&quot;Этот студент учится хуже?&quot;&quot;&quot;
+        if not isinstance(other, Student):
+            return NotImplemented
+        return self.average_grade() &lt; other.average_grade()
+
+    def __le__(self, other):
+        &quot;&quot;&quot;Этот студент учится не лучше?&quot;&quot;&quot;
+        if not isinstance(other, Student):
+            return NotImplemented
+        return self.average_grade() &lt;= other.average_grade()
+
+    def __str__(self):
+        return f&quot;{self.name}: {self.average_grade():.2f}&quot;
+
+# Создаём студентов
+alice = Student(&quot;Алиса&quot;, [5, 5, 4, 5])
+bob = Student(&quot;Боб&quot;, [3, 4, 3, 3])
+charlie = Student(&quot;Чарли&quot;, [4, 4, 5, 4])
+
+print(alice)  # Алиса: 4.75
+print(bob)    # Боб: 3.25
+print(charlie)  # Чарли: 4.25
+
+# Сравниваем
+print(f&quot;Алиса == Боб: {alice == bob}&quot;)      # False
+print(f&quot;Алиса != Боб: {alice != bob}&quot;)      # True
+print(f&quot;Алиса &lt; Боб: {alice &lt; bob}&quot;)        # False (4.75 &lt; 3.25? Нет!)
+print(f&quot;Алиса &gt; Боб: {alice &gt; bob}&quot;)        # True
+print(f&quot;Алиса &lt;= Чарли: {alice &lt;= charlie}&quot;) # False
+print(f&quot;Алиса &gt;= Чарли: {alice &gt;= charlie}&quot;) # True</code></pre>
+      </figure>
+      <p>Как вы наверняка уже обратили внимание, если нам хочется сделать все-все операторы сравнения, то однотипного кода получается многовато. Да что говорить, даже копировать и вставлять один кусочек кода так много раз и то утомительно. К счастью, лень — двигатель прогресса.</p>
+      <h2 id="topic-3">📊 Тотальное упорядочивание</h2>
+      <p>Модуль functools, про который мы с вами немного говорили, содержит декоратор @total_ordering, который избавляет вас от необходимости писать все методы сравнения. Нужно только определить:</p>
+      <p>Метод .__eq__() (для проверки равенства).</p>
+      <p>Один из методов: .__lt__(), .__le__(), .__gt__(), или .__ge__().</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from functools import total_ordering</code></pre>
+      </figure>
+      <p>@total_ordering</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>class Student:
+    &quot;&quot;&quot;Класс для работы с учениками — с total_ordering!&quot;&quot;&quot;
+
+    def __init__(self, name, grade):
+        self.name = name
+        self.grade = grade
+
+    def __eq__(self, other):
+        &quot;&quot;&quot;Обязателен для total_ordering&quot;&quot;&quot;
+        if not isinstance(other, Student):
+            return False
+        return self.grade == other.grade
+
+    def __lt__(self, other):
+        &quot;&quot;&quot;Достаточно ОДНОГО метода сравнения!&quot;&quot;&quot;
+        if not isinstance(other, Student):
+            raise TypeError(&quot;Можно сравнивать только Student со Student&quot;)
+        return self.grade &lt; other.grade
+
+    # Вот и всё! __le__, __gt__, __ge__ создадутся автоматически!
+
+    def __str__(self):
+        return f&quot;{self.name} ({self.grade})&quot;</code></pre>
+      </figure>
+      <p>Под капотом декоратор @total_ordering работает следующим образом: он анализирует ваш класс и выражает оставшиеся методы через существующие. Что-то вроде такого:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code># Если вы определили __lt__, декоратор создаст:
+def __le__(self, other):
+    return self == other or self &lt; other
+
+def __gt__(self, other):
+    return not (self &lt;:= other)
+
+def __ge__(self, other):
+    return not (self &lt; other)</code></pre>
+      </figure>
+      <h2 id="part-239">😓 Всё сложно</h2>
+      <p>В реальной жизни объекты редко приходится сравнивать по одному критерию. Для решения этой проблемы можно, конечно, нагородить логику с помощью if-elif-else, но в 99,99% случаев для решения подобных задач достаточно магии сравнения кортежей — нужно только расположить критерии в порядке убывания их важности. Вот так будет выглядеть пример со студентами, если сначала мы сравниваем их по оценке, а затем по имени.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from functools import total_ordering</code></pre>
+      </figure>
+      <p>@total_ordering</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>class Student:
+    def __init__(self, name, grade):
+        self.name = name
+        self.grade = grade
+
+    def __eq__(self, other):
+        if not isinstance(other, Student):
+            return False
+        return (self.grade, self.name) == (other.grade, other.name)
+
+    def __lt__(self, other):
+        if not isinstance(other, Student):
+            raise TypeError(&quot;Можно сравнивать только Student со Student&quot;)
+        # Сравниваем как кортежи: сначала по grade, потом по name
+        return (self.grade, self.name) &lt; (other.grade, other.name)
+
+    def __str__(self):
+        return f&quot;{self.name} ({self.grade})&quot;
+
+
+# Демонстрация:
+students = [
+    Student(&quot;Чарли&quot;, 85),
+    Student(&quot;Алиса&quot;, 95),
+    Student(&quot;Боб&quot;, 85),
+    Student(&quot;Диана&quot;, 95),
+]
+
+print(&quot;Исходный порядок:&quot;)
+for s in students:
+    print(f&quot;  {s}&quot;)
+
+students.sort()  # Использует __lt__ под капотом
+
+print(&quot;\nПосле сортировки:&quot;)
+for s in students:
+    print(f&quot;  {s}&quot;)</code></pre>
+      </figure>
+      <h2 id="topic-4">💎 Редкий экземпляр моей коллекции</h2>
+      <p>Тут важная терминология: мы говорим не про .append() или .pop() (это обычные методы), а про специальные методы, благодаря которым Python начинает считать ваш объект коллекцией.</p>
+      <p>В это сложно поверить, но общие методы всех коллекций, такие как: получение|присваивание|удаление элемента по индексу, получение длины, проверка вхождения и даже (тут чуть упрощённо) работа с циклом for — легко реализуются и для собственных классов с помощью дандер-методов. Вот они:</p>
+      <p>.__len__(self) — len(obj).</p>
+      <p>.__getitem__(self, key) — obj[i] (и часто срезы obj[a:b]).</p>
+      <p>.__setitem__(self, key, value) — obj[i] = value.</p>
+      <p>.__delitem__(self, key) — del obj[i].</p>
+      <p>.__iter__(self) — for x in obj.</p>
+      <p>.__contains__(self, key) — x in obj.</p>
+      <p>.__bool__(self) — bool(obj) (если нет — Python использует .__len__()).</p>
+      <p>Давайте соберём небольшой пример — класс Playlist, в который можно добавлять треки:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>class Playlist:
+    def __init__(self, tracks):
+        self._tracks = list(tracks)
+
+    def __len__(self):
+        return len(self._tracks)
+
+    def __getitem__(self, index):
+        # Будет работать и со срезами сразу из коробки
+        return self._tracks[index]
+
+    def __contains__(self, item):
+        return item in self._tracks
+
+    def add(self, track):
+        self._tracks.append(track)
+
+    def __repr__(self):
+        return f&quot;Playlist({len(self)} tracks)&quot;
+
+
+p = Playlist([
+    &quot;Muse — Hysteria&quot;,
+    &quot;Green Day — Holiday&quot;,
+    &quot;Ozzy Osbourne - Crazy train&quot;
+    ])
+print(len(p))            # 3
+print(p[0])              # &quot;Muse — Hysteria&quot;
+print(p[1:])             # Слайс работает!
+print(&quot;Muse — Hysteria&quot; in p)  # True
+for t in p:
+    print(&quot;▶&quot;, t)</code></pre>
+      </figure>
+      <p>Кругом обман: мы только что говорили, что для работы с циклом for нужен метод .__iter__(), потом не сделали его для нашего примера, и всё продолжило работать.</p>
+      <p>На самом деле и в этом случае у Python есть план Б. Если метод .__iter__() у объекта не найден, то интерпретатор пытается перебирать элементы с помощью .__getitem__(), начиная с нуля.</p>
+      <p>Но чтобы всё работало совсем красиво, давайте всё же добавим .__iter__().</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>class Playlist:
+    ...
+
+    def __iter__(self):
+        return iter(self._tracks)  # Отдаём итератор списка</code></pre>
+      </figure>
+      <h2 id="part-332">🌟 Итог: как мы и договаривались</h2>
+      <p>Сегодня мы научились делать свою математику и переопределять многие из встроенных операторов. Использование такого поведения для объектов ваших классов сделает их использование более органичным и приятным.</p>
+      <p>Чего делать не стоит, хотя это и возможно технически:</p>
+      <p>Не определяйте операторы неинтуитивно: если сложение делает что-то странное, то это сломает мозг другим программистам (да и вам через какое-то время).</p>
+      <p>Не игнорируйте законы математики. Например, a + b должно быть равно b + a (если иное не обусловлено очевидной логикой ваших объектов).</p>
+      <p>Не забывайте про NotImplemented и всегда проверяйте типы.</p>
+      <p>Не забивайте на .__repr__(). Хорошо его сделать занимает не больше 5 минут, а сэкономить это может вам часы отладки.</p>
+      <p>Надеемся, что к этому моменту у вас в голове появилась очень полезная мысль: любой оператор — это не «встроенная штука», а договор: «если у объекта есть правильный спецметод — синтаксис заработает».</p>
+      <p>И да, мы рассмотрели далеко не всё. Например, можно сделать так, чтобы ваш объект можно было вызвать как функцию с помощью метода .__call__(), и т. д.</p>
+      <p>Если вам нужно реализовать тот или иной оператор, для начала поищите соответствующий ему специальный метод на втором листе вот этой шпаргалки.</p>
+      <p>Ну и, конечно же, не забывайте про официальную документацию. Там всё есть.</p>
+      <p>P. S. Полученные знания позволяют вам сделать так, чтобы в вашей программе 1 + 1 == 3, но подумайте дважды, стоит ли оно того.</p>
+      </article>
+      <nav class="lesson-pagination" aria-label="Переключение уроков">
+        <a class="chapter-next" href="polymorphism.html">Назад · ООП 2. Полиморфизм</a>
+        <a class="chapter-next" href="inheritance.html">Далее · ООП 4. Наследование</a>
+      </nav>
+    </main>
+  </div>
+</body>
+</html>

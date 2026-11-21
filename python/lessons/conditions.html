@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#090909">
+  <title>Условный оператор — pupsiks</title>
+  <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../docs.css">
+  <script src="../docs.js" defer></script>
+</head>
+<body>
+  <header class="masthead">
+    <a class="brand" href="../../index.html"><img src="../../favicon.svg" alt="" width="38" height="38">pupsiks</a>
+    <a class="label" href="../index.html">Справочник Python</a>
+    <a class="home-link" href="../../index.html">На главную</a>
+  </header>
+  <div class="docs module">
+    <aside class="sidebar">
+      <nav aria-label="Разделы справочника" class="chapters">
+        <p class="label">Темы</p>
+        <ol>
+          <li><a href="../algorithms.html" aria-current="page">Линейные алгоритмы и циклы</a></li>
+          <li><a href="../collections.html">Коллекции</a></li>
+          <li><a href="../files.html">Файлы и библиотеки</a></li>
+          <li><a href="../functions.html">Функции</a></li>
+          <li><a href="../oop.html">ООП</a></li>
+        </ol>
+      </nav>
+    </aside>
+    <aside class="contents module-contents">
+      <nav aria-label="На этой странице">
+        <p class="label">На этой странице</p>
+        <a href="#topic-1">Условный оператор</a>
+        <a href="#topic-2">Логические операторы</a>
+        <a href="#topic-3">Вложенные условия</a>
+        <a href="#topic-4">Подстроки и спецсимволы</a>
+        <a href="#topic-5">Оператор выбора match-case</a>
+      </nav>
+    </aside>
+    <main>
+      <header class="overview" id="overview">
+        <a class="lesson-back label" href="../algorithms.html#conditions">Линейные алгоритмы и циклы</a>
+        <h1>Условный оператор</h1>
+        <p>Условный оператор и не только — как заставить код принимать решения</p>
+      </header>
+
+      <article class="lesson-body">
+      <p>Пока наши программы были прямые, как отрезок в геометрии и не предусматривали никакой вариативности. Понятно, что такие программы почти всегда не очень полезны и их надо усложнять. Сегодня наш код немного поумнеет и станет гибким, как йог. Вы узнаете, как управлять потоком программ, используя условия, логику и магию строк. Готовы? Погнали!</p>
+      <h2 id="topic-1">🛤️ Условный оператор. Выбор как в RPG</h2>
+      <p>Представьте, что вы — древнегреческий оракул. К вам приходят путники с вопросами:</p>
+      <p>— О, великий Python, даст ли Зевс дождь завтра?</p>
+      <p>— Зависит от того, введёшь ли ты правильный пароль, смертный.</p>
+      <p>Именно так работают условия — они превращают вашу программу из тупого исполнителя команд в подобие разумного существа. Ну почти. В Python для этого есть специальный оператор условия if-else.</p>
+      <p>Представьте, что if-else — это развилка в квесте:</p>
+      <p>— Если пойдёте налево — найдёте сундук с золотом.</p>
+      <p>— Иначе — нарвётесь на тролля.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>weather = input()  
+if weather == &quot;дождь&quot;:  # Если пользователь введёт слово &quot;дождь&quot;,
+    print(&quot;Бери зонт и резиновых уточек! 🐥&quot;)  # то выполнится этот блок кода
+else:  # Во всех остальных случаях
+    print(&quot;Солнцезащитные очки — твой выбор!&quot;)  # этот блок кода
+print(&quot;Хорошего дня!&quot;)  # Этот код выполнится в любом случае</code></pre>
+      </figure>
+      <p>Правила такие: сначала идёт слово if, затем условие, потом обязательно двоеточие и с новой строки с отступом в четыре пробела код, который должен выполниться в том случае, если условие верное.</p>
+      <p>Часть c else необязательна, но если она есть, то после else не идёт никакого условия, а только двоеточие (без пробела) и с новой строки код с отступом в четыре пробела, который должен выполниться, если условие неверное.</p>
+      <p>И if, и else относятся к блочным операторам, для любого из которых в Python верно правило — строчка с оператором обязательно заканчивается двоеточием, затем с новой строки идёт код с отступом в четыре пробела. После блочного оператора должна быть минимум одна строка вложенного кода, но может быть сколько угодно, в том числе другие блочные операторы.</p>
+      <p>Важно: если if может быть без else-части, то вот else не может существовать без своего if. Еда может существовать без котика, а вот котик без еды — нет!</p>
+      <h2 id="part-27">🔘 Чёрно-белый мир булевой логики</h2>
+      <p>Вы уже обратили внимание, что в предыдущем примере переменную со значением пользовательского ввода мы сравнили со строкой с помощью двух знаков равенства. Это один из шести встроенных в Python операторов отношений. Вот они все:</p>
+      <p>== — равно (потому что один знак = — оператор присваивания)</p>
+      <p>!= — не равно</p>
+      <p>&gt; — больше</p>
+      <p>&gt;= — больше или равно (пишется как читается)</p>
+      <p>&lt; — меньше</p>
+      <p>&lt;= — меньше или равно</p>
+      <p>PEP8</p>
+      <p>Вокруг операторов отношений обязательно нужно ставить по пробелу с каждой стороны.</p>
+      <p>В результате любой из операций отношения может получиться только два результата — верно (или истинно) или неверно (ложно). В Python для хранения результатов сравнения (и ещё для хранения флагов, которые могут принимать только два состояния — ВКЛ/ВЫКЛ) используется тип данных bool. У переменных этого типа только два значения:</p>
+      <p>True — «Да, я съел всю пиццу».</p>
+      <p>False — «Нет, это был кот!».</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>print(2 == 2)  # True
+print(3 &lt; 1)  # False
+print(5 &lt;= 13)  # True
+print(&quot;Привет&quot; == &#x27;привет&#x27;)  # False — регистр букв имеет значение!</code></pre>
+      </figure>
+      <p>Важной особенностью Python является то, что он поддерживает двойные операции отношения:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>x_coord = int(input())
+if 0 &lt;= x_coord &lt; 100:
+    print(&#x27;Координата в допустимом диапазоне&#x27;)</code></pre>
+      </figure>
+      <p>Значения типа bool можно задавать и напрямую из кода. И не нужно никаких кавычек, как для строк:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>is_pizza_gone = True  # Истинно всё съели
+pizza_gone = &#x27;True&#x27;  # Строка True
+print(is_pizza_gone == pizza_gone)  # Конечно же, значения не равны — False</code></pre>
+      </figure>
+      <p>Булевы переменные очень удобно использовать в if-else:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>is_cat_awake = True  # Кот не спит → можно гладить  
+if is_cat_awake:  
+    print(&quot;😸 Мур-мур!&quot;)  
+else:  
+    print(&quot;💤 Кот в отключке.&quot;)</code></pre>
+      </figure>
+      <p>В Python почти всё можно превратить в bool:</p>
+      <p>False: 0, пустая строка (правильнее сказать — любая пустая коллекция);</p>
+      <p>True: всё остальное (даже отрицательные числа! и даже 0.000000001!).</p>
+      <p>Это можно сделать явно с помощью функции bool():</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>print(bool(&#x27;🐱&#x27;))  # True
+print(bool(&#x27;&#x27;))  # False
+print(bool(0))  # False
+print(bool(-3.14))  # True</code></pre>
+      </figure>
+      <p>Но похожее приведение происходит неявно в операторе if — значение оригинальной переменной не меняется, но воспринимается программой как True/False:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>print(&quot;Как зовут вашего котика?&quot;)
+pet_name = input()
+print(&quot;А сколько ему лет?&quot;)
+pet_age = int(input())
+
+if pet_name:  # Пользователь ввёл любое имя
+    print(f&quot;Какое красивое имя — {pet_name}&quot;)
+else:  # Пользователь просто нажал Enter, и в pet_name — пустая строка
+    print(&quot;Безымянный котик — тоже котик&quot;)
+
+if pet_age:  # Любое ненулевое число
+    print(&quot;Уже большой!&quot;)
+else:  # Котику 0 лет
+    print(&#x27;Какой малыш!&#x27;)</code></pre>
+      </figure>
+      <h2 id="part-81">🎁 Мы добавили вам условие в условие</h2>
+      <p>Довольно часто бывает необходимость внутри одного условия проверить ещё одно условие. Это легко можно сделать, так как внутри любой части оператора if-else может быть другой оператор if-else, а внутри второго — третий и так далее. Количество вложенности матрёшки условий ограничено только вашей фантазией и терпением.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>age = 25  
+has_money = True  
+
+if age &gt;= 18:  
+    if has_money:  
+        print(&quot;Можно отдохнуть.&quot;)  
+    else:  
+        print(&quot;Ищи работу! 💼&quot;)  
+else:  
+    print(&quot;Иди учи уроки!&quot;)</code></pre>
+      </figure>
+      <p>Каждый вложенный блок внутри вложенного блока прибавляет ещё 4 пробела к отступу. Как несложно заметить, если сильно увлечься вложенностью, код буквально будет убегать за пределы видимости. Чтобы это не происходило или происходило реже, можно использовать оператор elif.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>age = int(input(&quot;Сколько лет тебе, путник?&quot;))
+
+if age &gt;= 3000:
+    print(&quot;О, великий древний! Расскажи про Python 0.1!&quot;)
+elif age &gt;= 100:
+    print(&quot;Добро пожаловать в музей COBOL.&quot;)
+else:
+    print(&quot;Юнец, иди учить PEP8!&quot;)</code></pre>
+      </figure>
+      <p>После if может идти сколько угодно операторов elif, условия будут проверяться сверху вниз, и проверка прекратится, как только одно из условий будет истинным.</p>
+      <h2 id="topic-2">🧩 Логическое трио: not, and, or. Следите за руками (и условиями)</h2>
+      <p>Другим способом избежать превращения кода в ночной кошмар из вложенных условий являются логические операции, которые позволяют делать сложные условия. Их всего три. Вот они в порядке уменьшения приоритета:</p>
+      <p>not — «не». Инвертирует истину в ложь и наоборот. Срабатывает всегда первым.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>if not is_cat_hungry:  
+    print(&quot;Кот сыт. Все живы!&quot;)</code></pre>
+      </figure>
+      <p>and — «и». Чтобы получить истину, надо, чтобы обе части были истинны, иначе — False.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>if name == &quot;Цезарь&quot; and password == &quot;Ave123&quot;:
+    print(&quot;Добро пожаловать в императорский чат.&quot;)</code></pre>
+      </figure>
+      <p>or — «или». True получится, даже если хотя бы одно из условий будет истинным.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>if is_weekend or is_holiday:  
+    print(&quot;Ура, можно валяться в гамаке!&quot;)</code></pre>
+      </figure>
+      <p>Чтобы повысить приоритет операций, нужно использовать скобки, точно так же, как и в математике. Несколько примеров.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>print(&quot;Идёт дождь?&quot;)
+is_rain = input() == &#x27;да&#x27;
+print(&quot;А холодно?&quot;)  
+is_cold = input() == &#x27;да&#x27;
+
+if is_rain and not is_cold:  # Дождь и не холодно
+    print(&quot;Зонт и шлёпанцы — ваш выбор! (Дождь, но тепло!)&quot;)  
+elif is_rain and is_cold:  # И дождь, и холодно
+    print(&quot;Куртка, зонт и горячий чай в термосе!&quot;)  
+else:  
+    print(&quot;Панама и уверенность в себе!&quot;)</code></pre>
+      </figure>
+      <p>У оператора присваивания самый низкий приоритет, поэтому сначала выполнится input(), потом пользовательский ввод сравнится со строкой «да» и только потом результат сравнения True|False запишется в переменную.</p>
+      <p>Иногда нужно посмотреть на условие немного под другим углом, и код сразу станет проще и понятнее. Например, нам надо ввести чётное число, которое больше 3000 и при этом ещё делится на пять или три. И давать пользователю подсказки, если что-то в числе не так. Можно написать что-то вот такое:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>num = int(input())
+if num % 2 == 0 and num &gt; 3000 and (num % 3 == 0 or num % 5 == 0):
+    print(&quot;Ура!&quot;)
+    print(f&quot;{num} — подходит&quot;)
+elif num % 2 != 0:
+    print(&quot;Нечётное!&quot;)
+elif num &lt;= 3000:
+    print(&quot;Меньше или равно 3000&quot;)
+elif not (num % 3 == 0 or num % 5 == 0):
+    print(&quot;Не делится ни на три, ни на пять&quot;) </code></pre>
+      </figure>
+      <p>Но если немного подумать, то можно понять, что если все проверки в elif пройдены, то это число и есть искомое. Тогда можно переписать вот так:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>num = int(input())
+if num % 2 != 0:
+    print(&quot;Нечётное!&quot;)
+elif num &lt;= 3000:
+    print(&quot;Меньше или равно 3000&quot;)
+elif not (num % 3 == 0 or num % 5 == 0):
+    print(&quot;Не делится ни на три, ни на пять&quot;) 
+else:
+    print(f&quot;Ура, {num} — подходит&quot;)</code></pre>
+      </figure>
+      <p>Смекалочка помогает делать код лучше.</p>
+      <h2 id="topic-3">🧶 Вот это понаставили условий</h2>
+      <p>Иногда условий становится настолько много, что они перестают влезать в длину строки, отмеренную нам PEP8, а что ещё хуже, читать их становится просто невозможно.</p>
+      <p>В таких случаях просто необходимо разбить условие на несколько строчек. Для этого используются круглые скобки:</p>
+      <p>if (user_age &gt; 12 and</p>
+      <p>user_balance &gt;= 1000 and</p>
+      <p>not is_banned):</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>    print(&quot;Доступ разрешён!&quot;)</code></pre>
+      </figure>
+      <p>Кроме того, можно записать результат выполнения условия или его части в переменную ещё до оператора if для того, чтобы сократить запись и сделать код более читаемым. Сравните:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>print(&#x27;Введите имена двух братьев из мифов, кино или видеоигр:&#x27;)
+brother1 = input()
+brother2 = input()</code></pre>
+      </figure>
+      <p>if (brother1 == &#x27;Ромул&#x27; and brother2 == &#x27;Рем&#x27; or</p>
+      <p>brother1 == &#x27;Кастор&#x27; and (brother2 == &#x27;Поллукс&#x27; or brother2 == &#x27;Полидевк&#x27;) or</p>
+      <p>brother1 == &#x27;Тор&#x27; and brother2 == &#x27;Локи&#x27; or</p>
+      <p>brother1 == &#x27;Марио&#x27; and brother2 == &#x27;Луиджи&#x27;):</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>    print(&#x27;✅ Ага, знаток! Даже поп-культуру захватил!&#x27;)
+else:
+    print(&#x27;❌ Неа. Может, вы перепутали Кастора с Человеком-пауком?&#x27;)</code></pre>
+      </figure>
+      <p>И вариант с записью частей условий в переменную:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>print(&#x27;Введите имена двух братьев из мифов, кино или видеоигр:&#x27;)
+brother1 = input()
+brother2 = input()
+
+is_roman = brother1 == &#x27;Ромул&#x27; and brother2 == &#x27;Рем&#x27;
+is_greek = brother1 == &#x27;Кастор&#x27; and (brother2 == &#x27;Поллукс&#x27; or brother2 == &#x27;Полидевк&#x27;)
+is_scandinavian = brother1 == &#x27;Тор&#x27; and brother2 == &#x27;Локи&#x27;
+is_marioworld = brother1 == &#x27;Марио&#x27; and brother2 == &#x27;Луиджи&#x27;
+
+if is_roman or is_greek or is_scandinavian or is_marioworld:
+    print(&#x27;✅ Ага, знаток! Даже поп-культуру захватил!&#x27;)
+else:
+    print(&#x27;❌ Неа. Может, вы перепутали Кастора с Человеком-пауком?&#x27;)</code></pre>
+      </figure>
+      <p>Второй вариант намного проще читать.</p>
+      <h2 id="part-184">💤 Когда ничего не хочется прямо сейчас</h2>
+      <p>Мы уже говорили, что внутри блочного оператора должна быть как минимум одна строчка кода. Но бывает, что мы знаем условие, а вот обработку того, что будет происходить при его истинности, пока не придумали (или нас накрыла внезапная волна лени). В этом случае можно воспользоваться специальной командой-заглушкой pass, которая ничего не делает, но при этом наш код не будет падать с синтаксической ошибкой.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>if user_status == &quot;admin&quot;:  
+    # TODO: Добавить права админа  
+    pass  
+else:  
+    print(&quot;Доступ запрещён! 🛑&quot;)</code></pre>
+      </figure>
+      <p>Иногда в качестве заглушки используется оператор, который называется ellipsis, а записывается как троеточие .... Это тоже валидно.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>if conquer_the_wold:
+   # Потом. Сегодня лень.
+   ...</code></pre>
+      </figure>
+      <p>В некоторых командах разработки договариваются использовать и то и то, но вкладывать в pass и ... немного разный смысл:</p>
+      <p>pass — заглушка, но так и должно быть (такое бывает)</p>
+      <p>... — заглушка, но потом тут должен появиться осмысленный код</p>
+      <h2 id="topic-4">🔍 Подстрока есть? А если найду?</h2>
+      <p>В Python можно легко проверить, является ли какая-нибудь строка подстрокой другой. Для этого используется оператор in.</p>
+      <p>Оператор in нам ещё пригодится, когда мы будем говорить про другие коллекции.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>text = input()
+if &quot;кот-учёный&quot; in text:  
+    print(&quot;Найден кот-ботаник!&quot;)</code></pre>
+      </figure>
+      <p>Ещё пример:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>password = input()
+
+if len(password) &gt;= 8 and (&quot;!&quot; in password or &quot;#&quot; in password):  
+    print(&quot;Надёжный пароль! 🔒&quot;)  
+else:  
+    print(&quot;Слабовато...&quot;)  </code></pre>
+      </figure>
+      <p>Чтобы проверить невхождение подстроки в строку, пишут not in.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>text = input()
+if &quot;дракон&quot; not in text:  
+    print(&quot;Драконов нет. Только подземелья.&quot;)  </code></pre>
+      </figure>
+      <p>Хотя синтаксически не будет ошибкой написать not (&quot;дракон&quot; in text), в приличном обществе так никто не делает. И мы, конечно, не будем. Как минимум потому, что по-русски мы говорим не &quot;не подстрока в строке&quot;, а &quot;подстрока не в строке&quot;.</p>
+      <h2 id="part-216">📇 Спецсимволы, или Наследие печатных машинок</h2>
+      <p>Строки в Python (и других языках программирования) могут содержать управляющие последовательности, которые начинаются со знака \. Вот самые важные из них:</p>
+      <p>\n — перенос строки;</p>
+      <p>\r — возврат каретки (устаревшее, но до сих пор встречается);</p>
+      <p>\t — табуляция.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>print(&quot;Первая строка\nВторая строка\tТабуляция&quot;)  </code></pre>
+      </figure>
+      <p>В современных операционных системах \n объединяет в себе функцию переноса строки и возврата каретки, а раньше строчки в тексте заканчивались комбинацией \n\r, что имитировало работу на печатной машинке: \n переносил курсор на следующую строчку, а \r возвращал его на начало строки.</p>
+      <p>Кроме того, \ используется для экранирования символов, например самого себя \\ или двойной или одинарной кавычки внутри двойных или одинарных кавычек соответственно.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>print(&quot;Хочу пиццу \&quot;Маргариту\&quot;&quot;)
+print(&quot;Путь: C:\\Users\\Кот&quot;) </code></pre>
+      </figure>
+      <h2 id="topic-5">✨ Выбираем со стилем</h2>
+      <p>Во многих языках программирования есть оператор выбора switch. В Python есть его аналог — match/case. Причём функционал match/case намного богаче, и мы будем возвращаться в курсе к нему ещё не раз. Но пока мы только прикоснёмся к его величию и будем использовать его для замены if-elif-....-elif-else в случаях, когда проверяется одна переменная, но у неё может быть много значений:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>day = input()  
+match day:  # Смотрим, какое значение у day
+    case &quot;понедельник&quot;:  # if day == &quot;понедельник&quot;
+        print(&quot;Начало рабочей недели...&quot;)  
+    case &quot;суббота&quot; | &quot;воскресенье&quot;:  # if day == &quot;суббота&quot; or day ==&quot;воскресенье&quot;
+        print(&quot;Уииии! Выходные! 🎉&quot;)  
+    case _:  # else
+        print(&quot;Любой другой день.&quot;)  </code></pre>
+      </figure>
+      <p>Фишки:</p>
+      <p>| — логическое ИЛИ;</p>
+      <p>_ — дефолтный кейс (как else).</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>pizza_pieces = int(input())  
+match pizza_pieces:  
+    case 0:  
+        print(&quot;Мне не хватило(&quot;)
+    case 1:
+        print(&quot;Спасибо, что оставили, но мало.&quot;)  
+    case 2 | 3 | 4:  
+        print(&quot;Это по мне!&quot;)
+        print(&quot;Ура!&quot;)
+    case _:  
+        print(&quot;Съем во что бы то ни стало!&quot;)</code></pre>
+      </figure>
+      <p>Разумеется, каждый вложенный блок в case может содержать любое количество строчек кода.</p>
+      <h2 id="part-251">🌟 Итог: наш код проберётся через самый сложный перекрёсток</h2>
+      <p>Мы узнали:</p>
+      <p>как заставить код принимать решения;</p>
+      <p>почему True и False — основа всего;</p>
+      <p>как комбинировать условия;</p>
+      <p>что нужно сделать, чтобы не потеряться в многоэтажных условиях;</p>
+      <p>как найти кота в любой строке (или не найти).</p>
+      <p>P. S. Не оставляй pass на завтра в коде, который можно написать сегодня.</p>
+      </article>
+      <nav class="lesson-pagination" aria-label="Переключение уроков">
+        <a class="chapter-next" href="builtins.html">Назад · Простые встроенные функции, math</a>
+        <a class="chapter-next" href="while-loop.html">Далее · Цикл while</a>
+      </nav>
+    </main>
+  </div>
+</body>
+</html>

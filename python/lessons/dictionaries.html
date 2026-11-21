@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#090909">
+  <title>Словари — pupsiks</title>
+  <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../docs.css">
+  <script src="../docs.js" defer></script>
+</head>
+<body>
+  <header class="masthead">
+    <a class="brand" href="../../index.html"><img src="../../favicon.svg" alt="" width="38" height="38">pupsiks</a>
+    <a class="label" href="../index.html">Справочник Python</a>
+    <a class="home-link" href="../../index.html">На главную</a>
+  </header>
+  <div class="docs module">
+    <aside class="sidebar">
+      <nav aria-label="Разделы справочника" class="chapters">
+        <p class="label">Темы</p>
+        <ol>
+          <li><a href="../algorithms.html">Линейные алгоритмы и циклы</a></li>
+          <li><a href="../collections.html" aria-current="page">Коллекции</a></li>
+          <li><a href="../files.html">Файлы и библиотеки</a></li>
+          <li><a href="../functions.html">Функции</a></li>
+          <li><a href="../oop.html">ООП</a></li>
+        </ol>
+      </nav>
+    </aside>
+    <aside class="contents module-contents">
+      <nav aria-label="На этой странице">
+        <p class="label">На этой странице</p>
+        <a href="#topic-1">Словарь как коллекция</a>
+        <a href="#topic-2">Получение и добавление значений</a>
+        <a href="#topic-3">Другие методы словарей</a>
+        <a href="#topic-4">Обход словаря</a>
+      </nav>
+    </aside>
+    <main>
+      <header class="overview" id="overview">
+        <a class="lesson-back label" href="../collections.html#dictionaries">Коллекции</a>
+        <h1>Словари</h1>
+        <p>Поиск по смыслу</p>
+      </header>
+
+      <article class="lesson-body">
+      <p>Сценарий из жизни: вы — секретарь Лиги Справедливости. Вам нужно мгновенно находить контакты супергероев:</p>
+      <p>Бэтмен → batcave@example.com</p>
+      <p>Супермен → fortress@solitude.org</p>
+      <p>Флэш → need@coffee.now</p>
+      <p>Конечно, можно хранить их в списке кортежей, где на первом месте будет супергеройское имя, а на втором — адрес электронной почты:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>superheroes = [
+    (&quot;Бэтмен&quot;, &quot;batcave@example.com&quot;),
+    (&quot;Супермен&quot;, &quot;fortress@solitude.org&quot;),
+    (&quot;Флэш&quot;, &quot;need@coffee.now&quot;)
+]</code></pre>
+      </figure>
+      <p>Очевидно, что такое хранение неудобно, потому что для поиска нужного контакта нам придётся перебирать все записи по очереди, пока не найдём нужную.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>hero_to_find = input()
+for hero, email in superheroes:  # Магия распаковки.
+    if hero == hero_to_find:
+        print(email)
+else:  # Если ничего не нашли:
+    print(&quot;Такого супергероя нет, не хотите им стать?&quot;)</code></pre>
+      </figure>
+      <p>Да, когда данных мало, можно запомнить, кто под каким индексом находится в списке, но это только до первого коллаба мультивселенных, во время которого Железный человек захочет добавиться в начало списка.</p>
+      <p>Да и, если честно, пытаться искать данные в списке вручную всё равно что перебирать мешок носков по одному в поисках пары. Работает, но пахнет отчаянием.</p>
+      <p>Словари решают эту проблему, позволяя хранить значения по ключу, который может быть, например, строкой. Сейчас — быстрое решение задачи выше, а пояснения — потом:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>contacts = {
+    &quot;Бэтмен&quot;: &quot;batcave@example.com&quot;,
+    &quot;Супермен&quot;: &quot;fortress@solitude.org&quot;,
+    &quot;Флэш&quot;: &quot;need@coffee.now&quot;
+}
+print(contacts[&quot;Бэтмен&quot;])</code></pre>
+      </figure>
+      <p>И в этом главная фишка словаря: вы обращаетесь к данным не по позиции, а по смыслу.</p>
+      <p>Наиболее живая аналогия — толковые словари из реального мира, где вы ищете определение слова не по номеру страницы, а самому слову — ключу.</p>
+      <h2 id="topic-1">💡 Со скоростью света</h2>
+      <p>Словари быстрые. Почему?</p>
+      <p>Потому что внутри — хеш-таблица, про которую мы упоминали, когда говорили про множества. Никакой магии:</p>
+      <p>Python превращает ключ (например, строку ′Катя′) в специальное число — хеш.</p>
+      <p>Потом по этому числу — как по адресу — находит нужное значение.</p>
+      <p>В разговоре про set мы упоминали, что использование хеша от значения помогает мгновенно найти вхождение элемента в множество. В словаре такой подход позволяет так же быстро получать значение по ключу вне зависимости от длины словаря.</p>
+      <p>К сожалению, это же и накладывает ограничение на типы данных, объекты которых могут быть ключами словаря: они должны быть неизменяемыми (хешируемыми). А кроме того, все ключи в словаре должны быть уникальными.</p>
+      <h2 id="part-42">✅ Можно:</h2>
+      <p>строки;</p>
+      <p>числа;</p>
+      <p>кортежи (если внутри тоже всё неизменяемое);</p>
+      <p>frozenset.</p>
+      <h2 id="part-47">❌ Нельзя:</h2>
+      <p>списки (list);</p>
+      <p>множества (set);</p>
+      <p>словари (dict).</p>
+      <p>Зато на значения никаких ограничений не накладывается.</p>
+      <h2 id="part-52">📕 Без типографии</h2>
+      <p>Есть несколько способов создания словаря, один из которых мы уже заспойлерили во вступлении этого урока — записать в фигурных скобках через запятую пары ключ: значение:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>heroes_speed = {
+    &quot;Бэтмен&quot;: 100,  # Скорость указана при движении на самолете.
+    &quot;Супермен&quot;: 200,
+    &quot;Флэш&quot;: 300
+} </code></pre>
+      </figure>
+      <p>Пустой словарь — пустые фигурные скобки:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>empty_dict = {}</code></pre>
+      </figure>
+      <p>Из-за того, что словари в Python появились раньше множеств, именно они застолбили за собой фигурные скобки. И теперь нам приходится создавать пустое множество только через set().</p>
+      <p>Впрочем, функция создания словаря через dict() тоже есть, и есть даже несколько вариантов, как её использовать:</p>
+      <p>Передать через запятую пары ключ: значение. Способ не очень часто применяется, потому что... а в общем, сами смотрите:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>villains_superpowers = dict(Джокер=&quot;безумие&quot;, Лекс_Лютор=&quot;богатство&quot;)</code></pre>
+      </figure>
+      <p>Передать в dict() коллекцию коллекций (список кортежей, список списков, список строк и т. д.), где каждая из вложенных коллекций содержит ровно два элемента. Первый элемент станет ключом, второй — значением:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>pairs = [(&quot;кофе&quot;, 50), (&quot;пицца&quot;, 500)]
+calories = dict(pairs)  # {&quot;кофе&quot;: 50, &quot;пицца&quot;: 500}
+
+strange_dict = dict((&#x27;ab&#x27;, &#x27;cd&#x27;, &#x27;ef&#x27;))  # {&#x27;a&#x27;: &#x27;b&#x27;, &#x27;c&#x27;: &#x27;d&#x27;, &#x27;e&#x27;: &#x27;f&#x27;}</code></pre>
+      </figure>
+      <p>Если хоть в какой-то из вложенных коллекций не два элемента, то сразу будет ValueError.</p>
+      <h2 id="topic-2">📖 Сверимся со словарём</h2>
+      <p>Мы также заспойлерили, что для получения элемента по ключу достаточно указать последний в квадратных скобках — точно так же, как с индексами в строках, списках и кортежах:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>phones = {&#x27;Вася&#x27;: &#x27;123&#x27;, &#x27;Петя&#x27;: &#x27;456&#x27;}
+print(phones[&#x27;Петя&#x27;])  # &#x27;456&#x27; — это не настоящий Петин телефон, а пример.</code></pre>
+      </figure>
+      <p>А если ключа нет?</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>print(phones[&#x27;Катя&#x27;])  # KeyError: &#x27;Катя&#x27;. Критический провал!</code></pre>
+      </figure>
+      <p>Никто не запретит нам перед получением значения сначала проверить, есть ли ключ в словаре, с помощью оператора in:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>name = input()
+if name in phones:
+    print(phones[name])
+else:
+    print(&#x27;Имя не найдено&#x27;)</code></pre>
+      </figure>
+      <p>Эта конструкция жизнеспособная, но немного громоздкая, к тому же существует способ получения значения со страховкой от ошибок — метод .get():</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code># Если ключ не будет найден, то вернётся None, а ошибки не возникнет.
+phone = phones.get(&quot;Чудо-женщина&quot;)
+# Есть второй необязательный параметр, который возвращается вместо None, если не найден ключ.
+phone = phones.get(&quot;Илья Муромец&quot;, &quot;Имя не найдено&quot;)</code></pre>
+      </figure>
+      <p>.get() похож на вежливого баристу: даже если вашего любимого двойного тыквенного айс-латте нет в меню, вам всё равно что-то предложат. Даже если это просто None.</p>
+      <p>Ещё пример:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code># Сколько кофе мы выпили за день?
+coffee_log = {&quot;понедельник&quot;: 3, &quot;вторник&quot;: 5}
+print(coffee_log.get(&quot;воскресенье&quot;, &quot;если значение не найдено, вероятно, такого дня не существует&quot;))</code></pre>
+      </figure>
+      <p>А ещё словари можно сравнивать. Правда, только на равенство ==. Словари равны, если у них совпадают все ключи и значения по этим ключам.</p>
+      <h2 id="topic-3">📚 Новая редакция, исправленная и дополненная</h2>
+      <p>Для добавления элементов в список мы использовали метод .append(), в множество — .add(). Вы, наверное, уже готовы запоминать какое-то очередное английское слово для словарей, но придётся вас огорчить (или обрадовать): в этом случае ваш словарный запас не будет обновлён. Для добавления элемента достаточно просто написать имя словаря, в квадратных скобках — желаемый ключ и присвоить значение.</p>
+      <p>Обновление значений работает точно так же, просто надо указать уже существующий ключ.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>contacts = {}
+contacts[&quot;Чудо-женщина&quot;] = &quot;amazon@paradise.is&quot;  # Добавили.
+contacts[&quot;Чудо-женщина&quot;] = &quot;amazon1@paradise.is&quot;   # Обновили.</code></pre>
+      </figure>
+      <p>Если нужно обновить один словарь другим словарём, то необходимо воспользоваться методом .update() или оператором |, как при объединении множеств:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>contacts.update({&quot;Киборг&quot;: &quot;cyborg@tech.org&quot;, &quot;Флэш&quot;: &quot;fast@speedforce.com&quot;})
+
+contacts = contacts | {&quot;Аквамен&quot;: &quot;h20@king.ru&quot;}  # Создаст новый словарь и присвоит старой переменной.
+
+contacts |= {&quot;Зелёный фонарь&quot;: &quot;green@green.gr&quot;}  # Обновит текущий.</code></pre>
+      </figure>
+      <p>.update() — это как совместить телефонные книжки из двух источников. Всё прекрасно, пока не совпали ключи, и теперь контакт «Папа» хранит номер Папы Римского.</p>
+      <p>Есть метод .setdefault(), который объединяет функционал .get() и присваивания значения. Если ключ найден, то его значение возвращается, если не найден, то возвращается указанное вторым параметром значение, а в словаре создаётся такая пара:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>stats = {}
+val = stats.setdefault(&#x27;попытки&#x27;, 0)
+print(val, stats)  # 0 {&#x27;попытки&#x27;: 0}</code></pre>
+      </figure>
+      <p>Для удаления пары ключ-значение есть два хорошо знакомых нам способа:</p>
+      <p>Оператор del.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>user = {&#x27;age&#x27;: 17, &#x27;name&#x27;: &#x27;Иван&#x27;}</code></pre>
+      </figure>
+      <p>del user[&#x27;age&#x27;]</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>print(user)
+# Если ключа нет — KeyError.</code></pre>
+      </figure>
+      <p>Метод .pop() — вернёт значение по ключу и удалит пару.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>name = user.pop(&#x27;name&#x27;)
+print(name)  # &#x27;Иван&#x27;
+print(user)  # {}
+# Можно указать дефолт:
+print(user.pop(&#x27;nonexistent&#x27;, &#x27;ничего не найдено&#x27;))  # &#x27;ничего не найдено&#x27;</code></pre>
+      </figure>
+      <p>Полностью очистить словарь можно с помощью метода .clear().</p>
+      <p>С копированием словарей абсолютно такая же история, как и со списками и множествами. Так как словари изменяемые, то простое присваивание в другую переменную не делает копию, а просто создает ещё одну связь, которая указывает на то же место в памяти, что и оригинальная переменная. Поэтому для поверхностного копирования можно использовать метод .copy(), а для копирования со всеми вложенными структурами функцию — deepcopy() из модуля copy().</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>original = {&#x27;a&#x27;: 1}
+copy = original.copy()
+copy[&#x27;a&#x27;] = 999
+
+print(original)  # {&#x27;a&#x27;: 1}
+print(copy)      # {&#x27;a&#x27;: 999}
+import copy
+complex_dict = {}  # Тут должен быть словарь с вложенными изменяемыми коллекциями.
+deep = copy.deepcopy(complex_dict)</code></pre>
+      </figure>
+      <p>Очень часто словари используются для подсчёта количества уникальных элементов в других коллекциях, например в списках.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>balls = [&#x27;оранжевый&#x27;, &#x27;фиолетовый&#x27;, &#x27;оранжевый&#x27;, &#x27;жёлтый&#x27;]
+balls_colors = {}
+for ball in balls:
+    balls_colors[ball] = balls_colors.get(ball, 0) + 1
+print(balls_colors)  # {&#x27;оранжевый&#x27;: 2, &#x27;фиолетовый&#x27;: 1, &#x27;жёлтый&#x27;: 1}</code></pre>
+      </figure>
+      <h2 id="topic-4">🎯 Как ничего не пропустить</h2>
+      <p>Словари, как и множества, не гарантируют порядок, в котором мы будем обходить ключи. Вернее, до версии Python 3.7 порядок ключей был вообще как в множестве, а потом стал сохраняться порядок вставки, но это по-прежнему не так надёжно, как индексы в строках. Так что лучше всего утверждать, что мы точно обойдём все ключи, но лучше не ожидать, что в каком-то порядке.</p>
+      <p>Вот наш подопытный словарь:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>mood_dict = {
+    &#x27;понедельник&#x27;: &#x27;отрицание&#x27;,
+    &#x27;вторник&#x27;: &#x27;злость&#x27;,
+    &#x27;среда&#x27;: &#x27;торг&#x27;,
+    &#x27;четверг&#x27;: &#x27;депрессия&#x27;,
+    &#x27;пятница&#x27;: &#x27;принятие&#x27;
+}</code></pre>
+      </figure>
+      <p>Обойти словарь циклом for можно несколькими способами:</p>
+      <p>Непосредственно по словарю, тогда перебираться будут ключи:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>for day in mood_dict:
+    print(day, mood_dict[day])</code></pre>
+      </figure>
+      <p>По ключам с помощью метода .keys(). Тут тоже будут перебираться ключи, но иногда в коде хочется более явно это подчеркнуть:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>for day in mood_dict.keys():
+    print(day, mood_dict[day])</code></pre>
+      </figure>
+      <p>По значениям с помощью метода .values(). Но в этом случае лёгкого и гарантированного способа восстановить ключ нет.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>for mood in mood_dict.values():
+    print(&quot;Неизвестный ключ&quot;, mood)</code></pre>
+      </figure>
+      <p>По кортежам из ключей и значений с помощью метода .items():</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>for day, mood in mood_dict.items():
+    print(day, mood)</code></pre>
+      </figure>
+      <p>Не обновляйте словарь внутри цикла по нему. Создайте копию!</p>
+      <p>Ещё одно важное замечание: методы .items(), .values(), .keys() возвращают не списки, а специальные итерируемые объекты. В этом можно убедиться, если попытаться вывести их с помощью print(). Если нужен именно список, то всегда можно передать результат выполнения этих методов в функцию list().</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>animal_sounds = {
+    &#x27;кот&#x27;: &#x27;мяу&#x27;,
+    &#x27;собака&#x27;: &#x27;гав&#x27;,
+    &#x27;корова&#x27;: &#x27;му&#x27;,
+    &#x27;утка&#x27;: &#x27;кря&#x27;,
+    &#x27;енот&#x27;: &#x27;ээээ...&#x27;
+}
+d_vals = animal_sounds.values()  # Объект dict_values.
+d_vals = list(d_vals)  # Список.</code></pre>
+      </figure>
+      <h2 id="part-175">🌟 Итог: мы — толкователи словарей</h2>
+      <p>Словари очень универсальны, а потому используются для решения прикладных задач довольно часто:</p>
+      <p>многие алгоритмы при переезде со списков на словари начинают работать сильно быстрее;</p>
+      <p>почти все системы в интернете обмениваются информацией в формате, невероятно похожем на словари (об этом мы обязательно поговорим);</p>
+      <p>конфигурационные файлы многих программ — словари;</p>
+      <p>даже некоторые базы данных (например, Mongo) хранят информацию в виде, аналогичном словарям.</p>
+      <p>Поэтому здорово, что мы теперь умеем:</p>
+      <p>создавать словари разными способами;</p>
+      <p>получать значения безопасно через .get();</p>
+      <p>устанавливать значения по умолчанию через .setdefault();</p>
+      <p>перебирать ключи, значения и пары;</p>
+      <p>объединять, копировать и очищать словари;</p>
+      <p>и главное — использовать dict как фундаментальную структуру своих программ.</p>
+      <p>P. S. Списки говорят: «Порядок важен». Множества говорят: «Уникальность важна». Словари говорят: «Контекст важен». И все они по-своему правы.</p>
+      </article>
+      <nav class="lesson-pagination" aria-label="Переключение уроков">
+        <a class="chapter-next" href="comprehensions.html">Назад · Списочные выражения</a>
+        <a class="chapter-next" href="generators.html">Далее · Сложные коллекции и генераторы</a>
+      </nav>
+    </main>
+  </div>
+</body>
+</html>

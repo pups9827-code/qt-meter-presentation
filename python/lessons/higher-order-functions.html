@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#090909">
+  <title>Функции высшего порядка — pupsiks</title>
+  <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../docs.css">
+  <script src="../docs.js" defer></script>
+</head>
+<body>
+  <header class="masthead">
+    <a class="brand" href="../../index.html"><img src="../../favicon.svg" alt="" width="38" height="38">pupsiks</a>
+    <a class="label" href="../index.html">Справочник Python</a>
+    <a class="home-link" href="../../index.html">На главную</a>
+  </header>
+  <div class="docs module">
+    <aside class="sidebar">
+      <nav aria-label="Разделы справочника" class="chapters">
+        <p class="label">Темы</p>
+        <ol>
+          <li><a href="../algorithms.html">Линейные алгоритмы и циклы</a></li>
+          <li><a href="../collections.html">Коллекции</a></li>
+          <li><a href="../files.html">Файлы и библиотеки</a></li>
+          <li><a href="../functions.html" aria-current="page">Функции</a></li>
+          <li><a href="../oop.html">ООП</a></li>
+        </ol>
+      </nav>
+    </aside>
+    <aside class="contents module-contents">
+      <nav aria-label="На этой странице">
+        <p class="label">На этой странице</p>
+        <a href="#topic-1">Функция как объект</a>
+        <a href="#topic-2">Функция как аргумент функции</a>
+        <a href="#topic-3">Безымянная лямбда</a>
+        <a href="#topic-4">Встроенные функции filter и map</a>
+        <a href="#topic-5">Сортировка с ключом</a>
+        <a href="#topic-6">min и max с ключом</a>
+        <a href="#topic-7">Цепочки функций</a>
+      </nav>
+    </aside>
+    <main>
+      <header class="overview" id="overview">
+        <a class="lesson-back label" href="../functions.html#higher-order-functions">Функции</a>
+        <h1>Функции высшего порядка</h1>
+        <p>Поговорим о высоком</p>
+      </header>
+
+      <article class="lesson-body">
+      <p>Мы уже не раз упоминали, что Python не терпит дискриминации, поэтому если что-то можно сделать с одним объектом языка, то это же можно сделать и с другими объектами.</p>
+      <p>Сегодня мы поговорим о том, что с функциями можно обращаться точно так же, как, например, с целочисленными или строковыми объектами. Их можно:</p>
+      <p>присвоить переменной,</p>
+      <p>положить в список или словарь,</p>
+      <p>передать в другую функцию,</p>
+      <p>вернуть из функции.</p>
+      <h2 id="topic-1">📦 Кругом одни объекты</h2>
+      <p>Первым делом давайте получим объект функции. Для этого достаточно написать имя функции без скобок. Это аналогично тому, что происходит со списками или строками: если вы пишете после имени списка квадратные скобки c индексом, то выполняется операция взятия элемента, не пишете скобки — получаете сам список. Пишете после функции круглые скобки с аргументами — она вызывается, не пишете — получаете саму функцию как объект.</p>
+      <p>input — объект функции чтения из стандартного ввода. Давайте мы этот объект напечатаем:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>print(input)</code></pre>
+      </figure>
+      <p>Python выдаёт нам текстовое представление этой функции: строку built-in function input, которая поясняет, что input — встроенная функция языка.</p>
+      <p>Тоже самое, но с нашими собственными функциями:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>def greet(name):
+    print(f&quot;Привет, {name}! Я добрый и предсказуемый код.&quot;)
+
+# Присваиваем функцию переменной
+hello = greet
+
+# Это всё ещё функция, её можно вызвать
+hello(&quot;Вася&quot;)  # Привет, Вася! ...
+greet(&quot;Петя&quot;)  # Привет, Петя! ...
+
+# Убедимся, что это один и тот же объект
+print(hello is greet)  # True (они как два прозвища одного и того же кота)</code></pre>
+      </figure>
+      <p>Можно хранить функции в коллекциях — списках, кортежах или словарях, — но только в качестве значения:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>def add(a, b): 
+    return a + b
+
+def sub(a, b): 
+    return a - b
+
+def mul(a, b): 
+    return a * b
+
+operations = {
+    &quot;+&quot;: add,
+    &quot;-&quot;: sub,
+    &quot;*&quot;: mul
+}
+
+op = &quot;*&quot;
+print(operations[op](6, 7))  # 42 — жизнь удалась, Дуглас Адамс доволен</code></pre>
+      </figure>
+      <p>Возможность записать функцию в переменную позволяет нам гибко управлять тем, какую функциональность мы хотим использовать. В одну и ту же переменную мы можем записать разные варианты поведения и менять их при необходимости. При этом нам не только не нужно будет менять код по всей программе, но не придётся даже изменять код функций. Достаточно переменной присвоить вместо одной функции другую.</p>
+      <p>Напишем программу, которая печатает списки либо просто через запятую, либо в «коробочках», в зависимости от значения переменной selected_formatting.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>def print_boxed(arr):
+    arr_stringified = [str(element) for element in arr]
+    mid = &#x27; | &#x27;.join(arr_stringified)
+    bar = &#x27;-&#x27; * (2 + len(mid))
+    print(&#x27; &#x27; + bar + &#x27; &#x27;)
+    print(&#x27;| &#x27; + mid + &#x27; |&#x27;)
+    print(&#x27; &#x27; + bar + &#x27; &#x27;)
+
+
+def print_simple(arr):
+    arr_stringified = [str(element) for element in arr]
+    print(&#x27;, &#x27;.join(arr_stringified))
+
+
+formatting = {
+    &#x27;boxed&#x27;: print_boxed,
+    &#x27;simple&#x27;: print_simple
+}
+
+print(&#x27;Введите тип форматирования boxed или simple:&#x27;)
+selected_formatting = input()
+
+print_formatted = formatting.get(selected_formatting, print_simple)
+
+# Дальше в программе можно использовать print_formatted повсюду
+print_formatted([1, 1, 2, 3, 5, 8, 13, 21])
+print_formatted([1, 2, 4, 8, 16, 32, 64, 128])
+print_formatted([&#x27;abc&#x27;, &#x27;def&#x27;, &#x27;ghi&#x27;])</code></pre>
+      </figure>
+      <p>Мы спросили у пользователя, как он хочет печатать, и по результатам ввода выбрали, как должна вести себя функция print_formatted во всей программе. Даже не забыли указать поведение по умолчанию на случай, если пользователь введёт какую-нибудь ерунду (а пользователи часто такое делают).</p>
+      <p>Умными словами, функция — это объект первого класса (first-class citizen).</p>
+      <h2 id="topic-2">📥 Положите ваши функции в функции</h2>
+      <p>Если функция — объект, то мы можем передавать её как параметр. Зачем? Причины могут быть разные, но одна из самых распространённых — делегирование логики. Пусть другая функция решит, как сравнивать, как фильтровать, как преобразовывать.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>def apply_twice(func, x):
+    # Внимание, хитрый трюк: мы вызываем переданную функцию два раза
+    return func(func(x))
+
+
+def inc(n):
+    return n + 1
+
+
+print(apply_twice(inc, 10))  # 12 — подрос, как кот на кормах премиум-класса</code></pre>
+      </figure>
+      <p>Ещё пример — функция, которая «улучшает» текст с помощью других функций:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>def make_better(message, enhanse_function):
+    &quot;&quot;&quot;Принимает сообщение и функцию, которая его &#x27;улучшает&#x27;&quot;&quot;&quot;
+    enhanced_message = enhanse_function(message)
+    return enhanced_message
+
+
+def add_smiles(text):
+    return text + &quot; 😊 🎉 🚀&quot;
+
+
+def make_dramatic(text):
+    return f&quot;⚡{text}⚡&quot;
+
+
+# Используем!
+simple_message = &quot;Я сделал домашку&quot;
+
+print(make_better(simple_message, add_smiles))
+# &quot;Я сделал домашку 😊 🎉 🚀&quot;
+
+print(make_better(simple_message, make_dramatic))
+# &quot;⚡Я сделал домашку⚡&quot;</code></pre>
+      </figure>
+      <p>Этот пример уже сильно пахнет декораторами, немного терпения, мы уже скоро про них поговорим обстоятельно.</p>
+      <h2 id="part-120">💪 На порядок больше</h2>
+      <p>Функции высшего порядка — это просто напыщенное название для функций, которые:</p>
+      <p>принимают другие функции как аргументы,</p>
+      <p>или возвращают функции как результат,</p>
+      <p>или делают и то и другое одновременно.</p>
+      <p>То есть мы с вами уже в предыдущих примерах написали функции высшего порядка. Какие мы молодцы!</p>
+      <p>И раз мы такие классные, давайте напишем функцию — фабрику комплиментов:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>def compliment_factory(degree_of_delight):
+    &quot;&quot;&quot;Возвращает функцию, которая генерирует комплименты с заданной степенью восторга&quot;&quot;&quot;    
+    if degree_of_delight == &quot;слабый&quot;:
+        def compliment(имя):
+            return f&quot;{имя}, ты неплох!&quot;
+
+    elif degree_of_delight == &quot;средний&quot;:
+        def compliment(имя):
+            return f&quot;{имя}, ты просто великолепен! ✨&quot;
+
+    elif degree_of_delight == &quot;максимальный&quot;:
+        def compliment(имя):
+            return f&quot;{имя}, ТЫ БОЖЕСТВЕНЕН! 🌟🎇💫 ТЫ ИЗМЕНИЛ МОЮ ЖИЗНЬ!&quot;
+
+    else:
+        def compliment(имя):
+            return f&quot;{имя}, ты ок.&quot;
+
+    return compliment
+
+
+# Используем фабрику!
+easy_compliment = compliment_factory(&quot;слабый&quot;)
+max_compliment = compliment_factory(&quot;максимальный&quot;)
+
+print(easy_compliment(&quot;Вася&quot;))
+print(max_compliment(&quot;Python&quot;))</code></pre>
+      </figure>
+      <p>Ещё пример:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>def make_multiplier(k):
+    # Возвращаем функцию, которая умножает на k
+    def mul(x):
+        return x * k
+    return mul
+
+
+double = make_multiplier(2)
+triple = make_multiplier(3)
+
+print(double(10))  # 20
+print(triple(10))  # 30</code></pre>
+      </figure>
+      <p>Это называется замыкание (closure): внутренняя функция помнит значение k из внешней области видимости. Мы не будем глубоко зарываться в теорию замыканий в этом уроке, но идея проста: «Вернули функцию, а она помнит нужные переменные».</p>
+      <h2 id="topic-3">🥸 У функции нет имени</h2>
+      <p>Иногда писать def слишком многословно, особенно если функция крошечная и нужна один раз, например как параметр функции высшего порядка. Тут на выручку приходят lambda-функции, у которых даже имени нет.</p>
+      <p>Лямбда-функции — короткие безымянные (анонимные) функции, которые можно создавать инструкцией lambda &lt;аргументы&gt;: &lt;выражение&gt;.</p>
+      <p>Важно: тело lambda-функции — одно выражение. Нельзя туда пихать for, if как оператор и прочие многоходовочки. Но можно использовать тернарный оператор и вызовы других функций.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>square = lambda x: x * x  # Принимаем параметр x и возвращаем x * x
+print(square(7))  # 49
+
+add = lambda x, y: x + y  # Принимаем параметры x и y и возвращаем x + y
+add(3, 5)  # =&gt; 8
+add(1, add(2, 3))  # =&gt; 6
+
+# Чуть более сложный пример с тернарным оператором
+sign = lambda x: 1 if x &gt; 0 else (-1 if x &lt; 0 else 0)
+# Читаемость уже не очень, при дальнейшем усложнении лучше сделать обычную функцию
+print([sign(i) for i in (-3, 0, 2)])  # [-1, 0, 1]</code></pre>
+      </figure>
+      <p>Строго говоря, то, что мы написали выше, хорошо только для иллюстрации, потому что при присваивании lambda-функции переменной мы, по сути, уже дали ей имя, а значит, стоило заменить её на обычную функцию. Присваивание безымянных функций переменным — нарушение PEP8, и это было продемонстрировано вам исключительно ради науки и в учебных целях.</p>
+      <p>Использовать lambda-функции разумно там, где функция маленькая, локальная и не нужна по имени. НО! Не превращайте код в «лямбда-лапшу». Если функция нетривиальна или используется в нескольких местах — лучше сделать полноценную функцию. Ваши будущие коллеги (и вы сами через неделю) скажут спасибо.</p>
+      <h2 id="topic-4">🔽 Отфильтровано</h2>
+      <p>В Python есть несколько встроенных функций высшего порядка, некоторые из них вы уже даже использовали, просто не знали об этом. Но начнём с функции filter().</p>
+      <p>Функция filter() принимает функцию-критерий отбора элементов, а затем саму коллекцию элементов. Возвращает она «список» из элементов, удовлетворяющих критерию.</p>
+      <p>Простыми словами: каждый переданный элемент коллекции проходит через функцию-критерий, и если она возвращает True (или что-то, что можно интерпретировать аналогичным образом), то он попадает в результирующий «список». Иначе — нет.</p>
+      <p>Вот тут в результирующий «список» попадают только чётные числа:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>def is_even(x):
+    return x % 2 == 0
+
+
+numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+even_numbers = filter(is_even, numbers)
+print(list(even_numbers))  # [2, 4, 6, 8, 10]</code></pre>
+      </figure>
+      <p>Как вы могли заметить, это идеальное место для использования lambda-функций. Наш пример можно переписать так:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+even_numbers = filter(lambda x: x % 2 == 0, numbers)
+print(*even_numbers)</code></pre>
+      </figure>
+      <p>Важно, что результат функции filter() не список, а итерируемый объект. По нему можно проходить циклом for, но при печати будет так себе — какой-то &lt;filter object at ...&gt;. Чуть позже мы поговорим, что это такое, а пока просто будем заворачивать результат в list() или распаковывать с помощью *.</p>
+      <p>Если хочется, чтобы в результат фильтрации попали все объекты, то можно написать вот такую функцию-критерий:</p>
+      <p>lambda x: True</p>
+      <p>Чтобы функция filter() не казалась магической, напишем свой упрощённый аналог. Наша функция simple_filter() будет принимать критерий и список и возвращать новый список.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>def simple_filter(criterion, arr):
+    result = []
+    for element in arr:
+        if criterion(element):
+            result.append(element)
+    return result  # Именно то, что возвращается список, а не странный filter object, — главное упрощение</code></pre>
+      </figure>
+      <h2 id="part-211">🗺️ Конвейер преобразований</h2>
+      <p>Другая популярная функция высшего порядка называется map().</p>
+      <p>Функция map() преобразует каждый элемент коллекции по некоторому общему правилу и в результате создаёт «список» (вернее, как и filter(), специальный итерируемый объект, похожий на список) из преобразованных значений.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code># Преобразуем температуры из градусов по Цельсию в градусы по Фаренгейту
+temp_c_list = [0, 20, 30, 100, -10]
+
+temp_fahr_list = list(map(lambda c: c * 9/5 + 32, temp_c_list))</code></pre>
+      </figure>
+      <p>Ещё пример:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>orders = [
+    {&quot;товар&quot;: &quot;книга&quot;, &quot;цена&quot;: 500, &quot;количество&quot;: 2},
+    {&quot;товар&quot;: &quot;носки&quot;, &quot;цена&quot;: 100, &quot;количество&quot;: 5},
+    {&quot;товар&quot;: &quot;наушники&quot;, &quot;цена&quot;: 3000, &quot;количество&quot;: 1}
+]
+
+# Посчитаем общую стоимость каждого заказа
+order_values = list(map(
+    lambda order: order[&quot;цена&quot;] * order[&quot;количество&quot;], 
+    orders</code></pre>
+      </figure>
+      <p>))</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>print(order_values)  # [1000, 500, 3000]</code></pre>
+      </figure>
+      <p>Если вы хотите (а вы непременно захотите) передать результат filter() в map() или наоборот, то преобразование к списку не обязательно, функции прекрасно работают с итерируемыми объектами, которыми являются filter object и map object.</p>
+      <h2 id="topic-5">📶 Высший sort</h2>
+      <p>Как мы намекали чуть раньше, вы уже встречались с функциями, которые могут принимать другие функции в качестве аргументов. И начнём с функции sorted() (и метода списка .sort()).</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code># Обычная сортировка
+nums = [3, 1, 4, 1, 5, 9, 2, 6]
+print(sorted(nums))  # [1, 1, 2, 3, 4, 5, 6, 9]
+
+# А если хотим отсортировать по какому-то признаку? Используем key!
+students = [&quot;Анна&quot;, &quot;Пётр&quot;, &quot;Мария&quot;, &quot;Александр&quot;]
+
+# Сортировка по длине имени
+print(sorted(students, key=len))  # len — это же функция, так почему бы и нет?
+
+# Сортировка по последней букве (почему бы и нет?)
+print(sorted(students, key=lambda name: name[-1]))  # [&#x27;Анна&#x27;, &#x27;Пётр&#x27;, &#x27;Александр&#x27;, &#x27;Мария&#x27;]
+
+# Сортировка строк нечувствительно к регистру:
+words = [&quot;банан&quot;, &quot;Яблоко&quot;, &quot;апельсин&quot;, &quot;груша&quot;, &quot;яблоко&quot;]
+print(sorted(words, key=str.lower)) # Так тоже можно
+# [&#x27;апельсин&#x27;, &#x27;банан&#x27;, &#x27;груша&#x27;, &#x27;Яблоко&#x27;, &#x27;яблоко&#x27;]</code></pre>
+      </figure>
+      <p>Прекрасно работает со сложными объектами:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>persons = [
+    {&quot;имя&quot;: &quot;Алиса&quot;, &quot;возраст&quot;: 25, &quot;зарплата&quot;: 100000},
+    {&quot;имя&quot;: &quot;Боб&quot;, &quot;возраст&quot;: 30, &quot;зарплата&quot;: 80000},
+    {&quot;имя&quot;: &quot;Вася&quot;, &quot;возраст&quot;: 25, &quot;зарплата&quot;: 120000},
+    {&quot;имя&quot;: &quot;Глафира&quot;, &quot;возраст&quot;: 35, &quot;зарплата&quot;: 90000}
+]
+
+# Сортируем по возрасту (по возрастанию)
+по_возрасту = sorted(persons, key=lambda person: person[&quot;возраст&quot;])
+
+# Сортируем по зарплате (по убыванию)
+по_зарплате = sorted(persons, key=lambda person: person[&quot;зарплата&quot;], reverse=True)</code></pre>
+      </figure>
+      <p>Иногда нужно сортировать по нескольким критериям. Например, сначала по возрасту, а если возраст одинаковый — по зарплате. В этом случае используем в лямбда-функции кортежи, в которых перечисляем критерии в порядке убывания значимости:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code># Возраст по возрастанию (обычно), зарплата по убыванию (отрицание)
+res = sorted(persons, key=lambda p: (p[&quot;возраст&quot;], -p[&quot;зарплата&quot;]))</code></pre>
+      </figure>
+      <h2 id="topic-6">🕵🏻 В поисках экстремумов</h2>
+      <p>Функции min() и max() также могут принимать в качестве аргумента функцию, которая будет возвращать значение для сравнения при поиске минимального или максимального элемента.</p>
+      <p>Вот так можно найти строку максимальной длины:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>words = [&quot;кот&quot;, &quot;грабли&quot;, &quot;вафля&quot;, &quot;ммм&quot;, &quot;дракоша&quot;]
+longest = max(words, key=len)
+print(longest)  # дракоша</code></pre>
+      </figure>
+      <p>Если критериев несколько, то снова на помощь приходят кортежи. Студент с лучшим баллом, а при равенстве — с меньшим возрастом:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>students = [
+    {&quot;name&quot;: &quot;Алиса&quot;, &quot;age&quot;: 25, &quot;score&quot;: 80},
+    {&quot;name&quot;: &quot;Боб&quot;, &quot;age&quot;: 30, &quot;score&quot;: 90},
+    {&quot;name&quot;: &quot;Вася&quot;, &quot;age&quot;: 20, &quot;score&quot;: 75},
+    {&quot;name&quot;: &quot;Глафира&quot;, &quot;age&quot;: 18, &quot;score&quot;: 95}
+]
+
+best_student = max(students, key=lambda s: (s[&quot;score&quot;], -s[&quot;age&quot;]))
+print(best_student)</code></pre>
+      </figure>
+      <p>Самый дешёвый товар с учётом скидки для экономных сластён:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>products = [
+    {&quot;name&quot;: &quot;Печенье&quot;, &quot;price&quot;: 100, &quot;discount&quot;: 0.1},  # 10%
+    {&quot;name&quot;: &quot;Шоколад&quot;, &quot;price&quot;: 95,  &quot;discount&quot;: 0.0},
+    {&quot;name&quot;: &quot;Пирожное&quot;, &quot;price&quot;: 120, &quot;discount&quot;: 0.25}  # 25%
+]
+
+def final_price(p):
+    return p[&quot;price&quot;] * (1 - p[&quot;discount&quot;])
+
+cheapest = min(products, key=final_price)
+print(cheapest)  # Пирожное (120 * 0.75 = 90) дешевле шоколада (95)</code></pre>
+      </figure>
+      <h2 id="topic-7">🕹️ Комбо</h2>
+      <p>И напоследок давайте рассмотрим задачу, где соберём практически всё, о чём мы говорили на уроке. Итак, мы хотим найти топ-2 самых успешных студентов по среднему баллу, которым меньше 21 года.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>students = [
+    {&quot;имя&quot;: &quot;Алиса&quot;, &quot;оценки&quot;: [85, 92, 78], &quot;возраст&quot;: 20},
+    {&quot;имя&quot;: &quot;Боб&quot;, &quot;оценки&quot;: [45, 60, 55], &quot;возраст&quot;: 22},
+    {&quot;имя&quot;: &quot;Вася&quot;, &quot;оценки&quot;: [92, 95, 88], &quot;возраст&quot;: 19},
+    {&quot;имя&quot;: &quot;Глафира&quot;, &quot;оценки&quot;: [38, 42, 40], &quot;возраст&quot;: 21},
+    {&quot;имя&quot;: &quot;Дмитрий&quot;, &quot;оценки&quot;: [67, 75, 70], &quot;возраст&quot;: 20}
+]
+
+# Задача: найти топ-2 самых успешных студентов по среднему баллу, 
+# которым меньше 21 года
+
+# Шаг 1: Добавляем средний балл
+students_with_mean = list(map(
+    lambda s: {**s, &quot;средний_балл&quot;: sum(s[&quot;оценки&quot;]) / len(s[&quot;оценки&quot;])},
+    students</code></pre>
+      </figure>
+      <p>))  # Тут мы распаковываем исходный словарь и добавляем новую пару ключ — значение</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code># Шаг 2: Фильтруем по возрасту
+young = list(filter(lambda s: s[&quot;возраст&quot;] &lt; 21, students_with_mean))
+
+# Шаг 3: Сортируем по среднему баллу (по убыванию)
+young_top = sorted(young, key=lambda s: s[&quot;средний_балл&quot;], reverse=True)[:2]
+
+print(&quot;Топ-2 молодых гения:&quot;)
+for student in young_top:
+    print(f&quot;- {student[&#x27;имя&#x27;]}: средний балл {student[&#x27;средний_балл&#x27;]:.1f}&quot;)</code></pre>
+      </figure>
+      <p>Или в одну строку (читаемость так себе, лучше так не делать):</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>young_top = sorted(
+    list(filter(lambda s: s[&quot;возраст&quot;] &lt; 21, 
+        list(map(lambda s: {**s, &quot;средний_балл&quot;: sum(s[&quot;оценки&quot;]) / len(s[&quot;оценки&quot;])}, students)))
+    ),
+    key=lambda s: s[&quot;средний_балл&quot;], reverse=True</code></pre>
+      </figure>
+      <p>)[:2]</p>
+      <h2 id="part-331">🌟 Итог: такой порядок навели</h2>
+      <p>Поздравляем, теперь вы владеете одним из самых элегантных инструментов Python — лямбда-функциями.</p>
+      <p>А ещё мы:</p>
+      <p>выяснили, что функции в Python — объекты первого класса,</p>
+      <p>попередавали функции в качестве аргументов другим функциям и функции же повозвращали,</p>
+      <p>дали определение функциям высшего порядка,</p>
+      <p>научились классно фильтровать, преобразовывать и сортировать данные.</p>
+      <p>Эти концепции — основа функционального программирования, которое делает код более декларативным, читаемым и выразительным. Теперь вместо циклов с кучей if-ов вы можете писать красивые цепочки преобразований.</p>
+      <p>P. S. Не превращайте код в непонятные однострочники только потому, что можете! Читаемость всегда важнее краткости.</p>
+      </article>
+      <nav class="lesson-pagination" aria-label="Переключение уроков">
+        <a class="chapter-next" href="variable-arguments.html">Назад · Функции. Переменное число аргументов</a>
+        <a class="chapter-next" href="streams.html">Далее · Обработка коллекций. Потоковый ввод</a>
+      </nav>
+    </main>
+  </div>
+</body>
+</html>

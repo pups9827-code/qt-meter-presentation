@@ -1,0 +1,415 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#090909">
+  <title>Функции. Переменное число аргументов — pupsiks</title>
+  <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../docs.css">
+  <script src="../docs.js" defer></script>
+</head>
+<body>
+  <header class="masthead">
+    <a class="brand" href="../../index.html"><img src="../../favicon.svg" alt="" width="38" height="38">pupsiks</a>
+    <a class="label" href="../index.html">Справочник Python</a>
+    <a class="home-link" href="../../index.html">На главную</a>
+  </header>
+  <div class="docs module">
+    <aside class="sidebar">
+      <nav aria-label="Разделы справочника" class="chapters">
+        <p class="label">Темы</p>
+        <ol>
+          <li><a href="../algorithms.html">Линейные алгоритмы и циклы</a></li>
+          <li><a href="../collections.html">Коллекции</a></li>
+          <li><a href="../files.html">Файлы и библиотеки</a></li>
+          <li><a href="../functions.html" aria-current="page">Функции</a></li>
+          <li><a href="../oop.html">ООП</a></li>
+        </ol>
+      </nav>
+    </aside>
+    <aside class="contents module-contents">
+      <nav aria-label="На этой странице">
+        <p class="label">На этой странице</p>
+        <a href="#topic-1">Переменное число аргументов</a>
+        <a href="#topic-2">Именованные аргументы и значения по умолчанию</a>
+        <a href="#topic-3">Произвольное число именованных аргументов</a>
+        <a href="#topic-4">Любые аргументы в любом количестве</a>
+        <a href="#topic-5">Запаковка и распаковка</a>
+        <a href="#topic-6">Важные мелочи</a>
+      </nav>
+    </aside>
+    <main>
+      <header class="overview" id="overview">
+        <a class="lesson-back label" href="../functions.html#variable-arguments">Функции</a>
+        <h1>Функции. Переменное число аргументов</h1>
+        <p>Бесконечность не предел</p>
+      </header>
+
+      <article class="lesson-body">
+      <p>Сегодня рассмотрим ту самую ситуацию, когда вы пишете функцию и такие: «Ну не знаю я заранее, сколько туда всего прилетит, пусть несут сколько хотят». И Python такой: «Окей, держи».</p>
+      <p>Параллельно разберёмся с значениями по умолчанию, порядком передачи аргументов, а ещё аккуратно поговорим о пустых заглушках — pass — и даже многоточии ... (да, это не только драматургический приём в переписке с одноклассниками).</p>
+      <h2 id="topic-1">⭐ Звезда по имени args</h2>
+      <p>Представьте, вы пишете функцию greet(), которая просто печатает «Привет, [Имя]!».</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>def greet(name):
+    print(f&quot;Привет, {name}!&quot;)
+
+
+greet(&quot;Вася&quot;)  # Всё работает</code></pre>
+      </figure>
+      <p>Но тут приходит, например, Петя и говорит: «А можно поприветствовать сразу двоих?». Вы, недолго думая, пишете:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>def greet_two(name1, name2):
+    print(f&quot;Привет, {name1} и {name2}!&quot;)
+
+
+greet_two(&quot;Вася&quot;, &quot;Петя&quot;)</code></pre>
+      </figure>
+      <p>А потом приходит Маша с подругами... Их пять... Потом десять... Писать отдельную функцию для каждого количества человек — это как заказывать отдельный самолёт для каждого члена семьи. Неэффективно, дорого, смешно.</p>
+      <p>Вот для таких ситуаций нам и нужны функции с переменным числом аргументов. Они умеют принимать любое количество данных на вход. Самый главный пример, который вы все знаете, — это функция print().</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>print(1)  # Один аргумент? OK
+print(1, 2, 3, 4, 5)  # Пять аргументов? Без проблем!
+print(&quot;Строка&quot;, [1, 2, 3], None, 42.0)  # Аргументы разных типов? Да запросто!</code></pre>
+      </figure>
+      <p>Как же она это делает? Сейчас узнаем.</p>
+      <p>Синтаксис до безобразия прост. Когда вы в заголовке функции ставите перед именем параметра звёздочку *, этот параметр превращается в кортеж, который собирает в себя все «лишние» позиционные аргументы.</p>
+      <p>Проще говоря, всё, что не влезло в другие параметры, запихивается в этот кортеж.</p>
+      <p>Давайте создадим функцию super_greet(), которая будет здороваться с любым количеством людей.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>def super_greet(*names):  # Обратите внимание на звёздочку!
+    print(&quot;Привет, мои дорогие друзья!&quot;)
+    for name in names:  # names — это кортеж! Мы можем по нему итерироваться
+        print(f&quot;Особый привет тебе, {name}!&quot;)
+    print(&quot;Всем сегодня по пятёрке!&quot;)
+
+# А теперь давайте её испробуем!
+super_greet(&quot;Вася&quot;)
+# Вывод:
+# Привет, мои дорогие друзья!
+# Особый привет тебе, Вася!
+# Всем сегодня по пятёрке!
+
+super_greet(&quot;Вася&quot;, &quot;Петя&quot;, &quot;Маша&quot;, &quot;Ваня&quot;, &quot;Котик Васенька&quot;)
+# Вывод:
+# Привет, мои дорогие друзья!
+# Особый привет тебе, Вася!
+# Особый привет тебе, Петя!
+# Особый привет тебе, Маша!
+# Особый привет тебе, Ваня!
+# Особый привет тебе, Котик Васенька!
+# Всем сегодня по пятёрке!</code></pre>
+      </figure>
+      <p>Есть некоторый договор между программистами, что параметр со * обычно называют args (от англ. arguments — аргументы). Но если вы, как в нашем случае, абсолютно точно знаете, что будет там лежать, то можно выбирать имя, описывающее содержимое.</p>
+      <p>За кулисами происходит вот что: когда мы вызвали super_greet(&quot;Вася&quot;, &quot;Петя&quot;, ...), Python:</p>
+      <p>увидел, что у функции нет других параметров, кроме *names.</p>
+      <p>cобрал все переданные аргументы в кортеж.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>Получилось names = (&quot;Вася&quot;, &quot;Петя&quot;, &quot;Маша&quot;, &quot;Ваня&quot;, &quot;Котик Васенька&quot;).</code></pre>
+      </figure>
+      <p>Параметр со звёздочкой можно комбинировать с обычными. Главное, ставить его после них.</p>
+      <p>Давайте усложним нашу функцию. Пусть первый аргумент — это ведущий вечеринки.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>def party_greet(host, *guests):
+    print(f&quot;Всем привет! Я ваш ведущий, {host}!&quot;)
+    if guests:  # Если кортеж guests не пустой
+        print(&quot;А теперь поприветствуем наших гостей:&quot;)
+        for guest in guests:
+            print(f&quot;--- {guest}!&quot;)
+    print(&quot;Зажигаем!&quot;)
+
+
+party_greet(&quot;Джон Сноу&quot;, &quot;Дейенерис&quot;, &quot;Тирион&quot;, &quot;Серсея&quot;)
+
+# Вывод:
+# Всем привет! Я ваш ведущий, Джон Сноу!
+# А теперь поприветствуем наших гостей:
+# --- Дейенерис!
+# --- Тирион!
+# --- Серсея!
+# Зажигаем!</code></pre>
+      </figure>
+      <p>Здесь «Джон Сноу» ушёл в параметр host, а всё остальное запаковалось в кортеж guests.</p>
+      <p>В старых языках, вроде C, для таких фокусов приходилось использовать хитрые макросы вроде va_list. Python, как всегда, заботится о нашем комфорте.</p>
+      <p>Если хотите, чтобы функция могла принимать в том числе и ноль аргументов, — оставьте только параметр со * и обрабатывайте пустой кортеж внутри функции.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>def lonely_greet(*names):
+    if names:
+        for name in names:
+            print(f&quot;Привет, {name}!&quot;)
+    else:
+        print(&quot;Ох, никого нет... Печально.&quot;)</code></pre>
+      </figure>
+      <h2 id="topic-2">🦖 Так исторически сложилось</h2>
+      <p>Давайте отойдём от абстрактных гостей и поговорим о чём-то конкретном и вкусном. О бургерах.</p>
+      <p>Вы пришли в самую крутую бургерную в мире — Byte Burger. Тут можно заказать бургер с любой начинкой! Но есть проблема: повар — робот на Python, и он понимает только строгие команды. Давайте напишем для него функцию make_burger.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>def make_burger(type_of_meat, with_onion, with_tomato, with_pickle):
+    print(f&quot;Начали готовить бургер с {type_of_meat}!&quot;)
+    if with_onion:
+        print(&quot;--- Добавляем луковые колечки. Ах, как пахнет!&quot;)
+    if with_tomato:
+        print(&quot;--- Кладём сочный ломтик помидора.&quot;)
+    if with_pickle:
+        print(&quot;--- И, конечно, хрустящий огурчик!&quot;)
+    print(&quot;Вуаля! Ваш бургер готов!\n&quot;)
+
+
+# Заказ Васи: говядина, с луком, без помидора, с огурцом
+make_burger(&quot;говядина&quot;, True, False, True)</code></pre>
+      </figure>
+      <p>Работает? Работает. Удобно? Нет. Что такое True, False, True? Это так называемые «магические числа» (вернее, булевы значения), которые ничего не говорят тому, кто читает код. Забудьте, что вы его только что написали. Посмотрите на вызов функции через неделю: вы вспомните, что хотели без помидора?</p>
+      <p>И тут только четыре параметра, в некоторых функциях их может быть намного больше. Например, в функции read_csv() из библиотеки pandas (про которую мы упоминали в разрезе сохранения xlsx файлов) их около пятидесяти. Если не верите — вот документация.</p>
+      <p>Спасение от тренировки памяти — именованные аргументы и значения по умолчанию.</p>
+      <p>Давайте сделаем наш код читаемым и удобным.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>def make_burger(type_of_meat, with_onion=False, with_tomato=True,
+                with_pickle=True):  # Пробелы вокруг знаков равенства не ставим!
+    print(f&quot;Начали готовить бургер с {type_of_meat}!&quot;)
+    if with_onion:
+        print(&quot;--- Добавляем луковые колечки. Ах, как пахнет!&quot;)
+    if with_tomato:
+        print(&quot;--- Кладём сочный ломтик помидора.&quot;)
+    if with_pickle:
+        print(&quot;--- И, конечно, хрустящий огурчик!&quot;)
+    print(&quot;Вуаля! Ваш бургер готов!\n&quot;)
+
+
+# Заказ Васи: он ненавидит лук и помидоры, но любит огурцы
+make_burger(&quot;говядина&quot;, with_onion=False, with_tomato=False, with_pickle=True)
+
+# Заказ Пети: он любит ВСЁ. Можно не указывать всё явно, т. к. значения по умолчанию нас и так устраивают
+make_burger(&quot;курица&quot;)  # С курицей, с помидором и огурцом, но без лука (по умолчанию False)
+
+# Заказ Маши: обожает лук. Остальное — по умолчанию
+make_burger(&quot;свинина&quot;, with_onion=True)</code></pre>
+      </figure>
+      <p>Вот что здесь произошло:</p>
+      <p>Значения по умолчанию: мы указали with_onion=False, with_tomato=True и т. д. Это значит, что если при вызове функции мы не передадим эти аргументы, Python подставит указанные значения сам.</p>
+      <p>Именованные аргументы: когда мы вызываем функцию, можем явно указать, в какой параметр какое значение идёт: with_onion=True.</p>
+      <p>Вообще, любую функцию в Python можно вызывать с использованием именованных аргументов. Например, вызов make_burger(&quot;говядина&quot;, with_onion=True) абсолютно эквивалентен вызову make_burger(with_onion=True, type_of_meat=&quot;говядина&quot;). Но часто комбинация позиционных и именованных аргументов делает код более понятным.</p>
+      <p>Это делает код невероятно читаемым. Сразу понятно, что Маша заказала бургер с луком.</p>
+      <p>Параметры со значениями по умолчанию всегда должны идти после параметров без значений по умолчанию. Иначе Python не сможет понять, что к чему относится.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code># Так можно
+make_burger(&quot;говядина&quot;, with_onion=True)
+
+# А так НЕЛЬЗЯ! Python схватится за голову и выдаст ошибку
+# make_burger(with_onion=True, &quot;говядина&quot;)  # SyntaxError: positional argument follows keyword argument</code></pre>
+      </figure>
+      <p>Python, как и человек, сначала хочет понять основную суть («Что за мясо?»), а уже потом вдаваться в детали («А с луком будем?»).</p>
+      <h2 id="topic-3">✨ Ма-а-аленькое такое созвездие</h2>
+      <p>Мы научились запаковывать бесконечное количество позиционных аргументов в кортеж. Но что, если нам нужно принять бесконечное количество именованных аргументов?</p>
+      <p>Например, мы пишем функцию create_profile() для анкеты человека. Мы знаем стандартные поля: name, age. Но вдруг пользователь захочет добавить что-то своё? «Любимый цвет», «Размер обуви», «Количество домашних драконов»?</p>
+      <p>В Python для этого используют две звёздочки **. Параметр с двумя звёздочками (часто его называют **kwargs — от «keyword arguments») превращается в словарь (dict), который собирает все лишние именованные аргументы. Но, опять же, если вы точно знаете, что там будет, можно выбрать другое имя.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>def create_profile(name, age, **extra_info):
+    print(f&quot;\n--- Анкета пользователя ---&quot;)
+    print(f&quot;Имя: {name}&quot;)
+    print(f&quot;Возраст: {age}&quot;)
+
+    if extra_info:  # Если словарь extra_info не пустой
+        print(&quot;\nДополнительная информация:&quot;)
+        for key, value in extra_info.items():
+            print(f&quot;  {key}: {value}&quot;)
+
+
+# Стандартная анкета
+create_profile(&quot;Вася&quot;, 25)
+
+# Анкета с дополнениями от чудаковатого пользователя
+create_profile(
+    &quot;Петя&quot;,
+    30,
+    favorite_color=&quot;зелёный&quot;,
+    iq=300,
+    phobias=&quot;боязнь клоунов и пустых экранов монитора&quot;,
+    dream=&quot;стать садовником на Марсе&quot;
+)</code></pre>
+      </figure>
+      <p>Вывод:</p>
+      <p>--- Анкета пользователя ---</p>
+      <p>Имя: Вася</p>
+      <p>Возраст: 25</p>
+      <p>--- Анкета пользователя ---</p>
+      <p>Имя: Петя</p>
+      <p>Возраст: 30</p>
+      <p>Дополнительная информация:</p>
+      <p>favorite_color: зелёный</p>
+      <p>iq: 300</p>
+      <p>phobias: боязнь клоунов и пустых экранов монитора</p>
+      <p>dream: стать садовником на Марсе</p>
+      <p>Что в итоге? В extra_info попал словарь: {&#x27;favorite_color&#x27;: &#x27;зелёный&#x27;, &#x27;iq&#x27;: 300, &#x27;phobias&#x27;: &#x27;боязнь клоунов и пустых экранов монитора&#x27;, &#x27;dream&#x27;: &#x27;стать садовником на Марсе&#x27;}</p>
+      <h2 id="topic-4">♾️ Всё и сразу</h2>
+      <p>А теперь давайте соберём все знания в одну кучу и посмотрим, как это работает вместе. Правила порядка аргументов в функции: (позиционные, *args, значения_по_умолчанию, **kwargs).</p>
+      <p>Давайте создадим функцию-монстра, которая демонстрирует всю мощь Python.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>def ultimate_function(required_arg, *args, default_arg=&quot;Я по умолчанию&quot;, **kwargs):
+    print(&quot;=&quot; * 50)
+    print(f&quot;Обязательный аргумент: {required_arg}&quot;)
+    print(f&quot;Аргументы по умолчанию: default_arg = {default_arg}&quot;)
+    print(&quot;-&quot; * 20)
+
+    if args:
+        print(f&quot;Пойманные *args (кортеж): {args}&quot;)
+    else:
+        print(&quot;*args пуст. Как скучно.&quot;)
+
+    if kwargs:
+        print(f&quot;Пойманные **kwargs (словарь): {kwargs}&quot;)
+    else:
+        print(&quot;**kwargs пуст. Никакой фантазии.&quot;)
+
+    print(&quot;=&quot; * 50)
+
+# Тестируем на разных примерах!
+
+print(&quot;1. Минимализм:&quot;)
+ultimate_function(&quot;Меня передали в required_arg&quot;)
+
+print(&quot;\n2. Добавим немного args:&quot;)
+ultimate_function(&quot;Первый&quot;, &quot;Второй&quot;, &quot;Третий&quot;)
+
+print(&quot;\n3. А теперь добавим kwargs:&quot;)
+ultimate_function(&quot;Снова первый&quot;, param1=&quot;value1&quot;, param2=&quot;value2&quot;)
+
+print(&quot;\n4. Полный джекпот! Всё вместе!&quot;)
+ultimate_function(
+    &quot;Начало&quot;,
+    &quot;Это&quot;, &quot;уйдёт&quot;, &quot;в&quot;, &quot;args&quot;,
+    default_arg=&quot;А я переопределён!&quot;,
+    custom_parameter=&quot;А я в kwargs&quot;,
+    meaning_of_life=42
+)</code></pre>
+      </figure>
+      <p>Запустите этот код и посмотрите, как Python аккуратно и предсказуемо раскидывает аргументы по соответствующим «карманам».</p>
+      <h2 id="topic-5">🎒 Если что-то можно запаковать, можно и распаковать</h2>
+      <p>Если мы можем упаковать аргументы в функции, то логично, что мы можем их и распаковать при вызове. Это как с посылкой: можно сложить в коробку много вещей (упаковка), а потом достать их обратно (распаковка).</p>
+      <p>Допустим, у нас есть список имён и мы хотим передать его в нашу функцию super_greet().</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>my_friends = [&quot;Алиса&quot;, &quot;Боб&quot;, &quot;Карл&quot;, &quot;Диана&quot;]
+
+# Если передать просто список, он станет одним элементом кортежа names
+super_greet(my_friends)
+# Вывод:... &quot;Особый привет тебе, [&#x27;Алиса&#x27;, &#x27;Боб&#x27;, &#x27;Карл&#x27;, &#x27;Диана&#x27;]!&quot; — Не то!
+
+# А если поставить звёздочку? Произойдёт магия!
+super_greet(*my_friends)
+# Вывод: Приветствует каждого друга по отдельности!</code></pre>
+      </figure>
+      <p>Звёздочка * перед коллекцией (списком, кортежем, строкой, множеством, словарём) при вызове функции распаковывает её в позиционные аргументы. Вызов super_greet(*my_friends) абсолютно аналогичен вызову super_greet(&quot;Алиса&quot;, &quot;Боб&quot;, &quot;Карл&quot;, &quot;Диана&quot;). В словаре распакуются только ключи.</p>
+      <p>При вызове функции можно распаковывать сколько угодно списков и кортежей подряд: func(*list1, *list2, *tuple1). Python аккуратно соберёт все элементы в один поток позиционных аргументов.</p>
+      <p>То же самое для словарей и именованных аргументов можно проделать с помощью двух звёздочек **. Вспомним нашу бургерную.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>my_burger_preferences = {
+    &quot;type_of_meat&quot;: &quot;растительная котлета&quot;,
+    &quot;with_onion&quot;: True,
+    &quot;with_tomato&quot;: False,
+    &quot;with_pickle&quot;: True
+}
+
+# Передаём словарь, распаковав его в именованные аргументы.
+make_burger(**my_burger_preferences)</code></pre>
+      </figure>
+      <p>Этот вызов полностью эквивалентен:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>make_burger(type_of_meat=&quot;растительная котлета&quot;, with_onion=True, with_tomato=False, with_pickle=True)</code></pre>
+      </figure>
+      <p>Это мощнейший инструмент! Он позволяет вам динамически формировать набор аргументов для функции прямо во время выполнения программы (мы так тесты для ваших программ пишем).</p>
+      <p>При вызове функции можно распаковывать сколько угодно словарей подряд: func(**dict1, **dict2). Если в нескольких словарях есть одинаковые ключи, то значение из последнего словаря перезапишет предыдущие. Но есть и ограничения:</p>
+      <p>Все ключи в словарях должны быть строками, иначе Python выдаст ошибку.</p>
+      <p>Если, помимо распаковки словаря, вы ещё явно передадите такой же именованный параметр, то будет ошибка «multiple values for keyword argument ...».</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>def f(a, b):
+    print(a, b)
+
+
+kwargs = {&#x27;a&#x27;: 1, &#x27;b&#x27;: 2}
+f(a=10, **kwargs)  # Ошибка!</code></pre>
+      </figure>
+      <h2 id="topic-6">💡 Непрошеные советы</h2>
+      <p>Только по позиции</p>
+      <p>Python 3.8+ разрешил помечать только позиционные аргументы с помощью косой черты /, а keyword-only — как и раньше, после *. Если видите такое в документации — не пугайтесь:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>def f(a, b, /, c, d=10, *, e, f=20, **kwargs):
+    ...</code></pre>
+      </figure>
+      <p>a, b — только позиционные: f(1, 2, c=3, e=4) — ок, f(a=1, b=2, c=3, e=4) — нельзя.</p>
+      <p>e, f — keyword-only: их обязательно называть при вызове.</p>
+      <p>Это удобно авторам библиотек: они фиксируют интерфейсы и не дают случайно сломать совместимость.</p>
+      <p>Отложим на потом</p>
+      <p>Мы уже говорили про инструкцию pass, когда рассказывали про блочные операторы. Определение функции def тоже своего рода блочный оператор, а значит, на него распространяются все правила. Поэтому, когда случается ситуация, в которой нужно ничего не делать, инструкцию pass используют и тут.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>def calculate_meaning_of_life():
+    pass  # Эх, отложу это на потом...
+
+def send_telegram_to_mars():
+    pass  # Эта функция тоже в разработке...
+
+# А эти функции уже готовы
+def make_coffee():
+    print(&quot;Готовлю кофе... Жжух-жжух... Готово!&quot;)
+
+def solve_world_hunger():
+    print(&quot;Мировая проблема голода решена! Оказалось, нужно просто всем раздать пиццу.&quot;)</code></pre>
+      </figure>
+      <p>Вместо pass иногда пишут ... (многоточие или ellipsis). Это абсолютно легально, а кроме того, смотрится как-то более загадочно и по-хардкорному, не находите?</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>def i_will_do_it_later():
+    ...</code></pre>
+      </figure>
+      <p>Пустота — не навсегда</p>
+      <p>Самая популярная ловушка:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>def append_item(value, bucket=[]):   # НЕ ДЕЛАЙТЕ ТАК
+    bucket.append(value)
+    return bucket
+
+print(append_item(1))  # [1]
+print(append_item(2))  # [1, 2] — сюрприз! «по умолчанию» запоминается между вызовами</code></pre>
+      </figure>
+      <p>Почему так? Потому что выражение справа от = вычисляется ровно один раз — в момент определения функции. Поэтому указывать значением по умолчанию изменяемые типы данных — словари, множества, списки — не классно (за исключением случаев, что поведение с запоминанием значений между вызовами — это именно то, что вы хотите). Решение:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>def append_item(value, bucket=None):
+    if bucket is None:
+        bucket = []  # Создаём новый список при каждом вызове
+    bucket.append(value)
+    return bucket</code></pre>
+      </figure>
+      <p>Это универсальный приём, который просто стоит запомнить.</p>
+      <p>Препарируем функции</p>
+      <p>Иногда удобно посмотреть на сигнатуру функции и не гадать. Для этого есть модуль inspect из стандартной библиотеки.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>import inspect
+
+def f(a, b=10, *args, c=20, **kwargs): 
+    pass
+
+print(inspect.signature(f))
+# (a, b=10, *args, c=20, **kwargs)</code></pre>
+      </figure>
+      <p>Да, прямо так и покажет: что позиционное, что по умолчанию, где звёзды.</p>
+      <p>Ещё несколько советов напоследок:</p>
+      <p>Самое важное — первым. Если у вашей функции один ключевой параметр — сделайте его первым и обязательным.</p>
+      <p>«Включатели» и «переключатели» — keyword-only. Любые флаги и тонкая настройка — через имена: *, debug=False, retries=3.</p>
+      <p>Защитите удачную сигнатуру с помощью positional-only и keyword-only. Так вы сможете менять имена или порядок «невидимых» параметров без боли для пользователей.</p>
+      <p>Не переусердствуйте с вариативностью. Если на вызов функции приходится полстраницы и вы сами не уверены, кто куда, — стоит упростить.</p>
+      <p>Когда сомневаетесь, что выбрать — позиционные или именованные, — выбирайте именованные. Они самодокументируют вызов.</p>
+      <h2 id="part-318">🌟 Итог: кругом одни звёзды</h2>
+      <p>В этом уроке мы научились:</p>
+      <p>Запаковывать позиционные аргументы в кортеж с помощью *args.</p>
+      <p>Запаковывать именованные аргументы в словарь с помощью **kwargs.</p>
+      <p>Использовать именованные аргументы и значения по умолчанию для создания удобных и читаемых функций.</p>
+      <p>Применять распаковку для передачи заранее собранных данных в функции.</p>
+      <p>Избегать классических ловушек, связанных с изменяемыми типами данных.</p>
+      <p>P. S. Хотите прокинуть чужие опции «как есть»? Принимайте **kwargs, но документируйте хотя бы основные. Иначе получится салат, только несъедобный.</p>
+      </article>
+      <nav class="lesson-pagination" aria-label="Переключение уроков">
+        <a class="chapter-next" href="parameters.html">Назад · Функции. Передача параметров</a>
+        <a class="chapter-next" href="higher-order-functions.html">Далее · Функции высшего порядка</a>
+      </nav>
+    </main>
+  </div>
+</body>
+</html>

@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#090909">
+  <title>Практика по функциям. Аннотация типов. Документирование — pupsiks</title>
+  <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../docs.css">
+  <script src="../docs.js" defer></script>
+</head>
+<body>
+  <header class="masthead">
+    <a class="brand" href="../../index.html"><img src="../../favicon.svg" alt="" width="38" height="38">pupsiks</a>
+    <a class="label" href="../index.html">Справочник Python</a>
+    <a class="home-link" href="../../index.html">На главную</a>
+  </header>
+  <div class="docs module">
+    <aside class="sidebar">
+      <nav aria-label="Разделы справочника" class="chapters">
+        <p class="label">Темы</p>
+        <ol>
+          <li><a href="../algorithms.html">Линейные алгоритмы и циклы</a></li>
+          <li><a href="../collections.html">Коллекции</a></li>
+          <li><a href="../files.html">Файлы и библиотеки</a></li>
+          <li><a href="../functions.html" aria-current="page">Функции</a></li>
+          <li><a href="../oop.html">ООП</a></li>
+        </ol>
+      </nav>
+    </aside>
+    <aside class="contents module-contents">
+      <nav aria-label="На этой странице">
+        <p class="label">На этой странице</p>
+        <a href="#topic-1">Стили документирования функций</a>
+        <a href="#topic-2">Аннотации типов в функции</a>
+      </nav>
+    </aside>
+    <main>
+      <header class="overview" id="overview">
+        <a class="lesson-back label" href="../functions.html#typing-and-docstrings">Функции</a>
+        <h1>Практика по функциям. Аннотация типов. Документирование</h1>
+        <p>Известный тип</p>
+      </header>
+
+      <article class="lesson-body">
+      <p>Python — язык с динамической типизацией. Это значит, что интерпретатор не заставляет вас заранее объявлять типы переменных. Казалось бы, праздник жизни! Но... Чем больше проект, тем сильнее хочется в какой‑то момент понять: а что сюда вообще передаётся? И что обратно вылетает из функции?</p>
+      <p>Идеально — чтобы это понимала и IDE, и линтер, и будущий «вы», который откроет этот код через полгода.</p>
+      <p>Для улучшения читаемости и упрощения поддержки кода есть несколько приёмов:</p>
+      <p>Комментарии. Мы про них уже неоднократно говорили, но сегодня рассмотрим специальный тип комментария — docstring.</p>
+      <p>Аннотации типов. Специальные подсказки для среды разработки и программистов про то, какого типа должна быть переменная.</p>
+      <h2 id="topic-1">🩺 Доктор, что со мной?</h2>
+      <p>Докстринг — это тройные кавычки сразу после объявления функции/класса/модуля. Он попадает в .__doc__, виден в help() и из IDE. Главное правило: пишите для человека, а не для формальной проверки.</p>
+      <p>Минимум, который стоит писать:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>def slugify(text: str) -&gt; str:
+    &quot;&quot;&quot;Преобразовать строку в URL‑дружественный слаг.  
+
+    Пробелы → дефисы, кириллица транслитерируется, всё в нижнем регистре.
+    &quot;&quot;&quot;
+    ...</code></pre>
+      </figure>
+      <p>Существует минимум три общепринятых стиля для докстринга:</p>
+      <p>Google — блоки с аргументами, возвращаемым значением и исключениями (про исключения поговорим уже совсем скоро) отделяются табуляцией.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>def paginate(items, page, per_page=10):
+    &quot;&quot;&quot;Slice items for the given page.
+
+    Args:
+        items: Source collection.
+        page: 1-based page number.
+        per_page: Items per page.
+
+    Returns:
+        Portion of items for the page.
+
+    Raises:
+        ValueError: If page &lt; 1.
+    &quot;&quot;&quot;
+    ...</code></pre>
+      </figure>
+      <p>Numpy — блоки с описанием параметров (аргументов) возвращаемого значения и возможных исключений отделяются некоторым количеством дефисов.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>def normalize(x):
+    &quot;&quot;&quot;Normalize a vector.
+
+    Parameters
+    ----------
+    x : list of float
+    Input vector.
+
+    Returns
+    -------
+    list of float
+    Normalized vector.
+    &quot;&quot;&quot;
+    ...</code></pre>
+      </figure>
+      <p>reST — сначала пишется, что делает функция, потом через двоеточия оформляются параметры, возвращаемое значение и возможные исключения.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>def divide(a, b):
+    &quot;&quot;&quot;Divide two numbers.
+
+    :param a: Dividend.
+    :param b: Divisor. Must be non-zero.
+    :returns: a / b result.
+    :raises ZeroDivisionError: If b == 0.
+    &quot;&quot;&quot;
+    return a / b</code></pre>
+      </figure>
+      <p>Выберите один стиль и держитесь его. Смешивание стилей — как носки разного цвета: чаще раздражает, чем выглядит хорошо.</p>
+      <h2 id="topic-2">🧐 Не читай мне аннотации</h2>
+      <p>Представьте, что вы делаете заказ в ресторане. Без аннотаций типов — это как сказать «принесите еды». С аннотациями — «принесите пиццу Пепперони, размер XXXL, с тройным сыром».</p>
+      <p>В Python аннотации — это просто подсказки. Интерпретатор не проверяет их в рантайме (если вы сами не попросите). Синтаксис максимально простой:</p>
+      <p>age: int = 16  # Возраст как целое число</p>
+      <p>name: str = &quot;Петя&quot;  # Имя — строка</p>
+      <p>price: float = 19.99</p>
+      <p>is_active: bool = True</p>
+      <p>Аннотации принято указывать и для параметров функций, и для возвращаемых значений.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>def greet(name: str) -&gt; str:  # Приняли строку — вернули строку
+   return f&quot;Привет, {name}!&quot;</code></pre>
+      </figure>
+      <p>Соберём вместе:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>def bank_robbery_simulation(
+    stolen_money: float, 
+    accomplices: int, 
+    success_probability: float</code></pre>
+      </figure>
+      <p>) -&gt; tuple[bool, float]:</p>
+      <p>&quot;&quot;&quot;</p>
+      <p>Симуляция ограбления банка (чисто в образовательных целях!)</p>
+      <p>Args:</p>
+      <p>stolen_money: Сумма украденного (в рублях)</p>
+      <p>accomplices: Количество сообщников</p>
+      <p>success_probability: Вероятность успеха (от 0.0 до 1.0)</p>
+      <p>Returns:</p>
+      <p>Кортеж (успех ограбления, доля каждого сообщника)</p>
+      <p>&quot;&quot;&quot;</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>    from random import random
+
+    is_successful = random() &lt; success_probability
+
+    if is_successful:
+        share_per_accomplice = stolen_money / (accomplices + 1)  # +1 для тебя!
+        return True, share_per_accomplice
+    else:
+        return False, 0.0
+
+# Пробуем «ограбить» банк
+success, my_share = bank_robbery_simulation(1000000.0, 4, 0.7)
+if success:
+    print(f&quot;Успех! Твоя доля: {my_share:.2f} руб. 🎉&quot;)
+else:
+    print(&quot;Провал! Готовься к общественным работам! 🚓&quot;)</code></pre>
+      </figure>
+      <p>Более сложные аннотации можно писать с помощью модуля typing. До Python 3.9, если вам хотелось указать, что тип значения — список, множество, кортеж или словарь, приходилось импортировать оттуда List, Set, Tuple, Dict соответственно. Сейчас можно писать более привычно:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code># Новая школа (рекомендуется)
+# Список строк</code></pre>
+      </figure>
+      <p>users: list[str] = [&quot;Петя&quot;, &quot;Маша&quot;, &quot;Гриша&quot;]</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code># Словарь, где ключ — строка, а значение — целое число</code></pre>
+      </figure>
+      <p>index: dict[str, int] = {&quot;Петя&quot;: 0, &quot;Маша&quot;: 1}</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code># Множество целых чисел</code></pre>
+      </figure>
+      <p>unique: set[int] = {1, 2, 3}</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code># Кортеж из двух вещественных чисел</code></pre>
+      </figure>
+      <p>coords: tuple[float, float] = (55.7522, 37.6156) # Широта, долгота</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code># Бесконечная кортежная магистраль целых чисел</code></pre>
+      </figure>
+      <p>tail: tuple[int, ...] = (1, 2, 3, 4, 5)</p>
+      <p>Если функции всё равно, список ли у вас, кортеж (или ещё что-то подобное) — типизируйте абстракциями:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from collections.abc import Iterable, Iterator, Sequence, Mapping
+
+# Принимаем «всё, по чему можно итерироваться циклом for»
+def sum_positive(xs: Iterable[int]) -&gt; int:
+    return sum(x for x in xs if x &gt; 0)
+
+# Если важно обращаться по индексу
+def third(xs: Sequence[str]) -&gt; str:
+    return xs[2]
+
+# Всё что угодно, у чего есть ключ — значение
+def keys_upper(m: Mapping[str, str]) -&gt; list[str]:
+    return [k.upper() for k in m.keys()]</code></pre>
+      </figure>
+      <p>В некоторых случаях переменная может, помимо основного типа, принимать значение None, а иногда вообще значение любого типа, тут на помощь приходят Optional и Any:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from typing import Optional, Any
+
+def get_user_name(user_id: Any) -&gt; Optional[str]:
+    if user_id == 1:
+        return &quot;Петя&quot;
+    elif user_id == &#x27;2&#x27;:
+        return &quot;Маша&quot;
+    elif user_id == 3.0:
+        return &quot;Гриша&quot;
+    else:
+        return None</code></pre>
+      </figure>
+      <p>Параметры args и kwargs тоже аннотируются. Обычно используется Any, но если вы точно знаете, что будет внутри, то стоит указать явно:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from typing import Any
+
+def greet(name: str, *args: Any, **kwargs: Any) -&gt; str:
+    return f&quot;Привет, {name}!&quot;</code></pre>
+      </figure>
+      <p>Не размазывайте Any по всему проекту. Это как выключить пожарную сигнализацию, потому что она «пищит». Лучше узко изолируйте места, где без Any никак.</p>
+      <p>Если мы хотим показать, что функция принимает другую функцию, то можно использовать Callable. После аннотации можно указать тип аргументов и возвращаемого значения:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from typing import Callable
+
+# greeting_func — функция, которая принимает два строковых аргумента и возвращает строку
+def greet(name: str, greeting_func: Callable[[str, str], str]) -&gt; str:
+    return greeting_func(name, &quot;Привет&quot;)</code></pre>
+      </figure>
+      <p>Когда нам необходимо указать, что переменная может принимать любой тип из какого-то набора, то можно использовать Union или более современный синтаксис |:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from typing import Union
+
+def greet(name: Union[str, int]) -&gt; str:
+    return f&quot;Привет, {name}!&quot;
+# Аннотации можно присваивать переменным 
+# Имена таких переменных пишутся с большой буквы
+Number = int | float  # Сахар вместо Union[int, float]
+
+def area(r: Number) -&gt; float:
+    return 3.14159 * float(r) ** 2</code></pre>
+      </figure>
+      <p>Кстати, на | можно заменить и Optional: Optional[int] -&gt; int | None</p>
+      <p>А в случаях, когда переменная или параметр может принимать только конкретные значения, можно использовать Literal:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from typing import Literal
+
+def greet(name: Literal[&quot;Петя&quot;, &quot;Маша&quot;, &quot;Гриша&quot;]) -&gt; str:  # С остальными не здороваемся
+    return f&quot;Привет, {name}!&quot;</code></pre>
+      </figure>
+      <p>А константы можно дополнительно выделить аннотацией Final:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from typing import Final</code></pre>
+      </figure>
+      <p>PI: Final = 3.14159</p>
+      <p>А ещё есть аннотация Annotated, которая позволяет добавить дополнительную информацию к типу:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from typing import Annotated
+
+# Пример: «целое неотрицательное» (условимся, что валидатор где‑то использует эти метаданные)
+NonNegativeInt = Annotated[int, &quot;x &gt;= 0&quot;]
+
+
+def set_retries(n: NonNegativeInt) -&gt; None:
+    print(f&quot;Retries set to {n}&quot;)</code></pre>
+      </figure>
+      <h2 id="part-188">🌟 Итог: я знаю, что я писал прошлым летом</h2>
+      <p>Главные правила сегодняшнего урока:</p>
+      <p>Аннотации типов — помогают сузить круг подозреваемых типов при вызове функций и анализе возвращаемого значения.</p>
+      <p>docstring — это экономия времени на поддержке кода для будущих вас или ваших коллег.</p>
+      <p>Правильные аннотации делают ваш код значительно лучше и читаемее.</p>
+      <p>Первые программисты писали документацию на бумаге и передавали друг другу. Теперь у вас есть Python с его крутыми фичами — используйте эту силу!</p>
+      <p>P. S. Аннотации — это как наклейки на банки на кухне. Непосредственно в приготовлении блюда не участвуют, но находить ингредиенты становится вдвое легче.</p>
+      </article>
+      <nav class="lesson-pagination" aria-label="Переключение уроков">
+        <a class="chapter-next" href="streams.html">Назад · Обработка коллекций. Потоковый ввод</a>
+        <a class="chapter-next" href="decorators.html">Далее · Переопределение функций, декораторы</a>
+      </nav>
+    </main>
+  </div>
+</body>
+</html>

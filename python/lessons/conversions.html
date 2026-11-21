@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#090909">
+  <title>Преобразования коллекций — pupsiks</title>
+  <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../docs.css">
+  <script src="../docs.js" defer></script>
+</head>
+<body>
+  <header class="masthead">
+    <a class="brand" href="../../index.html"><img src="../../favicon.svg" alt="" width="38" height="38">pupsiks</a>
+    <a class="label" href="../index.html">Справочник Python</a>
+    <a class="home-link" href="../../index.html">На главную</a>
+  </header>
+  <div class="docs module">
+    <aside class="sidebar">
+      <nav aria-label="Разделы справочника" class="chapters">
+        <p class="label">Темы</p>
+        <ol>
+          <li><a href="../algorithms.html">Линейные алгоритмы и циклы</a></li>
+          <li><a href="../collections.html" aria-current="page">Коллекции</a></li>
+          <li><a href="../files.html">Файлы и библиотеки</a></li>
+          <li><a href="../functions.html">Функции</a></li>
+          <li><a href="../oop.html">ООП</a></li>
+        </ol>
+      </nav>
+    </aside>
+    <aside class="contents module-contents">
+      <nav aria-label="На этой странице">
+        <p class="label">На этой странице</p>
+        <a href="#topic-1">Метод split()</a>
+        <a href="#topic-2">Метод join()</a>
+        <a href="#topic-3">Методы заполнения и выравнивания</a>
+        <a href="#topic-4">Вложенные списки</a>
+      </nav>
+    </aside>
+    <main>
+      <header class="overview" id="overview">
+        <a class="lesson-back label" href="../collections.html#conversions">Коллекции</a>
+        <h1>Преобразования коллекций</h1>
+        <p>Режем, клеим, собираем аппликации (почти как на уроке ИЗО)</p>
+      </header>
+
+      <article class="lesson-body">
+      <p>Мы уже довольно много внимания уделили строкам и их методам, а сегодня поговорим про два метода, которые понадобятся при решении задач чаще всего (и ещё про ряд методов), а ещё чуть подробнее поговорим про то, как жить, если надо коллекцию положить в коллекцию.</p>
+      <h2 id="topic-1">🪓 Только щепки летят</h2>
+      <p>Несмотря на известную пословицу про то, что написано пером, в Python мы можем легко нарубить строки на списки строк. Для этого используется метод .split(). Если не указать никакого параметра, то строка разделится по пробельным символам (пробелы, табуляции, переводы строк).</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>text = &quot;Васенька (кот) съел пиццу и не оставил нам&quot;
+words = text.split()
+# [&quot;Васенька&quot;, &quot;(кот)&quot; &quot;съел&quot;, &quot;пиццу&quot;, &quot;и&quot;, &quot;не&quot;, &quot;оставил&quot;, &quot;нам&quot;]</code></pre>
+      </figure>
+      <p>Обратите внимание, что сами разделители исчезают.</p>
+      <p>Самое классное, что можно указать строку-разделитель (одну букву или целое предложение), по которой будет происходить нарезка строки:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>csv_data = &quot;яблоки, груши, бананы, слоны&quot;
+fruits = csv_data.split(&quot;, &quot;)
+# [&quot;яблоки&quot;, &quot;груши&quot;, &quot;бананы&quot;, &quot;слоны&quot;] (со слоном что-то не так).</code></pre>
+      </figure>
+      <p>Если разделитель в строке не встретится ни разу, то в результате получится список из одного элемента, в котором лежит исходная строка целиком.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>line = &quot;мяу;мяу;мяу;дай;еду&quot;.split(&quot;гав&quot;)
+print(line)  # [&quot;мяу;мяу;мяу;дай;еду&quot;]</code></pre>
+      </figure>
+      <p>Важный момент: если .split() встретит два разделителя подряд, всегда, кроме случаев вызова метода без указания разделителя, в итоговом списке будет элемент — пустая строка.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>line = &quot;я   люблю   кофе&quot;
+print(line.split(&#x27; &#x27;))
+# [&#x27;я&#x27;, &#x27;&#x27;, &#x27;&#x27;, &#x27;люблю&#x27;, &#x27;&#x27;, &#x27;&#x27;, &#x27;кофе&#x27;]</code></pre>
+      </figure>
+      <p>Но при этом:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>line = &quot;я   люблю   кофе&quot;
+print(line.split())
+# [&#x27;я&#x27;, &#x27;люблю&#x27;, &#x27;кофе&#x27;]</code></pre>
+      </figure>
+      <p>По умолчанию .split() идёт по строке слева направо и делит её столько раз, сколько сможет. Но не всегда это то, что нам нужно. К счастью, Python мегасупергибкий и позволяет нам повлиять практически на всё.</p>
+      <p>Если нужно, чтобы строчка делилась на список строк по разделителю, но не больше какого-то числа раз — пожалуйста. Достаточно воспользоваться параметром maxsplit.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>verdict = &quot;Казнить нельзя помиловать&quot;
+print(verdict.split(maxsplit=1))
+# [&#x27;Казнить&#x27;, &#x27;нельзя помиловать&#x27;]</code></pre>
+      </figure>
+      <p>Если же нам захочется сделать пример выше несколько менее кровожадным и начать делить строчку не слева направо, а наоборот — справа налево, то достаточно воспользоваться методом rsplit().</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>verdict = &quot;Казнить нельзя помиловать&quot;
+print(verdict.rsplit(&quot; &quot;, maxsplit=1))
+# [&#x27;Казнить нельзя&#x27;, &#x27;помиловать&#x27;]</code></pre>
+      </figure>
+      <p>Есть и ряд более экзотичных методов, которые, впрочем, в определённых ситуациях будут полезны и повысят читаемость кода:</p>
+      <p>.splitlines() — разделить текст в список построчно:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>zen = &quot;&quot;&quot;Красивое лучше, чем уродливое.
+Явное лучше, чем неявное.
+Простое лучше, чем сложное.
+Сложное лучше, чем запутанное.&quot;&quot;&quot;  
+
+lines = zen.splitlines()
+# [&#x27;Красивое лучше, чем уродливое.&#x27;, &#x27;Явное лучше, чем неявное.&#x27;, ...]  </code></pre>
+      </figure>
+      <p>.partition() и .rpartition() — делят строку на три части: до разделителя, сам разделитель, всё остальное. Отличаются только тем, с какой стороны начинают искать разделитель.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>email = &quot;mymail@yandex.ru&quot;  
+name, separator, domain = email.partition(&#x27;@&#x27;)  # (&#x27;mymail&#x27;, &#x27;@&#x27;, &#x27;yandex.ru&#x27;)</code></pre>
+      </figure>
+      <h2 id="part-50">🚀 Одной строкой</h2>
+      <p>Когда лень вводить данные по одному элементу (а это всегда), Python позволяет сделать это одной строкой, а потом нарезать на части.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code># Ввод чисел через пробел: &quot;10 20 30&quot;
+data = input().split()  # [&quot;10&quot;, &quot;20&quot;, &quot;30&quot;]
+for i in range(len(data)):
+    data[i] = int(data[i])  # Уже на следующем уроке будет удобнее. Честно-честно</code></pre>
+      </figure>
+      <h2 id="topic-2">🪡 Из клочков</h2>
+      <p>Если строчку можно разделить на список строк, то логично, что должна быть и обратная операция. И она есть! За сбор строки через определённый разделитель (в этом случае уместнее было бы говорить «соединитель», но...) из списка строк отвечает метод строки .join().</p>
+      <p>Довольно частая ошибка связана с тем, что начинающие разработчики пытаются вызвать метод .join() у списка, но это метод строки. Поэтому он вызывается у разделителя, через который мы хотим собрать элементы списка строк.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>words = [&quot;Я&quot;, &quot;хочу&quot;, &quot;кофе&quot;, &quot;прямо&quot;, &quot;сейчас&quot;]
+sentence = &quot; &quot;.join(words)  # &quot;Я хочу кофе прямо сейчас&quot;</code></pre>
+      </figure>
+      <p>Отдельно радостно от того, что после последнего элемента разделитель не добавляется.</p>
+      <p>Разделитель, как вы наверняка догадываетесь, может быть не одним символом, а строкой любой длины.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>emojis = &quot; 🐍 &quot;.join([&quot;Мне&quot;, &quot;везде&quot;, &quot;мерещатся&quot;, &quot;змеи&quot;])
+# &quot;Мне 🐍 везде 🐍 мерещатся 🐍 змеи&quot;</code></pre>
+      </figure>
+      <p>Ещё раз: .join() — метод строки.</p>
+      <p>[&#x27;a&#x27;, &#x27;b&#x27;, &#x27;c&#x27;].join(&#x27;, &#x27;)  # ❌ Ошибка!</p>
+      <p>Надо:</p>
+      <p>&#x27;, &#x27;.join([&#x27;a&#x27;, &#x27;b&#x27;, &#x27;c&#x27;])  # ✅</p>
+      <p>Другая распространённая ошибка использования .join() связана с тем, что корректно метод работает, только если в качестве параметра передан список строк. Если там есть элементы другого типа, то будет ошибка TypeError.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>numbers = [1, 2, 3]
+print(&quot;, &quot;.join(numbers))  # ❌ Ошибка!</code></pre>
+      </figure>
+      <p>Чтобы такого не происходило, нужно просто преобразовать все элементы списка к строке:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>numbers = [1, 2, 3]
+for i in range(len(numbers)):
+    numbers[i] = str(numbers[i])  # Уже совсем скоро мы узнаем способ удобнее и красивее.
+print(&quot;, &quot;.join(numbers))</code></pre>
+      </figure>
+      <h2 id="topic-3">🤌 Сладкий сон перфекциониста</h2>
+      <p>Есть такая категория людей, у которых малейший визуальный изъян вывода данных вызывает почти физический дискомфорт (а иногда и подёргивание глаза). Не осуждаем, а только советуем использовать методы строки для выравнивания, такие как .rjust(), .ljust() и .center().</p>
+      <p>Что делает rjust()?</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>text = &quot;42&quot;
+print(text.rjust(5))  # &#x27;   42&#x27;</code></pre>
+      </figure>
+      <p>Метод .rjust(width, fillchar=&#x27; &#x27;) возвращает строку, где исходная строка сдвинута вправо, а слева добавлены fillchar (по умолчанию пробелы), чтобы занять width символов.</p>
+      <p>Метод .ljust(), делает абсолютно то же самое, только сдвигает исходный текст к левому краю.</p>
+      <p>Представьте, что вы печатаете таблицу расходов:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>items = [&quot;хлеб&quot;, &quot;молоко&quot;, &quot;сыр&quot;]
+prices = [23, 105, 8]
+
+for idx in range(len(items)):
+    item, price = items[idx], prices[idx]
+    print(item.ljust(10), str(price).rjust(5))  # Невозможно красиво!</code></pre>
+      </figure>
+      <p>Можно выравнивать не только пробелами:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>print(&quot;42&quot;.rjust(5, &#x27;0&#x27;))  # &#x27;00042&#x27;</code></pre>
+      </figure>
+      <p>Часто эти методы используются, например, чтобы создать маску для номера заказа:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>order_id = str(73).rjust(6, &#x27;0&#x27;)
+print(f&quot;Заказ №{order_id}&quot;)  # Заказ №000073.</code></pre>
+      </figure>
+      <p>Для заполнения ведущими нулями можно использовать метод строки .zfill()</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>print(&quot;7&quot;.zfill(3))  # 007  </code></pre>
+      </figure>
+      <p>Метод .center() пытается разместить исходную строчку максимально центрально.</p>
+      <p>Итак, перфекционисты, у вас есть целый арсенал:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>print(&quot;cat&quot;.center(10))     # &#x27;   cat    &#x27;
+print(&quot;cat&quot;.ljust(10, &#x27;_&#x27;)) # &#x27;cat_______&#x27;
+print(&quot;cat&quot;.rjust(10, &#x27;.&#x27;)) # &#x27;.......cat&#x27;</code></pre>
+      </figure>
+      <p>Всего этого можно добиться и с помощью f-строк. Что именно использовать — вопрос личных предпочтений.</p>
+      <h2 id="topic-4">𝄜 Подключение к матрице</h2>
+      <p>Мы уже говорили, что в список можно положить что угодно, в том числе и другие списки.</p>
+      <p>Списки, которые лежат внутри другого списка, называют вложенными (прямо как с циклами). И хотя глубина вложенности не ограничена, чаще всего она не будет превышать одного уровня — это идеальное представление для таблиц и двумерных матриц.</p>
+      <p>Давайте представим, что у нас есть некоторый список списков оценок учеников.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>grades = [
+    [5, 4, 3],
+    [2, 5, 5],
+    [4, 4, 4]
+]</code></pre>
+      </figure>
+      <p>Это как таблица в тетрадке: строки — ученики, колонки — предметы.</p>
+      <p>Чтобы получить определённую оценку, надо написать так:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>print(grades[0][1])
+# 4 — оценка первого ученика по второму предмету.</code></pre>
+      </figure>
+      <p>Переводим с питонячьего:</p>
+      <p>grades[0] → список [5, 4, 3]</p>
+      <p>[5, 4, 3][1] → 4</p>
+      <p>Python позволяет не только в списки класть списки, но и положить в список этот же список, благодаря чему возможны вот такие (не очень полезные, но забавные) штуки:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>li = [1, 2, 3]
+li.append(li)
+print(li)  #  Python видит зацикливание и заменяет его на многоточие.
+print(li[-1][-1][-1][-1][-1][-1][-1][-1][0])
+# 1. У каждого списка, который мы получаем, последний элемент — это он же, а нулевой — 1.</code></pre>
+      </figure>
+      <p>Чтобы перебрать элементы вложенных списков, необходимо воспользоваться вложенными циклами (не зря они называются одинаково):</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>for student in grades:
+    for mark in student:
+        print(mark, end=&#x27; &#x27;)
+    print()</code></pre>
+      </figure>
+      <p>А теперь давайте воспользуемся всеми знаниями этого урока и сделаем красиво: добавим заголовки, номер ученика и сделаем красивое расположение текста.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>subjects = [&#x27;Матем&#x27;, &#x27;Физика&#x27;, &#x27;Инфа&#x27;]
+grades = [
+    [5, 4, 3],
+    [2, 5, 5],
+    [4, 4, 4]
+]
+# Делаем красивые заголовки.
+subj_pretty = []
+for subj in subjects:
+    subj_pretty.append(subj.center(6))
+print(&#x27;Студент&#x27;.ljust(10), *subj_pretty)
+# А тут печатаем номер ученика и его оценки.
+for i, row in enumerate(grades, 1):
+    # Сначала делаем временный список с красивым форматированием, а потом выводим его
+    tmp_line = []
+    tmp_line.append(f&quot;Ученик{i}&quot;.ljust(10))
+    for mark in row:
+        tmp_line.append(str(mark).center(6))        
+    print(*tmp_line)</code></pre>
+      </figure>
+      <h2 id="part-152">🌟 Итог: разделяем и властвуем!</h2>
+      <p>Сегодня мы:</p>
+      <p>узнали, что .split() и .join() — ножницы и клей для текста;</p>
+      <p>познакомились с набором методов для идеального выравнивания текста;</p>
+      <p>подробнее посмотрели, что будет, если в список положить список, и как потом с этим жить.</p>
+      <p>А уже на следующем уроке мы сделаем нашу жизнь сильно проще, лаконичнее и в питонячьем стиле.</p>
+      <p>P. S. Список строк говорит нам, что всегда можно объединиться вокруг чего-то общего.</p>
+      </article>
+      <nav class="lesson-pagination" aria-label="Переключение уроков">
+        <a class="chapter-next" href="sets.html">Назад · Множества</a>
+        <a class="chapter-next" href="comprehensions.html">Далее · Списочные выражения</a>
+      </nav>
+    </main>
+  </div>
+</body>
+</html>

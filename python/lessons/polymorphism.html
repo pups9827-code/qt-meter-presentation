@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#090909">
+  <title>ООП 2. Полиморфизм — pupsiks</title>
+  <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../docs.css">
+  <script src="../docs.js" defer></script>
+</head>
+<body>
+  <header class="masthead">
+    <a class="brand" href="../../index.html"><img src="../../favicon.svg" alt="" width="38" height="38">pupsiks</a>
+    <a class="label" href="../index.html">Справочник Python</a>
+    <a class="home-link" href="../../index.html">На главную</a>
+  </header>
+  <div class="docs module">
+    <aside class="sidebar">
+      <nav aria-label="Разделы справочника" class="chapters">
+        <p class="label">Темы</p>
+        <ol>
+          <li><a href="../algorithms.html">Линейные алгоритмы и циклы</a></li>
+          <li><a href="../collections.html">Коллекции</a></li>
+          <li><a href="../files.html">Файлы и библиотеки</a></li>
+          <li><a href="../functions.html">Функции</a></li>
+          <li><a href="../oop.html" aria-current="page">ООП</a></li>
+        </ol>
+      </nav>
+    </aside>
+    <aside class="contents module-contents">
+      <nav aria-label="На этой странице">
+        <p class="label">На этой странице</p>
+        <a href="#topic-1">Понятие полиморфизма</a>
+        <a href="#topic-2">Примеры полиморфизма</a>
+        <a href="#topic-3">Строковое представление объекта</a>
+        <a href="#topic-4">Проверка сущности</a>
+      </nav>
+    </aside>
+    <main>
+      <header class="overview" id="overview">
+        <a class="lesson-back label" href="../oop.html#polymorphism">ООП</a>
+        <h1>ООП 2. Полиморфизм</h1>
+        <p>Один на всех и все на одного</p>
+      </header>
+
+      <article class="lesson-body">
+      <p>Представьте школьного учителя, который заходит в класс и говорит: «Открываем тетради, записываем тему урока». Кто-то из учеников пишет шариковой ручкой, кто-то гелевой, кто-то подчёркивает написанное цветным маркером, а кто-то вообще достал стилус и планшет.</p>
+      <p>Команда всем поступила одна и та же — «записать тему урока», а действия все сделали хоть немного, но разные. И никто не ответил:</p>
+      <p>TypeError: гелевой ручкой писать тему урока не могу</p>
+      <p>Это и есть полиморфизм в реальной жизни: команда одна, а конкретные действия разные в зависимости от того, к кому она обращена.</p>
+      <p>Похожих жизненных примеров можно привести довольно много, взять хотя бы кнопку включения любого электрического прибора. Вы делаете одно и тоже действие — включение, а пылесос, чайник и ноутбук в ответ ведут себя по-разному (хотя схожим и логичным образом).</p>
+      <p>Точно так же работает полиморфизм в программировании. Это когда разные объекты могут одинаково реагировать на одну и ту же команду, но делают это каждый по-своему, согласно своей природе.</p>
+      <p>Слово «полиморфизм» происходит от греческих слов: «поли» (много) и «морфизм» (форма). Буквально это значит «много форм».</p>
+      <h2 id="topic-1">💯 Многохарактерность</h2>
+      <p>В Python полиморфизм — это не сложное и страшное явление, а совершенно естественное свойство языка. Фактически вы уже пользовались полиморфизмом множество раз, даже не задумываясь об этом.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code># Оператор + работает по-разному в зависимости от типа данных
+print(5 + 3)  # 8 — математическое сложение
+print(&quot;Hello&quot; + &quot; World&quot;)  # &quot;Hello World&quot; — конкатенация строк
+print([1, 2] + [3, 4])  # [1, 2, 3, 4] — объединение списков
+
+# Функция len() тоже полиморфна
+print(len(&quot;Python&quot;))  # 6
+print(len([1, 2, 3, 4]))  # 4
+print(len({&quot;a&quot;: 1, &quot;b&quot;: 2}))  # 2</code></pre>
+      </figure>
+      <p>Как и в жизненных аналогиях, один и тот же оператор + и одна и та же функция len() работают с разными типами данных! Это и есть полиморфизм.</p>
+      <p>Полиморфизм — это способность кода работать с объектами разных типов, если они поддерживают необходимый интерфейс.</p>
+      <p>Слово «интерфейс» для нас тоже может быть немного непонятным, но всё просто — это набор методов и атрибутов, которые должен иметь объект. Мы с этим сталкивались, просто словом таким не называли.</p>
+      <p>Например, у списка есть метод .append(), у словаря есть метод .get(). Интерфейс класса — это его публичные методы и атрибуты, которыми можно пользоваться.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code># У каждого типа есть свой интерфейс
+string = &quot;Python&quot;
+print(string.upper())    # Метод .upper() есть в интерфейсе str
+print(string.replace(&quot;P&quot;, &quot;J&quot;))  # Метод .replace() тоже есть
+
+number = 42
+# print(number.upper())  # AttributeError! У int нет метода upper()</code></pre>
+      </figure>
+      <p>Python использует очень специфичный подход к полиморфизму, называемый утиной типизацией (duck typing).</p>
+      <p>Это название прозвучит смешно, но оно основано на реальной логике:</p>
+      <p>Если это выглядит как утка, плавает как утка и крякает как утка, то это, вероятно, утка.</p>
+      <p>В контексте Python это означает: если объект имеет нужные методы и атрибуты, Python будет с ним работать, не проверяя, какого он на самом деле класса. Python не спрашивает: «Эй, ты точно утка?» Он просто смотрит, может ли объект плавать и крякать.</p>
+      <h2 id="topic-2">🦆 Утиные истории</h2>
+      <p>Теперь переходим к своим классам. Сделаем три класса: Circle, Square, Rectangle. У всех будет один и тот же интерфейс:</p>
+      <p>метод .area() — для получения площади фигуры;</p>
+      <p>метод .perimeter() — для получения её периметра.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>from math import pi
+
+
+class Circle:
+    def __init__(self, radius):
+        self.radius = radius  # Радиус круга
+
+    def area(self):
+        return pi * self.radius ** 2  # Площадь круга
+
+    def perimeter(self):
+        return 2 * pi * self.radius   # Длина окружности
+
+
+class Square:
+    def __init__(self, side):
+        self.side = side  # Длина стороны
+
+    def area(self):
+        return self.side * self.side  # Площадь квадрата
+
+    def perimeter(self):
+        return 4 * self.side          # Периметр квадрата
+
+
+class Rectangle:
+    def __init__(self, width, height):
+        self.width = width   # Ширина
+        self.height = height # Высота
+
+    def area(self):
+        return self.width * self.height
+
+    def perimeter(self):
+        return 2 * (self.width + self.height)
+
+
+# Создаём разные фигуры
+square = Square(5)
+circle = Circle(3)
+rect = Rectangle(4, 6)
+
+# И работаем с ними ОДИНАКОВО!
+# Python сам разберётся, какой метод какого класса вызывать
+
+figs = [square, circle, rect]
+
+print(&quot;=&quot; * 50)
+print(&quot;ИНФОРМАЦИЯ О ФИГУРАХ&quot;)
+print(&quot;=&quot; * 50)
+
+for fig in figs:
+    area = fig.area()
+    perimeter = fig.perimeter()
+
+    print(f&quot;Фигура: {fig.__class__.__name__}&quot;) 
+    print(f&quot;  Площадь: {area:.2f}&quot;)
+    print(f&quot;  Периметр: {perimeter:.2f}&quot;)
+    print()</code></pre>
+      </figure>
+      <p>Обратите внимание:</p>
+      <p>все три класса имеют методы .area() и .perimeter();</p>
+      <p>реализация внутри методов совершенно разная, но интерфейс (имена методов и их назначение) одинаков;</p>
+      <p>функция в цикле работает со всеми фигурами, не зная их типа.</p>
+      <p>Это и есть полиморфизм в чистом виде. Кра-си-во.</p>
+      <p>Полиморфизм — штука мощная, но его можно очень просто сломать, если забыть про смысл методов. Вот антипример:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>class StrangeCircle:
+   def area(self):
+       print(&quot;Я круг, и мне лень считать площадь&quot;)
+
+   def perimeter(self):
+       return &quot;периметр? ну пусть будет &#x27;много&#x27;&quot;</code></pre>
+      </figure>
+      <p>Формально:</p>
+      <p>есть метод .area(),</p>
+      <p>есть метод .perimeter().</p>
+      <p>Но .area() ничего не возвращает (возвращает None), а .perimeter() возвращает строку. Если дальше мы захотим, например, сравнивать площади или периметры, всё взорвётся.</p>
+      <p>Полиморфизм — это не только имена методов, но и смысл того, что они делают, и тип возвращаемых данных.</p>
+      <h2 id="part-120">🎭 Все вы одинаковые</h2>
+      <p>В примере выше мы написали просто код в корне модуля, а могли бы вынести тело цикла в отдельную функцию вроде:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>def print_info(fig):
+    area = fig.area()
+    perimeter = fig.perimeter()
+
+    print(f&quot;Фигура: {fig.__class__.__name__}&quot;)
+    print(f&quot;  Площадь: {area:.2f}&quot;)
+    print(f&quot;  Периметр: {perimeter:.2f}&quot;)</code></pre>
+      </figure>
+      <p>И получили бы самую настоящую полиморфную функцию.</p>
+      <p>Полиморфная функция — это функция, которая работает с разными типами данных, используя их общий интерфейс.</p>
+      <p>Полиморфная функция не проверяет тип своего аргумента. Вместо этого она просто вызывает нужные методы, веря, что они есть.</p>
+      <p>Ещё один пример:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>class Cat:
+    def speak(self):
+        return &quot;Мяу!&quot;
+
+
+class Dog:
+    def speak(self):
+        return &quot;Гав!&quot;
+
+
+class Parrot:
+    def speak(self):
+        return &quot;Помогите! Они превратили меня в попугая!&quot;
+
+
+def make_them_speak(animals):
+    for animal in animals:
+        # Нам всё равно, кот это или попугай, если есть нужный интерфейс
+        print(animal.speak())
+
+
+animals = [Cat(), Dog(), Parrot(), Dog()]
+make_them_speak(animals)</code></pre>
+      </figure>
+      <p>Функция make_them_speak() — полиморфная. Ей нужна только гарантия, что у объекта есть метод .speak(), тип класса вообще не интересует. Класс, с которым эта функция сработает, может быть даже пока не написан.</p>
+      <h2 id="topic-3">💬 Расскажите пару слов о себе</h2>
+      <p>Теперь разберёмся с ещё одним видом полиморфного поведения — строковым представлением объектов. А заодно познакомимся ещё с парочкой магических методов.</p>
+      <p>Вернемся к примеру с фигурами. Если мы напишем:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>circle = Circle(10)
+print(circle)</code></pre>
+      </figure>
+      <p>с большой вероятностью увидим что-то такое:</p>
+      <p>&lt;__main__.Circle object at 0x000001C3AF3D&gt;</p>
+      <p>Это стандартное представление объекта. Python говорит: «Это объект класса Circle, вот его адрес в памяти». Компьютеру ок, человеку — ну такое.</p>
+      <p>В наших силах научить объект нормально представляться. Для этого есть специальный метод — .__str__().</p>
+      <p>Спецметод .__str__() отвечает за человеческое представление объекта:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>print(obj) вызывает obj.__str__() (если он есть);
+str(obj) тоже;</code></pre>
+      </figure>
+      <p>f-строки f&quot;{obj}&quot; — тоже.</p>
+      <p>Добавим метод в наш Circle:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>class Circle:
+    def __init__(self, radius):
+        self.radius = radius
+
+    def area(self):
+        return pi * self.radius ** 2
+
+    def perimeter(self):
+        return 2 * pi * self.radius
+
+    def __str__(self):
+        # Дружелюбное представление
+        return f&quot;Круг радиуса {self.radius}&quot;</code></pre>
+      </figure>
+      <p>Теперь:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>c = Circle(10)
+print(c)          # Круг радиуса 10
+print(str(c))     # Круг радиуса 10
+print(f&quot;Фигура: {c}&quot;)  # Фигура: Круг радиуса 10</code></pre>
+      </figure>
+      <p>Но если мы положим наши фигуры в список:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>figures = [Circle(10), Circle(20), Circle(30)]
+print(figures)  
+# [&lt;__main__.Circle object at 0x00000271C0614B90&gt;, &lt;__main__.Circle object at 0x00000271C0614CD0&gt;, &lt;__main__.Circle object at 0x00000271C03EA2C0&gt;]</code></pre>
+      </figure>
+      <p>Да что же такое произошло? Python по умолчанию считает, что если мы печатаем коллекцию объектов как есть, то мы делаем это для логирования или отладки. Иными словами, неподготовленный пользователь с нежной душевной организацией такой вывод не увидит, а вот суровому разработчику красота не нужна — ему подавай информативность. Поэтому вызывается не метод .__str__(), а .__repr__().</p>
+      <p>Метод .__repr__(self) нужен для официального, «технического» представления объекта.</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>repr(obj) вызывает obj.__repr__();</code></pre>
+      </figure>
+      <p>при печати коллекций элементов у каждого из них вызывается obj.__repr__().</p>
+      <p>Если у объекта нет метода .__str__(), то вызывается .__repr__(). Python думает, что раз красивого вывода не завезли, то буду использовать какой есть. Наоборот не работает — если нет .__repr__(), то вывод будет стандартный, например: &lt;__main__.Circle object at 0×000001C3AF3D&gt;.</p>
+      <p>Идеальная философия .__repr__() состоит в том, что строка repr(obj) должна быть по возможности валидным кодом Python, который создаёт такой же объект.</p>
+      <p>Добавим в Circle:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>class Circle:
+    def __init__(self, radius):
+        self.radius = radius
+
+    def area(self):
+        from math import pi
+        return pi * self.radius ** 2
+
+    def perimeter(self):
+        from math import pi
+        return 2 * pi * self.radius
+
+    def __str__(self):
+        # Для пользователя
+        return f&quot;Круг радиуса {self.radius}&quot;
+
+    def __repr__(self):
+        # Для программиста
+        return f&quot;Circle(radius={self.radius})&quot;</code></pre>
+      </figure>
+      <p>Теперь:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>c = Circle(10)
+
+print(str(c))   # Круг радиуса 10
+print(repr(c))  # Circle(radius=10)
+print([c])      # [Circle(radius=10)]</code></pre>
+      </figure>
+      <h2 id="topic-4">🪪 Проверка, приготовьте ваши паспорта</h2>
+      <p>Теоретически мы можем писать так:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>def print_shape_info(shape):
+    if isinstance(shape, Circle):
+        ...
+    elif isinstance(shape, Square):
+        ...
+    elif isinstance(shape, Rectangle):
+        ...</code></pre>
+      </figure>
+      <p>И это будет антиполиморфный код. Достоинство полиморфизма как раз в том, что нам не нужно знать тип. Достаточно знать, какие методы он поддерживает.</p>
+      <p>Конечно, isinstance() нужен, но только в определёные моменты:</p>
+      <p>когда действительно поведение зависит от типа, а не от интерфейса;</p>
+      <p>когда мы на самом деле делаем ветвление по ролям.</p>
+      <p>Например:</p>
+      <figure class="example"><figcaption class="label">Python</figcaption>
+        <pre tabindex="0"><code>class Student:
+    def __init__(self, name, university):
+        self.name = name
+        self.university = university
+
+
+class Employee:
+    def __init__(self, name, company):
+        self.name = name
+        self.company = company
+
+
+def print_person_info(person):
+    if isinstance(person, Student):
+        print(f&quot;{person.name} учится в {person.university}&quot;)
+    elif isinstance(person, Employee):
+        print(f&quot;{person.name} работает в {person.company}&quot;)
+    else:
+        print(person.name)</code></pre>
+      </figure>
+      <p>Здесь разный тип означает реально разные сущности. Это логично.</p>
+      <p>Хотя и в этом примере никто не запретил бы нам сделать классам единый интерфейс .print_info(), что сделало бы код полиморфным.</p>
+      <p>Но для фигур или животных куда красивее сделать единый интерфейс (area(), speak() и т. п.) и вызывать методы полиморфно, без isinstance().</p>
+      <h2 id="part-263">🌟 Итог: классов много, а код один</h2>
+      <p>Сегодня мы узнали:</p>
+      <p>Полиморфизм — это способность кода работать с разными типами данных через общий интерфейс.</p>
+      <p>Утиная типизация — Python не требует явного объявления типов, главное — чтобы объект имел нужные методы.</p>
+      <p>Когда разные классы имеют методы с одинаковыми именами и смыслом, они становятся полиморфными.</p>
+      <p>Полиморфные функции работают с разными типами, опираясь только на интерфейс, а не на конкретный тип.</p>
+      <p>.__str__() и .__repr__() — два способа представить объект в виде строки:</p>
+      <p>.__str__() — красивая строка для людей;</p>
+      <p>.__repr__() — полная информация для чудовищ программистов.</p>
+      <p>P. S. Полиморфизм учит: не важно, кто ты, — важно, что ты умеешь.</p>
+      </article>
+      <nav class="lesson-pagination" aria-label="Переключение уроков">
+        <a class="chapter-next" href="oop-intro.html">Назад · ООП 1. Введение</a>
+        <a class="chapter-next" href="special-methods.html">Далее · ООП 3. Переопределение операторов</a>
+      </nav>
+    </main>
+  </div>
+</body>
+</html>
