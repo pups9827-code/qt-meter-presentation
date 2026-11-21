@@ -38,6 +38,11 @@
     --title-start: 2980ms;
   }
 
+  .panel:nth-child(4) {
+    --divider-start: 720ms;
+    --title-start: 3680ms;
+  }
+
   .panel-title {
     /* After the title's 90° rotation its inline axis points down the page. */
     animation: var(--intro-title) var(--title-start) backwards;

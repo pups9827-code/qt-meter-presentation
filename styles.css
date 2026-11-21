@@ -42,11 +42,12 @@ h1 { font-size: 26px; letter-spacing: .13em; margin: 0; font-weight: 600; }
   border-left: 1px solid var(--line);
   overflow: hidden;
   background: #000;
+  --preview-width: min(72.5cqw, 100cqw - 3 * var(--rail));
   transition: flex-grow var(--panel-slide);
 }
-/* The three weights always add up to 3, so both borders follow the same easing. */
-.panels.has-selection .panel { flex-grow: .4125; }
-.panels.has-selection .panel.is-wide { flex-grow: 2.175; }
+/* Keep the sum at 4 so the borders share the easing as the selection moves. */
+.panels.has-selection .panel { flex-grow: .36666667; }
+.panels.has-selection .panel.is-wide { flex-grow: 2.9; }
 .panel::before {
   content: '';
   position: absolute;
@@ -61,7 +62,7 @@ h1 { font-size: 26px; letter-spacing: .13em; margin: 0; font-weight: 600; }
   position: absolute;
   z-index: -1;
   inset: 0 auto 0 0;
-  width: min(72.5cqw, 100cqw - 2 * var(--rail));
+  width: var(--preview-width);
   pointer-events: none;
   opacity: 0;
   filter: brightness(0);
@@ -86,6 +87,11 @@ h1 { font-size: 26px; letter-spacing: .13em; margin: 0; font-weight: 600; }
   container-type: inline-size;
   overflow: hidden;
   mask-image: linear-gradient(90deg, #000 55%, rgba(0, 0, 0, .25));
+}
+.project-preview {
+  background:
+    linear-gradient(180deg, #0003, #0009 44%, #000 96%),
+    url("presentation/previews/slide-5.jpg") 75% center / cover no-repeat;
 }
 .portrait::before {
   content: '';
@@ -181,7 +187,7 @@ h1 { font-size: 26px; letter-spacing: .13em; margin: 0; font-weight: 600; }
 .panel-content {
   position: relative;
   /* Lay out the copy at its finished width while its parent slides over it. */
-  width: calc(min(72.5cqw, 100cqw - 2 * var(--rail)) - var(--rail));
+  width: calc(var(--preview-width) - var(--rail));
   padding: clamp(150px, 23vh, 290px) 22px 60px clamp(22px, 2.6vw, 48px);
   opacity: 0;
   pointer-events: none;
@@ -238,7 +244,7 @@ body.collection-open { overflow: hidden; }
   .panel-content { padding-left: 22px; }
 }
 @media (max-width: 700px) {
-  :root { --rail: 48px; }
+  :root { --rail: clamp(39px, 11vw, 48px); }
   .site-header { height: 94px; padding: 0 6%; }
   .brand { gap: 12px; }
   .brand-mark { width: 36px; height: 36px; }
@@ -266,7 +272,7 @@ body.collection-open { overflow: hidden; }
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
 
-.python-content h2 { text-shadow: 0 1px 12px #000, 0 1px 4px #000; }
+.python-content h2, .project-content h2 { text-shadow: 0 1px 12px #000, 0 1px 4px #000; }
 .python-content .collection-link {
   margin-top: 20px;
   text-shadow: 0 1px 3px #000, 0 0 6px #000;

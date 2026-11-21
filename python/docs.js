@@ -1,40 +1,77 @@
 'use strict';
 
-for (const example of document.querySelectorAll('.example')) {
-  const code = example.querySelector('code');
+const examples = document.querySelectorAll('.example');
+for (const example of examples) {
   const button = document.createElement('button');
   button.type = 'button';
   button.className = 'copy-code';
   button.textContent = 'Копировать';
   example.querySelector('figcaption').append(button);
+}
 
-  button.addEventListener('click', async () => {
+if (examples.length) {
+  document.addEventListener('click', async (event) => {
+    const button = event.target.closest('button.copy-code');
+    if (!button) return;
+
+    const code = button.closest('.example').querySelector('code');
     try {
       await navigator.clipboard.writeText(code.textContent);
       button.textContent = 'Скопировано';
     } catch {
       const range = document.createRange();
       range.selectNodeContents(code);
-      window.getSelection().removeAllRanges();
-      window.getSelection().addRange(range);
+      const selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
       button.textContent = 'Код выделен';
     }
   });
 }
 
 const links = [...document.querySelectorAll('.contents a[href^="#"], .chapters a[href^="#"]')];
-const destinations = new Set(links.map((link) => link.hash.slice(1)));
-const sections = [...document.querySelectorAll('main [id]')].filter((section) => destinations.has(section.id));
+const linksBySection = new Map();
+for (const link of links) {
+  const id = link.hash.slice(1);
+  if (!linksBySection.has(id)) linksBySection.set(id, []);
+  linksBySection.get(id).push(link);
+}
+const sections = [...document.querySelectorAll('main [id]')].filter((section) => linksBySection.has(section.id));
+const noActiveLinks = [];
+let activeLinks = links.filter((link) => link.hasAttribute('aria-current'));
+let activeSectionIndex;
 
 function updateNavigation() {
-  const current = sections.findLast((section) => section.getBoundingClientRect().top <= 92);
-  for (const link of links) {
-    if (link.hash === '#' + current?.id) link.setAttribute('aria-current', 'location');
-    else link.removeAttribute('aria-current');
+  // The headings and lesson cards follow document order. Most scroll events
+  // stay within the current section, so check its boundaries first.
+  if (activeSectionIndex !== undefined) {
+    const current = sections[activeSectionIndex];
+    const next = sections[activeSectionIndex + 1];
+    if ((!current || current.getBoundingClientRect().top <= 92) &&
+        (!next || next.getBoundingClientRect().top > 92)) return;
   }
+
+  let start = 0;
+  let end = sections.length;
+  while (start < end) {
+    const middle = (start + end) >>> 1;
+    if (sections[middle].getBoundingClientRect().top <= 92) start = middle + 1;
+    else end = middle;
+  }
+  activeSectionIndex = start - 1;
+  const nextLinks = linksBySection.get(sections[activeSectionIndex]?.id) ?? noActiveLinks;
+  if (nextLinks === activeLinks) return;
+
+  for (const link of activeLinks) {
+    if (!nextLinks.includes(link)) link.removeAttribute('aria-current');
+  }
+  for (const link of nextLinks) {
+    if (!activeLinks.includes(link)) link.setAttribute('aria-current', 'location');
+  }
+  activeLinks = nextLinks;
 }
 
-window.addEventListener('scroll', updateNavigation, { passive: true });
+if (sections.length) window.addEventListener('scroll', updateNavigation, { passive: true });
 updateNavigation();
 
 const revealBlocks = document.querySelectorAll('.lesson-body > *, .lesson-list > li');
@@ -64,9 +101,14 @@ if (revealBlocks.length) {
     const delays = ['0ms', 'var(--intro-lead-delay)', 'var(--intro-description-delay)', 'var(--intro-footer-delay)'];
     let firstBatch = true;
     observer = new IntersectionObserver(entries => {
-      const overviewBounds = overview.getBoundingClientRect();
-      const headingVisible = overviewBounds.bottom > 0 && overviewBounds.top < innerHeight;
-      const lead = firstBatch && headingVisible ? 'var(--intro-footer-delay)' : '0ms';
+      let lead = '0ms';
+      if (firstBatch) {
+        const overviewBounds = overview.getBoundingClientRect();
+        if (overviewBounds.bottom > 0 && overviewBounds.top < innerHeight) {
+          lead = 'var(--intro-footer-delay)';
+        }
+        firstBatch = false;
+      }
       let step = 0;
       for (const { target, isIntersecting } of entries) {
         if (isIntersecting) {
@@ -75,9 +117,7 @@ if (revealBlocks.length) {
         }
         target.classList.toggle('awaiting-reveal', !isIntersecting);
         target.classList.toggle('revealing', isIntersecting);
-
       }
-      firstBatch = false;
     });
     for (const block of revealBlocks) observer.observe(block);
   }

@@ -1,8 +1,13 @@
 'use strict';
 
 const panelsContainer = document.querySelector('.panels');
-const panels = [...panelsContainer.querySelectorAll('.panel')];
+const panels = Array.from(panelsContainer.querySelectorAll('.panel'), element => ({
+  element,
+  trigger: element.querySelector('.panel-trigger'),
+  content: element.querySelector('.panel-content'),
+}));
 const hoverDevice = window.matchMedia('(any-hover: hover)');
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 const collection = document.querySelector('.collection');
 const openCollection = document.querySelector('.collection-link');
 
@@ -22,56 +27,71 @@ const terminalLog = [
   '[trace] buffer flushed',
 ];
 
+const terminalLines = document.createDocumentFragment();
 for (let frame = 0; frame < 72; frame += 1) {
   const line = document.createElement('span');
   const event = terminalLog[frame % terminalLog.length];
   const address = (0x3c40 + frame * 173).toString(16).toUpperCase();
-  const segment = String((frame * 7) % 41).padStart(2, '0');
-  const metadata = [
-    '',
-    `  :: TICK=${frame} / SECTOR_${segment}`,
-    `  :: OFFSET=0x${address}`,
-    `  :: MEMORY_MAP[${segment}] > FRAME_0x${address} > LOCAL_REPLAY`,
-  ];
-  line.textContent = `0x${address}  ${event}${metadata[frame % metadata.length]}`;
-  terminalFeed.append(line);
+  const variant = frame % 4;
+  let metadata = '';
+  if (variant === 2) {
+    metadata = `  :: OFFSET=0x${address}`;
+  } else if (variant !== 0) {
+    const segment = String((frame * 7) % 41).padStart(2, '0');
+    metadata = variant === 1
+      ? `  :: TICK=${frame} / SECTOR_${segment}`
+      : `  :: MEMORY_MAP[${segment}] > FRAME_0x${address} > LOCAL_REPLAY`;
+  }
+  line.textContent = `0x${address}  ${event}${metadata}`;
+  terminalLines.append(line);
 }
+terminalFeed.append(terminalLines);
 
 for (const group of document.querySelectorAll('[data-loop-copy]')) {
   if (group.classList.contains('slide-strip')) {
     // Two passes keep even the shorter lanes filled on tall screens.
-    for (const image of [...group.children]) group.append(image.cloneNode(true));
+    group.append(...Array.from(group.children, image => image.cloneNode(true)));
   }
   const copy = group.cloneNode(true);
   copy.removeAttribute('data-loop-copy');
   group.after(copy);
 }
 
+let activePanel = null;
+let widePanel = null;
+
+function setPreview(panel, active) {
+  panel.element.classList.toggle('is-active', active);
+  panel.trigger.setAttribute('aria-expanded', String(active));
+  if (panel.content) panel.content.inert = !active;
+}
+
 function showPreview(panel) {
-  for (const item of panels) {
-    const active = item === panel;
-    item.classList.toggle('is-active', active);
-    item.querySelector('.panel-trigger').setAttribute('aria-expanded', String(active));
-    const content = item.querySelector('.panel-content');
-    if (content) content.inert = !active;
-  }
+  if (panel === activePanel) return;
+  if (activePanel) setPreview(activePanel, false);
+  if (panel) setPreview(panel, true);
+  activePanel = panel;
 }
 
 function selectPanel(panel) {
-  panelsContainer.classList.toggle('has-selection', Boolean(panel));
-  for (const item of panels) item.classList.toggle('is-wide', item === panel);
+  if (panel !== widePanel) {
+    panelsContainer.classList.toggle('has-selection', Boolean(panel));
+    widePanel?.element.classList.remove('is-wide');
+    panel?.element.classList.add('is-wide');
+    widePanel = panel;
+  }
   showPreview(panel);
 }
 
 panels.forEach((panel, index) => {
-  const trigger = panel.querySelector('.panel-trigger');
+  const { element, trigger } = panel;
 
-  panel.addEventListener('pointerenter', (event) => {
+  element.addEventListener('pointerenter', (event) => {
     if (event.pointerType !== 'touch' && hoverDevice.matches) selectPanel(panel);
   });
 
   trigger.addEventListener('click', (event) => {
-    if (event.pointerType === 'touch' && panel.classList.contains('is-active')) {
+    if (event.pointerType === 'touch' && panel === activePanel) {
       selectPanel(null);
     } else {
       selectPanel(panel);
@@ -87,7 +107,7 @@ panels.forEach((panel, index) => {
     event.preventDefault();
     const step = event.key === 'ArrowRight' ? 1 : -1;
     const next = panels[(index + step + panels.length) % panels.length];
-    next.querySelector('.panel-trigger').focus();
+    next.trigger.focus();
     selectPanel(next);
   });
 });
@@ -125,7 +145,7 @@ let guideExit;
 
 guideLink.addEventListener('click', (event) => {
   if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey ||
-      event.altKey || event.shiftKey || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      event.altKey || event.shiftKey || reduceMotion.matches) return;
 
   event.preventDefault();
   if (guideExit) return;
