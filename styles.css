@@ -282,13 +282,15 @@ body.collection-open { overflow: hidden; }
   display: block;
   width: fit-content;
   margin-top: 14px;
+  transform: translateY(6px);
   color: var(--muted);
-  font: 600 12px/1.8 'Courier New', monospace;
+  font: 600 11px/1.8 'Courier New', monospace;
+  letter-spacing: .23em;
+  text-transform: uppercase;
   text-decoration: none;
   transition: color 180ms ease;
 }
 .intro-contact:link, .intro-contact:visited { color: var(--muted); text-decoration: none; }
-.intro-contact span { display: block; letter-spacing: .04em; }
 .intro-contact:hover, .intro-contact:focus-visible { color: var(--paper); }
 @media (max-width: 700px) {
   .intro-contact { margin-top: 22px; }
