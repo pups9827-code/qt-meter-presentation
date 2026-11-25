@@ -277,3 +277,18 @@ body.collection-open { overflow: hidden; }
   margin-top: 20px;
   text-shadow: 0 1px 3px #000, 0 0 6px #000;
 }
+
+.intro-contact {
+  display: block;
+  width: fit-content;
+  margin-top: 14px;
+  color: var(--muted);
+  font: 12px/1.8 'Courier New', monospace;
+  text-decoration: none;
+  transition: color 180ms ease;
+}
+.intro-contact span { display: block; letter-spacing: .04em; }
+.intro-contact:hover { color: var(--paper); }
+@media (max-width: 700px) {
+  .intro-contact { margin-top: 22px; }
+}
