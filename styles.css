@@ -284,9 +284,8 @@ body.collection-open { overflow: hidden; }
   margin-top: 14px;
   transform: translateY(6px);
   color: var(--muted);
-  font: 600 11px/1.8 'Courier New', monospace;
-  letter-spacing: .23em;
-  text-transform: uppercase;
+  font: 500 13px/1.8 Georgia, 'Times New Roman', serif;
+  letter-spacing: .15em;
   text-decoration: none;
   transition: color 180ms ease;
 }
