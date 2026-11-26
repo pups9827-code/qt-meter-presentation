@@ -1,0 +1,11 @@
+# GitHub Pages builds this repository from the root of main.
+include:
+  - .well-known
+
+exclude:
+  - SECURITY_SETUP.md
+  - "**/*.bak"
+  - "**/*.old"
+  - "**/*.orig"
+  - "**/*.swp"
+  - "**/*~"

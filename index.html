@@ -1,20 +1,16 @@
 <!doctype html>
 <html lang="ru">
 <head>
-<!-- Yandex.Metrika counter -->
-<script type="text/javascript">
-(function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};m[i].l=1*new Date();for(var j=0;j<document.scripts.length;j++){if(document.scripts[j].src===r){return;}}k=e.createElement(t);a=e.getElementsByTagName(t)[0];k.async=1;k.src=r;a.parentNode.insertBefore(k,a)})(window,document,'script','https://mc.yandex.ru/metrika/tag.js?id=114486647','ym');
-ym(114486647,'init',{ssr:true,webvisor:false,clickmap:true,referrer:document.referrer,url:location.href,accurateTrackBounce:true,trackLinks:true});
-</script>
-<!-- /Yandex.Metrika counter -->
-
   <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; base-uri 'none'; object-src 'none'; form-action 'none'; script-src 'self' https://mc.yandex.ru https://yastatic.net; script-src-attr 'none'; style-src 'self'; style-src-attr 'none'; connect-src https://mc.yandex.ru; img-src 'self' https://mc.yandex.ru; font-src 'self'; frame-src 'none'">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <script src="metrika.js" defer></script>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#000000">
   <meta name="description" content="pupsiks — личная коллекция презентаций и документация Python.">
   <title>pupsiks</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css?v=contact4">
+  <link rel="stylesheet" href="styles.css?v=security1">
   <link rel="stylesheet" href="intro.css">
   <script src="script.js" defer></script>
 </head>
@@ -110,7 +106,10 @@ ym(114486647,'init',{ssr:true,webvisor:false,clickmap:true,referrer:document.ref
         <div class="panel-content project-content" id="project-content" inert>
           <h2>Qt Meteor</h2>
           <p class="panel-description">Журнал погоды</p>
-          <a class="collection-link" href="qt_meteor_project.zip" download>Скачать ZIP</a>
+          <div class="project-downloads">
+            <a class="collection-link" href="qt_meteor_project.zip" download>Скачать ZIP</a>
+            <a class="collection-link checksum-link" href="checksums.txt" aria-label="Контрольная сумма ZIP (SHA-256)">SHA-256</a>
+          </div>
         </div>
       </article>
 

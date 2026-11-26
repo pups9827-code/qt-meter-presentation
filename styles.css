@@ -272,6 +272,8 @@ body.collection-open { overflow: hidden; }
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
 
+.project-downloads { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 16px; }
+.project-downloads .checksum-link { font-size: 11px; }
 .python-content h2, .project-content h2 { text-shadow: 0 1px 12px #000, 0 1px 4px #000; }
 .python-content .collection-link {
   margin-top: 20px;
