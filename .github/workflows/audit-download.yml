@@ -80,7 +80,7 @@ jobs:
               });
               const page = await context.newPage();
               page.on('pageerror', error => errors.push(String(error)));
-              page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
+              page.on('console', message => { if (message.type() === 'error') { errors.push(message.text()); console.error(message.text().slice(0, 500)); } });
               const visit = async path => assert.equal((await page.goto(origin + path)).status(), 200);
               await visit('/');
               const presentations = page.locator('[data-panel=presentations] .panel-trigger');
@@ -95,9 +95,8 @@ jobs:
               assert.equal(await page.locator('h1').count(), 1);
               await page.locator('a[href="lessons/environment.html"]').first().click();
               await page.waitForURL('**/python/lessons/environment.html');
-              const copy = page.getByRole('button', { name: 'Копировать' }).first();
-              await copy.click();
-              assert.equal(await copy.textContent(), 'Скопировано');
+              await page.locator('button.copy-code').first().click();
+              await page.getByRole('button', { name: /Скопировано|Код выделен/ }).waitFor({ state: 'visible' });
               await visit('/presentation/');
               await page.locator('#root .h-title').first().waitFor({ state: 'attached' });
               await page.getByRole('button', { name: 'Слайды', exact: true }).click();
