@@ -1,0 +1,41 @@
+name: Inspect site download
+
+on:
+  push:
+    branches: [security/pages-hardening]
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Calculate SHA-256 and inspect archive entries
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import hashlib
+          import re
+          from pathlib import Path, PurePosixPath
+          from zipfile import ZipFile
+          patterns = re.compile(rb'-----BEGIN (?:[A-Z ]+ )?PRIVATE KEY-----|gh[pousr]_[A-Za-z0-9_]{24,}|github_pat_[A-Za-z0-9_]{24,}|AIza[A-Za-z0-9_-]{30,}|(?:AKIA|ASIA)[A-Z0-9]{16}|sk-(?:proj-)?[A-Za-z0-9_-]{24,}|xox[baprs]-[0-9A-Za-z-]{12,}')
+          for archive in sorted(Path().rglob('*.zip')):
+              with archive.open('rb') as handle:
+                  print('SHA256', hashlib.file_digest(handle, 'sha256').hexdigest(), archive)
+              with ZipFile(archive) as bundle:
+                  print('ZIP integrity', bundle.testzip() or 'OK')
+                  print('ZIP entries', len(bundle.infolist()))
+                  for item in bundle.infolist():
+                      path = PurePosixPath(item.filename.replace(chr(92), '/'))
+                      if path.is_absolute() or '..' in path.parts or (item.external_attr >> 16) & 0o170000 == 0o120000:
+                          print('Unsafe ZIP path or symlink:', repr(item.filename))
+                      if any(part in ('.git', '.DS_Store', '__MACOSX') or part == '.env' or part.startswith('.env.') or part.lower().endswith(('.bak', '.key', '.pem')) for part in path.parts):
+                          print('Internal ZIP file candidate:', repr(item.filename))
+                      if not item.is_dir() and item.file_size <= 8 * 1024 * 1024:
+                          if patterns.search(bundle.read(item)):
+                              print('Secret candidate in ZIP:', repr(item.filename))
+          PY
