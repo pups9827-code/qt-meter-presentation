@@ -104,6 +104,14 @@ jobs:
               assert.equal(await slides.count(), 10);
               await slides.nth(1).click();
               await page.waitForFunction(() => document.querySelector('.counter')?.textContent.startsWith('02'));
+              await slides.nth(4).click();
+              await page.waitForFunction(() => document.querySelector('.counter')?.textContent.startsWith('05'));
+              await page.getByRole('button', { name: 'Увеличить снимок интерфейса' }).click();
+              const screenshotDialog = page.getByRole('dialog', { name: 'Снимок приложения с демонстрационными данными' });
+              await screenshotDialog.waitFor({ state: 'visible' });
+              await page.waitForFunction(() => document.querySelector('.journal-dialog img')?.naturalWidth > 0);
+              await screenshotDialog.getByRole('button', { name: 'Закрыть снимок' }).click();
+              await screenshotDialog.waitFor({ state: 'hidden' });
               assert.equal(await page.evaluate(() => [...document.fonts].some(face => face.family.includes('Cormorant Garamond'))), true);
               await visit('/');
               await page.locator('[data-panel=project] .panel-trigger').hover();
@@ -115,7 +123,7 @@ jobs:
               assert.match(await page.locator('body').textContent(), /[a-f0-9]{64}  qt_meteor_project\.zip/);
               assert.ok(analyticsRequests >= 5);
               assert.deepEqual(errors, []);
-              console.log('Collection, Python navigation and clipboard, presentation and fonts, ZIP download and checksum passed.');
+              console.log('Homepage and presentation dialogs, Python navigation and clipboard, presentation slides and fonts, ZIP download and checksum passed.');
             } finally {
               await browser.close();
             }
