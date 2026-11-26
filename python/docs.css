@@ -158,10 +158,10 @@ pre { margin: 0; padding: 18px 16px; overflow: auto; font: .92rem/1.65 var(--mon
   .lesson-back ~ p { --reveal-delay: var(--intro-description-delay); }
 
   @media screen {
-    :is(.lesson-body, .lesson-list) > .awaiting-reveal:not(:focus-within) { opacity: 0; }
+    :where(.lesson-reveal) :is(.lesson-body, .lesson-list) > :not(.revealing):not(:focus-within) { opacity: 0; }
     .lesson-body > .revealing:focus-within { animation: none; }
 
-    .lesson-list > .awaiting-reveal:not(:focus-within) {
+    :where(.lesson-reveal) .lesson-list > :not(.revealing):not(:focus-within) {
       clip-path: var(--intro-clip-start);
       filter: var(--reveal-blur);
       transform: translateY(9px);

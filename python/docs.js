@@ -80,15 +80,18 @@ const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
 if (revealBlocks.length) {
   const page = document.documentElement;
   const overview = document.querySelector('.overview');
+  const canObserve = 'IntersectionObserver' in window;
+  const visibleBlocks = new Set();
   let observer;
+
+  // One class hides all pending blocks. Only intersecting blocks need DOM updates.
+  if (canObserve) page.classList.add('lesson-reveal');
 
   function preparePage() {
     observer?.disconnect();
     page.classList.add('lesson-preparing');
-    for (const block of revealBlocks) {
-      block.classList.remove('revealing');
-      block.classList.toggle('awaiting-reveal', 'IntersectionObserver' in window);
-    }
+    for (const block of visibleBlocks) block.classList.remove('revealing');
+    visibleBlocks.clear();
   }
 
   function showPage(event) {
@@ -96,7 +99,7 @@ if (revealBlocks.length) {
     // Commit the paused appearance before restarting, including after a cached Back.
     void page.offsetWidth;
     page.classList.remove('lesson-preparing');
-    if (!('IntersectionObserver' in window)) return;
+    if (!canObserve) return;
 
     const delays = ['0ms', 'var(--intro-lead-delay)', 'var(--intro-description-delay)', 'var(--intro-footer-delay)'];
     let firstBatch = true;
@@ -114,9 +117,11 @@ if (revealBlocks.length) {
         if (isIntersecting) {
           target.style.setProperty('--reveal-delay', `calc(${lead} + ${delays[step]})`);
           step = Math.min(step + 1, delays.length - 1);
+          visibleBlocks.add(target);
+          target.classList.add('revealing');
+        } else if (visibleBlocks.delete(target)) {
+          target.classList.remove('revealing');
         }
-        target.classList.toggle('awaiting-reveal', !isIntersecting);
-        target.classList.toggle('revealing', isIntersecting);
       }
     });
     for (const block of revealBlocks) observer.observe(block);
