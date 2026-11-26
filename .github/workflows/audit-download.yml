@@ -100,7 +100,11 @@ jobs:
               assert.equal(await copy.textContent(), 'Скопировано');
               await visit('/presentation/');
               await page.locator('#root .h-title').first().waitFor({ state: 'attached' });
-              await page.locator('nav[aria-label="Слайды"] button').first().waitFor({ state: 'attached' });
+              await page.getByRole('button', { name: 'Слайды', exact: true }).click();
+              const slides = page.locator('nav[aria-label="Слайды"] button');
+              assert.equal(await slides.count(), 10);
+              await slides.nth(1).click();
+              await page.waitForFunction(() => document.querySelector('.counter')?.textContent.startsWith('02'));
               assert.equal(await page.evaluate(() => [...document.fonts].some(face => face.family.includes('Cormorant Garamond'))), true);
               await visit('/');
               await page.locator('[data-panel=project] .panel-trigger').hover();
