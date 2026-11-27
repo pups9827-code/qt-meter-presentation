@@ -30,22 +30,32 @@
 
   .panel:nth-child(2) {
     --divider-start: 520ms;
-    --title-start: 2280ms;
+    --title-start: 2240ms;
   }
 
   .panel:nth-child(3) {
     --divider-start: 620ms;
-    --title-start: 2980ms;
+    --title-start: 2900ms;
   }
 
   .panel:nth-child(4) {
     --divider-start: 720ms;
-    --title-start: 3680ms;
+    --title-start: 3560ms;
   }
 
   .panel-title {
-    /* After the title's 90° rotation its inline axis points down the page. */
-    animation: var(--intro-title) var(--title-start) backwards;
+    animation: panel-title-in var(--intro-title-timing) var(--title-start) backwards;
+  }
+
+  @supports (mask-clip: no-clip) {
+    .panel-title {
+      mask-image: linear-gradient(90deg, #000 calc(50% - .1em), transparent calc(50% + .1em));
+      mask-size: calc(200% + 1em) calc(100% + .7em);
+      mask-repeat: no-repeat;
+      mask-clip: no-clip;
+      mask-position: -.35em center;
+      animation-name: panel-title-soft-in;
+    }
   }
 }
 
@@ -62,4 +72,15 @@
 @keyframes intro-title-in {
   from { clip-path: var(--intro-clip-start, inset(0 100% 0 0)); }
   to { clip-path: inset(0 0 0 0); }
+}
+
+/* The reveal follows the rotated text axis and includes the glyph overhang. */
+@keyframes panel-title-in {
+  from { clip-path: inset(-.35em calc(100% + .35em) -.35em -.35em); }
+  to { clip-path: inset(-.35em -.35em -.35em -.35em); }
+}
+
+@keyframes panel-title-soft-in {
+  from { mask-position: calc(100% + .35em) center; }
+  to { mask-position: -.35em center; }
 }

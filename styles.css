@@ -17,6 +17,40 @@ button { border-radius: 0; }
 .brand { display: inline-flex; align-items: center; gap: 20px; color: inherit; text-decoration: none; }
 .brand-mark { width: 46px; height: 46px; }
 .brand > span { font-size: 29px; letter-spacing: .29em; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .site-header .brand {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    color: #bebebe;
+    background: #000;
+  }
+
+  .site-header .brand::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(
+      108deg,
+      transparent 19%,
+      #ffffff20 30%,
+      #ffffff78 42%,
+      #ffffffe6 50%,
+      #ffffff78 58%,
+      #ffffff20 70%,
+      transparent 81%
+    );
+    mix-blend-mode: overlay;
+    animation: brand-shine 9s cubic-bezier(.37, 0, .63, 1) infinite;
+  }
+}
+
+@keyframes brand-shine {
+  0% { transform: translateX(-90%); }
+  43%, 100% { transform: translateX(90%); }
+}
 .header-note, .eyebrow, .intro-footer, .collection-link { font-family: 'Courier New', monospace; text-transform: uppercase; }
 .header-note { font-size: 12px; letter-spacing: .24em; color: var(--muted); }
 .layout { display: grid; grid-template-columns: 36% 64%; padding: 0 4.4%; min-height: max(680px, calc(100svh - 150px)); }
